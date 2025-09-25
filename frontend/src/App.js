@@ -456,10 +456,23 @@ const CandidaturaMembroPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!turnstileToken) {
+      toast({
+        title: "Verificação necessária",
+        description: "Complete a verificação de segurança.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      await axios.post(`${API}/candidaturas/membro`, formData);
+      await axios.post(`${API}/candidaturas/membro`, {
+        ...formData,
+        turnstile_token: turnstileToken
+      });
       toast({
         title: "Candidatura enviada com sucesso!",
         description: "Entraremos em contato em breve.",
@@ -473,10 +486,15 @@ const CandidaturaMembroPage = () => {
         num_imoveis: 1,
         mensagem: ''
       });
+      setTurnstileToken('');
+      // Reset Turnstile widget
+      if (window.turnstile) {
+        window.turnstile.reset('#turnstile-widget');
+      }
     } catch (error) {
       toast({
         title: "Erro ao enviar candidatura",
-        description: "Tente novamente mais tarde.",
+        description: error.response?.data?.detail || "Tente novamente mais tarde.",
         variant: "destructive",
       });
     }
