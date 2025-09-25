@@ -1007,9 +1007,239 @@ const CandidaturaAssociadoPage = () => {
   );
 };
 
+// Admin Panel
+const AdminPanel = () => {
+  const [candidaturasMembros, setCandidaturasMembros] = useState([]);
+  const [candidaturasParceiros, setCandidaturasParceiros] = useState([]);
+  const [candidaturasAssociados, setCandidaturasAssociados] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('membros');
+
+  const fetchCandidaturas = async () => {
+    setLoading(true);
+    try {
+      const [membros, parceiros, associados] = await Promise.all([
+        axios.get(`${API}/admin/candidaturas/membros`),
+        axios.get(`${API}/admin/candidaturas/parceiros`),
+        axios.get(`${API}/admin/candidaturas/associados`)
+      ]);
+      
+      setCandidaturasMembros(membros.data);
+      setCandidaturasParceiros(parceiros.data);
+      setCandidaturasAssociados(associados.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar candidaturas",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchCandidaturas();
+  }, []);
+
+  const handleAprovar = async (tipo, id) => {
+    try {
+      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/aprovar`);
+      toast({
+        title: "Candidatura aprovada!",
+        description: "Email de boas-vindas enviado.",
+      });
+      fetchCandidaturas(); // Refresh data
+    } catch (error) {
+      toast({
+        title: "Erro ao aprovar",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRecusar = async (tipo, id, motivo = '') => {
+    try {
+      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/recusar`, 
+        { motivo }, 
+        { params: { motivo } }
+      );
+      toast({
+        title: "Candidatura recusada",
+        description: "Email de notificação enviado.",
+      });
+      fetchCandidaturas(); // Refresh data
+    } catch (error) {
+      toast({
+        title: "Erro ao recusar",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const CandidaturaCard = ({ candidatura, tipo }) => (
+    <Card key={candidatura.id} className="mb-4">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg">{candidatura.nome}</CardTitle>
+          <span className="text-sm text-gray-500">
+            {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
+          </span>
+        </div>
+        <CardDescription>{candidatura.email}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <p><strong>Telefone:</strong> {candidatura.telefone}</p>
+            {candidatura.endereco && <p><strong>Endereço:</strong> {candidatura.endereco}</p>}
+            {candidatura.num_imoveis && <p><strong>Nº Imóveis:</strong> {candidatura.num_imoveis}</p>}
+            {candidatura.nome_empresa && <p><strong>Empresa:</strong> {candidatura.nome_empresa}</p>}
+            {candidatura.categoria && <p><strong>Categoria:</strong> {candidatura.categoria}</p>}
+            {candidatura.ocupacao && <p><strong>Ocupação:</strong> {candidatura.ocupacao}</p>}
+          </div>
+          <div>
+            {candidatura.mensagem && (
+              <div>
+                <p><strong>Mensagem:</strong></p>
+                <p className="text-gray-700 text-sm mt-1">{candidatura.mensagem}</p>
+              </div>
+            )}
+            {candidatura.motivo_interesse && (
+              <div>
+                <p><strong>Motivo do Interesse:</strong></p>
+                <p className="text-gray-700 text-sm mt-1">{candidatura.motivo_interesse}</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button
+            onClick={() => handleAprovar(tipo, candidatura.id)}
+            className="bg-green-600 hover:bg-green-700"
+            size="sm"
+            data-testid={`aprovar-${candidatura.id}`}
+          >
+            Aprovar
+          </Button>
+          <Button
+            onClick={() => handleRecusar(tipo, candidatura.id)}
+            variant="destructive"
+            size="sm"
+            data-testid={`recusar-${candidatura.id}`}
+          >
+            Recusar
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8">Painel de Administração</h1>
+        
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6">
+              {[
+                { id: 'membros', label: 'Membros', count: candidaturasMembros.length },
+                { id: 'parceiros', label: 'Parceiros', count: candidaturasParceiros.length },
+                { id: 'associados', label: 'Associados', count: candidaturasAssociados.length }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  data-testid={`tab-${tab.id}`}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activeTab === 'membros' && (
+              <div data-testid="membros-content">
+                <h2 className="text-xl font-semibold mb-4">Candidaturas para Membro</h2>
+                {candidaturasMembros.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-gray-500">
+                      Nenhuma candidatura pendente
+                    </CardContent>
+                  </Card>
+                ) : (
+                  candidaturasMembros.map(candidatura => (
+                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="membro" />
+                  ))
+                )}
+              </div>
+            )}
+            
+            {activeTab === 'parceiros' && (
+              <div data-testid="parceiros-content">
+                <h2 className="text-xl font-semibold mb-4">Candidaturas para Parceiro</h2>
+                {candidaturasParceiros.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-gray-500">
+                      Nenhuma candidatura pendente
+                    </CardContent>
+                  </Card>
+                ) : (
+                  candidaturasParceiros.map(candidatura => (
+                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="parceiro" />
+                  ))
+                )}
+              </div>
+            )}
+            
+            {activeTab === 'associados' && (
+              <div data-testid="associados-content">
+                <h2 className="text-xl font-semibold mb-4">Candidaturas para Associado</h2>
+                {candidaturasAssociados.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-gray-500">
+                      Nenhuma candidatura pendente
+                    </CardContent>
+                  </Card>
+                ) : (
+                  candidaturasAssociados.map(candidatura => (
+                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="associado" />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Dashboard (placeholder for now)
 const DashboardPage = () => {
   const { user } = useAuth();
+
+  // If user is admin, show admin panel
+  if (user?.role === 'admin') {
+    return <AdminPanel />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
