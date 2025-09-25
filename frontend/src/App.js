@@ -858,8 +858,8 @@ const CandidaturaAssociadoPage = () => {
 
     try {
       await axios.post(`${API}/candidaturas/associado`, {
-        ...formData,
-        turnstile_token: turnstileToken
+        ...formData
+        // turnstile_token: turnstileToken
       });
       toast({
         title: "Candidatura enviada com sucesso!",
