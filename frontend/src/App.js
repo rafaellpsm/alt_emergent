@@ -590,6 +590,11 @@ const CandidaturaMembroPage = () => {
                   />
                 </div>
                 
+                <div>
+                  <Label>Verificação de Segurança</Label>
+                  <TurnstileWidget onVerify={setTurnstileToken} />
+                </div>
+                
                 <div className="flex space-x-4">
                   <Button 
                     type="submit" 
