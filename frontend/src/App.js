@@ -623,6 +623,390 @@ const CandidaturaMembroPage = () => {
   );
 };
 
+// Candidatura Parceiro Page
+const CandidaturaParceiroPage = () => {
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    nome_empresa: '',
+    categoria: '',
+    website: '',
+    mensagem: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!turnstileToken) {
+      toast({
+        title: "Verificação necessária",
+        description: "Complete a verificação de segurança.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      await axios.post(`${API}/candidaturas/parceiro`, {
+        ...formData,
+        turnstile_token: turnstileToken
+      });
+      toast({
+        title: "Candidatura enviada com sucesso!",
+        description: "Entraremos em contato em breve.",
+      });
+      // Reset form
+      setFormData({
+        nome: '',
+        email: '',
+        telefone: '',
+        nome_empresa: '',
+        categoria: '',
+        website: '',
+        mensagem: ''
+      });
+      setTurnstileToken('');
+      if (window.turnstile) {
+        window.turnstile.reset('#turnstile-widget');
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar candidatura",
+        description: error.response?.data?.detail || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+            Candidatura para Parceiro
+          </h1>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações da Empresa</CardTitle>
+              <CardDescription>
+                Preencha as informações abaixo para se candidatar como parceiro da ALT Ilhabela
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="nome">Nome do Responsável</Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                    required
+                    data-testid="parceiro-nome-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                    data-testid="parceiro-email-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input
+                    id="telefone"
+                    value={formData.telefone}
+                    onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                    required
+                    data-testid="parceiro-telefone-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="nome_empresa">Nome da Empresa</Label>
+                  <Input
+                    id="nome_empresa"
+                    value={formData.nome_empresa}
+                    onChange={(e) => setFormData({...formData, nome_empresa: e.target.value})}
+                    required
+                    data-testid="parceiro-empresa-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="categoria">Categoria</Label>
+                  <Select 
+                    value={formData.categoria} 
+                    onValueChange={(value) => setFormData({...formData, categoria: value})}
+                  >
+                    <SelectTrigger data-testid="parceiro-categoria-select">
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="restaurante">Restaurante</SelectItem>
+                      <SelectItem value="turismo">Turismo</SelectItem>
+                      <SelectItem value="transporte">Transporte</SelectItem>
+                      <SelectItem value="esportes">Esportes Náuticos</SelectItem>
+                      <SelectItem value="comercio">Comércio Local</SelectItem>
+                      <SelectItem value="servicos">Serviços</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="website">Website (Opcional)</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({...formData, website: e.target.value})}
+                    placeholder="https://www.exemplo.com"
+                    data-testid="parceiro-website-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="mensagem">Mensagem (Opcional)</Label>
+                  <Textarea
+                    id="mensagem"
+                    value={formData.mensagem}
+                    onChange={(e) => setFormData({...formData, mensagem: e.target.value})}
+                    placeholder="Conte-nos sobre seus serviços e como pode contribuir com a ALT..."
+                    data-testid="parceiro-mensagem-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label>Verificação de Segurança</Label>
+                  <TurnstileWidget onVerify={setTurnstileToken} />
+                </div>
+                
+                <div className="flex space-x-4">
+                  <Button 
+                    type="submit" 
+                    disabled={loading || !formData.categoria}
+                    className="flex-1"
+                    data-testid="parceiro-submit-btn"
+                  >
+                    {loading ? 'Enviando...' : 'Enviar Candidatura'}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => window.location.href = '/'}
+                    data-testid="parceiro-voltar-btn"
+                  >
+                    Voltar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Candidatura Associado Page
+const CandidaturaAssociadoPage = () => {
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    ocupacao: '',
+    motivo_interesse: '',
+    mensagem: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!turnstileToken) {
+      toast({
+        title: "Verificação necessária",
+        description: "Complete a verificação de segurança.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      await axios.post(`${API}/candidaturas/associado`, {
+        ...formData,
+        turnstile_token: turnstileToken
+      });
+      toast({
+        title: "Candidatura enviada com sucesso!",
+        description: "Entraremos em contato em breve.",
+      });
+      // Reset form
+      setFormData({
+        nome: '',
+        email: '',
+        telefone: '',
+        ocupacao: '',
+        motivo_interesse: '',
+        mensagem: ''
+      });
+      setTurnstileToken('');
+      if (window.turnstile) {
+        window.turnstile.reset('#turnstile-widget');
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar candidatura",
+        description: error.response?.data?.detail || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+            Candidatura para Associado
+          </h1>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações do Candidato</CardTitle>
+              <CardDescription>
+                Preencha as informações abaixo para se candidatar como associado da ALT Ilhabela
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="nome">Nome Completo</Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                    required
+                    data-testid="associado-nome-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                    data-testid="associado-email-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input
+                    id="telefone"
+                    value={formData.telefone}
+                    onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                    required
+                    data-testid="associado-telefone-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="ocupacao">Ocupação</Label>
+                  <Input
+                    id="ocupacao"
+                    value={formData.ocupacao}
+                    onChange={(e) => setFormData({...formData, ocupacao: e.target.value})}
+                    required
+                    placeholder="Ex: Advogado, Empresário, Aposentado..."
+                    data-testid="associado-ocupacao-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="motivo_interesse">Por que deseja ser associado?</Label>
+                  <Textarea
+                    id="motivo_interesse"
+                    value={formData.motivo_interesse}
+                    onChange={(e) => setFormData({...formData, motivo_interesse: e.target.value})}
+                    required
+                    placeholder="Explique sua motivação para apoiar a ALT Ilhabela..."
+                    data-testid="associado-motivo-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="mensagem">Mensagem Adicional (Opcional)</Label>
+                  <Textarea
+                    id="mensagem"
+                    value={formData.mensagem}
+                    onChange={(e) => setFormData({...formData, mensagem: e.target.value})}
+                    placeholder="Informações adicionais que gostaria de compartilhar..."
+                    data-testid="associado-mensagem-input"
+                  />
+                </div>
+                
+                <div>
+                  <Label>Verificação de Segurança</Label>
+                  <TurnstileWidget onVerify={setTurnstileToken} />
+                </div>
+                
+                <div className="flex space-x-4">
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="flex-1"
+                    data-testid="associado-submit-btn"
+                  >
+                    {loading ? 'Enviando...' : 'Enviar Candidatura'}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => window.location.href = '/'}
+                    data-testid="associado-voltar-btn"
+                  >
+                    Voltar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Dashboard (placeholder for now)
 const DashboardPage = () => {
   const { user } = useAuth();
