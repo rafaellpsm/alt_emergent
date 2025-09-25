@@ -400,6 +400,47 @@ const LoginPage = () => {
   );
 };
 
+// Cloudflare Turnstile Component
+const TurnstileWidget = ({ onVerify }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  useEffect(() => {
+    // Load Turnstile script if not already loaded
+    if (!window.turnstile) {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setIsLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded && window.turnstile) {
+      window.turnstile.render('#turnstile-widget', {
+        sitekey: '0x4AAAAAAABkWN-a6T5C_eLd',
+        callback: onVerify,
+        'error-callback': () => {
+          toast({
+            title: "Erro na verificação",
+            description: "Tente novamente.",
+            variant: "destructive",
+          });
+        },
+      });
+    }
+  }, [isLoaded, onVerify]);
+
+  return (
+    <div className="my-4">
+      <div id="turnstile-widget"></div>
+    </div>
+  );
+};
+
 // Application Forms
 const CandidaturaMembroPage = () => {
   const [formData, setFormData] = useState({
