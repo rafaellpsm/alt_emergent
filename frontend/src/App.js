@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPage } from './components/Forms';
+import { MeusImoveisPage } from './components/MemberPages';
 
 // Import shadcn components
 import { Button } from './components/ui/button';
