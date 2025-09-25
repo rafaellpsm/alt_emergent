@@ -1,8 +1,8 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, HttpUrl
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
@@ -74,7 +74,7 @@ class Token(BaseModel):
     token_type: str
     user: User
 
-# Application Models
+# Enhanced Application Models
 class CandidaturaBase(BaseModel):
     nome: str
     email: EmailStr
@@ -86,6 +86,10 @@ class CandidaturaMembro(CandidaturaBase):
     tipo: str = Field(default="membro")
     endereco: str
     num_imoveis: int
+    link_imovel: Optional[HttpUrl] = None  # New field
+    experiencia_locacao: Optional[str] = None  # New field
+    renda_mensal_estimada: Optional[float] = None  # New field
+    possui_alvara: bool = False  # New field
     status: str = Field(default="pendente")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -94,7 +98,12 @@ class CandidaturaParceiro(CandidaturaBase):
     tipo: str = Field(default="parceiro")
     nome_empresa: str
     categoria: str  # Restaurante, Turismo, etc.
-    website: Optional[str] = None
+    website: Optional[HttpUrl] = None
+    link_empresa: Optional[HttpUrl] = None  # New field
+    cnpj: Optional[str] = None  # New field
+    tempo_operacao: Optional[str] = None  # New field
+    servicos_oferecidos: Optional[str] = None  # New field
+    capacidade_atendimento: Optional[str] = None  # New field
     status: str = Field(default="pendente")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -103,38 +112,93 @@ class CandidaturaAssociado(CandidaturaBase):
     tipo: str = Field(default="associado")
     ocupacao: str
     motivo_interesse: str
+    empresa_trabalho: Optional[str] = None  # New field
+    linkedin: Optional[HttpUrl] = None  # New field
+    contribuicao_pretendida: Optional[str] = None  # New field
+    disponibilidade: Optional[str] = None  # New field
     status: str = Field(default="pendente")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# Property Models
+# Enhanced Property Models
 class Imovel(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     titulo: str
     descricao: str
-    tipo: str  # Casa, Apartamento, etc.
+    tipo: str  # Casa, Apartamento, Pousada, etc.
     regiao: str
+    endereco_completo: str
     preco_diaria: float
+    preco_semanal: Optional[float] = None
+    preco_mensal: Optional[float] = None
     num_quartos: int
     num_banheiros: int
     capacidade: int
+    area_m2: Optional[float] = None
+    possui_piscina: bool = False
+    possui_churrasqueira: bool = False
+    possui_wifi: bool = True
+    permite_pets: bool = False
+    tem_vista_mar: bool = False
+    tem_ar_condicionado: bool = False
     fotos: List[str] = []
+    video_url: Optional[HttpUrl] = None
+    link_booking: Optional[HttpUrl] = None
+    link_airbnb: Optional[HttpUrl] = None
     ativo: bool = True
+    destaque: bool = False  # For featuring on main page
     proprietario_id: str
     visualizacoes: int = 0
     cliques_link: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ImovelCreate(BaseModel):
     titulo: str
     descricao: str
     tipo: str
     regiao: str
+    endereco_completo: str
     preco_diaria: float
+    preco_semanal: Optional[float] = None
+    preco_mensal: Optional[float] = None
     num_quartos: int
     num_banheiros: int
     capacidade: int
+    area_m2: Optional[float] = None
+    possui_piscina: bool = False
+    possui_churrasqueira: bool = False
+    possui_wifi: bool = True
+    permite_pets: bool = False
+    tem_vista_mar: bool = False
+    tem_ar_condicionado: bool = False
+    video_url: Optional[HttpUrl] = None
+    link_booking: Optional[HttpUrl] = None
+    link_airbnb: Optional[HttpUrl] = None
 
-# Partner Profile Models
+class ImovelUpdate(BaseModel):
+    titulo: Optional[str] = None
+    descricao: Optional[str] = None
+    tipo: Optional[str] = None
+    regiao: Optional[str] = None
+    endereco_completo: Optional[str] = None
+    preco_diaria: Optional[float] = None
+    preco_semanal: Optional[float] = None
+    preco_mensal: Optional[float] = None
+    num_quartos: Optional[int] = None
+    num_banheiros: Optional[int] = None
+    capacidade: Optional[int] = None
+    area_m2: Optional[float] = None
+    possui_piscina: Optional[bool] = None
+    possui_churrasqueira: Optional[bool] = None
+    possui_wifi: Optional[bool] = None
+    permite_pets: Optional[bool] = None
+    tem_vista_mar: Optional[bool] = None
+    tem_ar_condicionado: Optional[bool] = None
+    video_url: Optional[HttpUrl] = None
+    link_booking: Optional[HttpUrl] = None
+    link_airbnb: Optional[HttpUrl] = None
+
+# Enhanced Partner Profile Models
 class PerfilParceiro(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
@@ -142,39 +206,68 @@ class PerfilParceiro(BaseModel):
     descricao: str
     categoria: str
     telefone: str
-    website: Optional[str] = None
+    endereco: Optional[str] = None
+    website: Optional[HttpUrl] = None
+    instagram: Optional[HttpUrl] = None
+    facebook: Optional[HttpUrl] = None
     fotos: List[str] = []
+    video_url: Optional[HttpUrl] = None
+    horario_funcionamento: Optional[str] = None
+    servicos: List[str] = []
+    preco_medio: Optional[str] = None
+    aceita_cartao: bool = True
+    delivery: bool = False
+    destaque: bool = False  # For featuring on main page
     ativo: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class PerfilParceiroCreate(BaseModel):
     nome_empresa: str
     descricao: str
     categoria: str
     telefone: str
-    website: Optional[str] = None
+    endereco: Optional[str] = None
+    website: Optional[HttpUrl] = None
+    instagram: Optional[HttpUrl] = None
+    facebook: Optional[HttpUrl] = None
+    horario_funcionamento: Optional[str] = None
+    servicos: List[str] = []
+    preco_medio: Optional[str] = None
+    aceita_cartao: bool = True
+    delivery: bool = False
 
-# Content Models
+# Enhanced Content Models
 class Noticia(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     titulo: str
+    subtitulo: Optional[str] = None
     conteudo: str
+    resumo: Optional[str] = None
     autor_id: str
     autor_nome: str
+    categoria: str = "geral"  # geral, evento, promocao, regulamentacao
+    fotos: List[str] = []
+    video_url: Optional[HttpUrl] = None
+    link_externo: Optional[HttpUrl] = None
+    tags: List[str] = []
+    destaque: bool = False
     publicada: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class NoticiaCreate(BaseModel):
     titulo: str
+    subtitulo: Optional[str] = None
     conteudo: str
+    resumo: Optional[str] = None
+    categoria: str = "geral"
+    video_url: Optional[HttpUrl] = None
+    link_externo: Optional[HttpUrl] = None
+    tags: List[str] = []
+    destaque: bool = False
 
-# Email Models
-class EmailMassa(BaseModel):
-    destinatarios: List[str]  # roles: admin, membro, parceiro, associado
-    assunto: str
-    mensagem: str
-
-# Dashboard Stats
+# Dashboard Models
 class DashboardStats(BaseModel):
     total_users: int
     total_membros: int
@@ -183,6 +276,20 @@ class DashboardStats(BaseModel):
     candidaturas_pendentes: int
     total_imoveis: int
     total_noticias: int
+    imoveis_destaque: int
+    parceiros_destaque: int
+
+class MainPageData(BaseModel):
+    noticias_destaque: List[Noticia]
+    imoveis_destaque: List[Imovel]
+    parceiros_destaque: List[PerfilParceiro]
+    ultimas_noticias: List[Noticia]
+
+# Email Models
+class EmailMassa(BaseModel):
+    destinatarios: List[str]  # roles: admin, membro, parceiro, associado
+    assunto: str
+    mensagem: str
 
 # Helper Functions
 def verify_password(plain_password, hashed_password):
@@ -229,6 +336,22 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
+async def get_membro_user(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.MEMBRO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas membros podem acessar esta funcionalidade"
+        )
+    return current_user
+
+async def get_parceiro_user(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.PARCEIRO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas parceiros podem acessar esta funcionalidade"
+        )
+    return current_user
+
 # Email Service
 async def send_email(to_email: str, subject: str, body: str, is_html: bool = False):
     try:
@@ -257,6 +380,36 @@ async def send_email(to_email: str, subject: str, body: str, is_html: bool = Fal
 @api_router.get("/")
 async def root():
     return {"message": "ALT Ilhabela Portal API"}
+
+# Main Page for Authenticated Users
+@api_router.get("/main-page", response_model=MainPageData)
+async def get_main_page_data(current_user: User = Depends(get_current_user)):
+    # Get featured news (max 3)
+    noticias_destaque = await db.noticias.find(
+        {"publicada": True, "destaque": True}
+    ).sort("created_at", -1).limit(3).to_list(length=None)
+    
+    # Get featured properties (max 6)
+    imoveis_destaque = await db.imoveis.find(
+        {"ativo": True, "destaque": True}
+    ).sort("created_at", -1).limit(6).to_list(length=None)
+    
+    # Get featured partners (max 6)
+    parceiros_destaque = await db.perfis_parceiros.find(
+        {"ativo": True, "destaque": True}
+    ).sort("created_at", -1).limit(6).to_list(length=None)
+    
+    # Get latest news (max 10)
+    ultimas_noticias = await db.noticias.find(
+        {"publicada": True}
+    ).sort("created_at", -1).limit(10).to_list(length=None)
+    
+    return MainPageData(
+        noticias_destaque=[Noticia(**n) for n in noticias_destaque],
+        imoveis_destaque=[Imovel(**i) for i in imoveis_destaque],
+        parceiros_destaque=[PerfilParceiro(**p) for p in parceiros_destaque],
+        ultimas_noticias=[Noticia(**n) for n in ultimas_noticias]
+    )
 
 # Authentication Routes
 @api_router.post("/auth/register", response_model=User)
@@ -310,7 +463,7 @@ async def login(user_credentials: UserLogin):
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
-# Application Routes
+# Enhanced Application Routes
 @api_router.post("/candidaturas/membro", response_model=CandidaturaMembro)
 async def submit_candidatura_membro(candidatura: CandidaturaMembro):
     candidatura_dict = candidatura.dict()
@@ -329,7 +482,202 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
     await db.candidaturas_associados.insert_one(candidatura_dict)
     return candidatura
 
-# Admin Routes
+# Enhanced Property Routes for Members
+@api_router.get("/imoveis", response_model=List[Imovel])
+async def get_imoveis(current_user: User = Depends(get_current_user)):
+    imoveis = await db.imoveis.find({"ativo": True}).sort("created_at", -1).to_list(length=None)
+    return [Imovel(**imovel) for imovel in imoveis]
+
+@api_router.get("/meus-imoveis", response_model=List[Imovel])
+async def get_meus_imoveis(current_user: User = Depends(get_membro_user)):
+    imoveis = await db.imoveis.find({"proprietario_id": current_user.id}).sort("created_at", -1).to_list(length=None)
+    return [Imovel(**imovel) for imovel in imoveis]
+
+@api_router.post("/imoveis", response_model=Imovel)
+async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(get_membro_user)):
+    imovel = Imovel(
+        proprietario_id=current_user.id,
+        **imovel_data.dict()
+    )
+    
+    imovel_dict = imovel.dict()
+    await db.imoveis.insert_one(imovel_dict)
+    return imovel
+
+@api_router.get("/imoveis/{imovel_id}", response_model=Imovel)
+async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
+    imovel = await db.imoveis.find_one({"id": imovel_id, "ativo": True})
+    if not imovel:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    
+    # Increment view count
+    await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$inc": {"visualizacoes": 1}}
+    )
+    
+    return Imovel(**imovel)
+
+@api_router.put("/imoveis/{imovel_id}", response_model=Imovel)
+async def update_imovel(
+    imovel_id: str, 
+    imovel_data: ImovelUpdate, 
+    current_user: User = Depends(get_membro_user)
+):
+    # Check if property belongs to current user
+    existing = await db.imoveis.find_one({"id": imovel_id, "proprietario_id": current_user.id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    
+    # Update only provided fields
+    update_data = {k: v for k, v in imovel_data.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": update_data}
+    )
+    
+    updated_imovel = await db.imoveis.find_one({"id": imovel_id})
+    return Imovel(**updated_imovel)
+
+@api_router.delete("/imoveis/{imovel_id}")
+async def delete_imovel(imovel_id: str, current_user: User = Depends(get_membro_user)):
+    result = await db.imoveis.update_one(
+        {"id": imovel_id, "proprietario_id": current_user.id},
+        {"$set": {"ativo": False, "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    
+    return {"message": "Imóvel removido com sucesso"}
+
+# Partner Profile Routes (Enhanced)
+@api_router.get("/parceiros", response_model=List[PerfilParceiro])
+async def get_parceiros(current_user: User = Depends(get_current_user)):
+    parceiros = await db.perfis_parceiros.find({"ativo": True}).sort("created_at", -1).to_list(length=None)
+    return [PerfilParceiro(**parceiro) for parceiro in parceiros]
+
+@api_router.get("/meu-perfil-parceiro", response_model=PerfilParceiro)
+async def get_meu_perfil_parceiro(current_user: User = Depends(get_parceiro_user)):
+    perfil = await db.perfis_parceiros.find_one({"user_id": current_user.id})
+    if not perfil:
+        raise HTTPException(status_code=404, detail="Perfil não encontrado")
+    return PerfilParceiro(**perfil)
+
+@api_router.post("/perfil-parceiro", response_model=PerfilParceiro)
+async def create_perfil_parceiro(
+    perfil_data: PerfilParceiroCreate, 
+    current_user: User = Depends(get_parceiro_user)
+):
+    # Check if profile already exists
+    existing = await db.perfis_parceiros.find_one({"user_id": current_user.id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Perfil já existe")
+    
+    perfil = PerfilParceiro(
+        user_id=current_user.id,
+        **perfil_data.dict()
+    )
+    
+    perfil_dict = perfil.dict()
+    await db.perfis_parceiros.insert_one(perfil_dict)
+    return perfil
+
+@api_router.put("/perfil-parceiro", response_model=PerfilParceiro)
+async def update_perfil_parceiro(
+    perfil_data: PerfilParceiroCreate, 
+    current_user: User = Depends(get_parceiro_user)
+):
+    update_data = perfil_data.dict()
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.perfis_parceiros.update_one(
+        {"user_id": current_user.id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Perfil não encontrado")
+    
+    updated_perfil = await db.perfis_parceiros.find_one({"user_id": current_user.id})
+    return PerfilParceiro(**updated_perfil)
+
+# Enhanced Content Management Routes
+@api_router.get("/noticias", response_model=List[Noticia])
+async def get_noticias(
+    categoria: Optional[str] = None,
+    limit: Optional[int] = 20,
+    current_user: User = Depends(get_current_user)
+):
+    query = {"publicada": True}
+    if categoria:
+        query["categoria"] = categoria
+    
+    noticias = await db.noticias.find(query).sort("created_at", -1).limit(limit).to_list(length=None)
+    return [Noticia(**noticia) for noticia in noticias]
+
+@api_router.get("/noticias/{noticia_id}", response_model=Noticia)
+async def get_noticia(noticia_id: str, current_user: User = Depends(get_current_user)):
+    noticia = await db.noticias.find_one({"id": noticia_id, "publicada": True})
+    if not noticia:
+        raise HTTPException(status_code=404, detail="Notícia não encontrada")
+    return Noticia(**noticia)
+
+@api_router.post("/admin/noticias", response_model=Noticia)
+async def create_noticia(noticia_data: NoticiaCreate, current_user: User = Depends(get_admin_user)):
+    noticia = Noticia(
+        titulo=noticia_data.titulo,
+        subtitulo=noticia_data.subtitulo,
+        conteudo=noticia_data.conteudo,
+        resumo=noticia_data.resumo,
+        categoria=noticia_data.categoria,
+        video_url=noticia_data.video_url,
+        link_externo=noticia_data.link_externo,
+        tags=noticia_data.tags,
+        destaque=noticia_data.destaque,
+        autor_id=current_user.id,
+        autor_nome=current_user.nome
+    )
+    
+    noticia_dict = noticia.dict()
+    await db.noticias.insert_one(noticia_dict)
+    return noticia
+
+@api_router.get("/admin/noticias", response_model=List[Noticia])
+async def get_admin_noticias(current_user: User = Depends(get_admin_user)):
+    noticias = await db.noticias.find({}).sort("created_at", -1).to_list(length=None)
+    return [Noticia(**noticia) for noticia in noticias]
+
+@api_router.put("/admin/noticias/{noticia_id}", response_model=Noticia)
+async def update_noticia(
+    noticia_id: str,
+    noticia_data: NoticiaCreate,
+    current_user: User = Depends(get_admin_user)
+):
+    update_data = noticia_data.dict()
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.noticias.update_one(
+        {"id": noticia_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notícia não encontrada")
+    
+    updated_noticia = await db.noticias.find_one({"id": noticia_id})
+    return Noticia(**updated_noticia)
+
+@api_router.delete("/admin/noticias/{noticia_id}")
+async def delete_noticia(noticia_id: str, current_user: User = Depends(get_admin_user)):
+    result = await db.noticias.delete_one({"id": noticia_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notícia não encontrada")
+    return {"message": "Notícia deletada com sucesso"}
+
+# Admin Routes (Enhanced)
 @api_router.get("/admin/dashboard", response_model=DashboardStats)
 async def get_dashboard_stats(current_user: User = Depends(get_admin_user)):
     # Count users by role
@@ -347,6 +695,8 @@ async def get_dashboard_stats(current_user: User = Depends(get_admin_user)):
     # Count content
     total_imoveis = await db.imoveis.count_documents({"ativo": True})
     total_noticias = await db.noticias.count_documents({"publicada": True})
+    imoveis_destaque = await db.imoveis.count_documents({"ativo": True, "destaque": True})
+    parceiros_destaque = await db.perfis_parceiros.count_documents({"ativo": True, "destaque": True})
     
     return DashboardStats(
         total_users=total_users,
@@ -355,7 +705,9 @@ async def get_dashboard_stats(current_user: User = Depends(get_admin_user)):
         total_associados=total_associados,
         candidaturas_pendentes=candidaturas_pendentes,
         total_imoveis=total_imoveis,
-        total_noticias=total_noticias
+        total_noticias=total_noticias,
+        imoveis_destaque=imoveis_destaque,
+        parceiros_destaque=parceiros_destaque
     )
 
 @api_router.get("/admin/candidaturas/membros", response_model=List[CandidaturaMembro])
@@ -506,37 +858,6 @@ async def recusar_candidatura(
     
     return {"message": "Candidatura recusada"}
 
-# Content Management Routes
-@api_router.get("/noticias", response_model=List[Noticia])
-async def get_noticias(current_user: User = Depends(get_current_user)):
-    noticias = await db.noticias.find({"publicada": True}).sort("created_at", -1).to_list(length=20)
-    return [Noticia(**noticia) for noticia in noticias]
-
-@api_router.post("/admin/noticias", response_model=Noticia)
-async def create_noticia(noticia_data: NoticiaCreate, current_user: User = Depends(get_admin_user)):
-    noticia = Noticia(
-        titulo=noticia_data.titulo,
-        conteudo=noticia_data.conteudo,
-        autor_id=current_user.id,
-        autor_nome=current_user.nome
-    )
-    
-    noticia_dict = noticia.dict()
-    await db.noticias.insert_one(noticia_dict)
-    return noticia
-
-@api_router.get("/admin/noticias", response_model=List[Noticia])
-async def get_admin_noticias(current_user: User = Depends(get_admin_user)):
-    noticias = await db.noticias.find({}).sort("created_at", -1).to_list(length=None)
-    return [Noticia(**noticia) for noticia in noticias]
-
-@api_router.delete("/admin/noticias/{noticia_id}")
-async def delete_noticia(noticia_id: str, current_user: User = Depends(get_admin_user)):
-    result = await db.noticias.delete_one({"id": noticia_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Notícia não encontrada")
-    return {"message": "Notícia deletada com sucesso"}
-
 # Communication Routes
 @api_router.post("/admin/email-massa")
 async def enviar_email_massa(
@@ -592,127 +913,34 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     return {"message": "Usuário desativado com sucesso"}
 
-# Member Property Routes
-@api_router.get("/imoveis", response_model=List[Imovel])
-async def get_imoveis(current_user: User = Depends(get_current_user)):
-    imoveis = await db.imoveis.find({"ativo": True}).to_list(length=None)
-    return [Imovel(**imovel) for imovel in imoveis]
-
-@api_router.get("/meus-imoveis", response_model=List[Imovel])
-async def get_meus_imoveis(current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.MEMBRO:
-        raise HTTPException(status_code=403, detail="Apenas membros podem acessar imóveis")
-    
-    imoveis = await db.imoveis.find({"proprietario_id": current_user.id}).to_list(length=None)
-    return [Imovel(**imovel) for imovel in imoveis]
-
-@api_router.post("/imoveis", response_model=Imovel)
-async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.MEMBRO:
-        raise HTTPException(status_code=403, detail="Apenas membros podem cadastrar imóveis")
-    
-    imovel = Imovel(
-        proprietario_id=current_user.id,
-        **imovel_data.dict()
-    )
-    
-    imovel_dict = imovel.dict()
-    await db.imoveis.insert_one(imovel_dict)
-    return imovel
-
-@api_router.put("/imoveis/{imovel_id}", response_model=Imovel)
-async def update_imovel(
-    imovel_id: str, 
-    imovel_data: ImovelCreate, 
-    current_user: User = Depends(get_current_user)
+# Admin - Toggle Featured Content
+@api_router.put("/admin/imoveis/{imovel_id}/destaque")
+async def toggle_imovel_destaque(
+    imovel_id: str,
+    destaque: bool,
+    current_user: User = Depends(get_admin_user)
 ):
-    if current_user.role != UserRole.MEMBRO:
-        raise HTTPException(status_code=403, detail="Apenas membros podem editar imóveis")
-    
-    # Check if property belongs to current user
-    existing = await db.imoveis.find_one({"id": imovel_id, "proprietario_id": current_user.id})
-    if not existing:
-        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
-    
     result = await db.imoveis.update_one(
         {"id": imovel_id},
-        {"$set": imovel_data.dict()}
+        {"$set": {"destaque": destaque, "updated_at": datetime.now(timezone.utc)}}
     )
-    
-    updated_imovel = await db.imoveis.find_one({"id": imovel_id})
-    return Imovel(**updated_imovel)
-
-@api_router.delete("/imoveis/{imovel_id}")
-async def delete_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.MEMBRO:
-        raise HTTPException(status_code=403, detail="Apenas membros podem deletar imóveis")
-    
-    result = await db.imoveis.update_one(
-        {"id": imovel_id, "proprietario_id": current_user.id},
-        {"$set": {"ativo": False}}
-    )
-    
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Imóvel não encontrado")
-    
-    return {"message": "Imóvel removido com sucesso"}
+    return {"message": f"Imóvel {'adicionado ao' if destaque else 'removido do'} destaque"}
 
-# Partner Profile Routes
-@api_router.get("/parceiros", response_model=List[PerfilParceiro])
-async def get_parceiros(current_user: User = Depends(get_current_user)):
-    parceiros = await db.perfis_parceiros.find({"ativo": True}).to_list(length=None)
-    return [PerfilParceiro(**parceiro) for parceiro in parceiros]
-
-@api_router.get("/meu-perfil-parceiro", response_model=PerfilParceiro)
-async def get_meu_perfil_parceiro(current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.PARCEIRO:
-        raise HTTPException(status_code=403, detail="Apenas parceiros podem acessar perfil")
-    
-    perfil = await db.perfis_parceiros.find_one({"user_id": current_user.id})
-    if not perfil:
-        raise HTTPException(status_code=404, detail="Perfil não encontrado")
-    return PerfilParceiro(**perfil)
-
-@api_router.post("/perfil-parceiro", response_model=PerfilParceiro)
-async def create_perfil_parceiro(
-    perfil_data: PerfilParceiroCreate, 
-    current_user: User = Depends(get_current_user)
+@api_router.put("/admin/parceiros/{parceiro_id}/destaque")
+async def toggle_parceiro_destaque(
+    parceiro_id: str,
+    destaque: bool,
+    current_user: User = Depends(get_admin_user)
 ):
-    if current_user.role != UserRole.PARCEIRO:
-        raise HTTPException(status_code=403, detail="Apenas parceiros podem criar perfil")
-    
-    # Check if profile already exists
-    existing = await db.perfis_parceiros.find_one({"user_id": current_user.id})
-    if existing:
-        raise HTTPException(status_code=400, detail="Perfil já existe")
-    
-    perfil = PerfilParceiro(
-        user_id=current_user.id,
-        **perfil_data.dict()
-    )
-    
-    perfil_dict = perfil.dict()
-    await db.perfis_parceiros.insert_one(perfil_dict)
-    return perfil
-
-@api_router.put("/perfil-parceiro", response_model=PerfilParceiro)
-async def update_perfil_parceiro(
-    perfil_data: PerfilParceiroCreate, 
-    current_user: User = Depends(get_current_user)
-):
-    if current_user.role != UserRole.PARCEIRO:
-        raise HTTPException(status_code=403, detail="Apenas parceiros podem editar perfil")
-    
     result = await db.perfis_parceiros.update_one(
-        {"user_id": current_user.id},
-        {"$set": perfil_data.dict()}
+        {"id": parceiro_id},
+        {"$set": {"destaque": destaque, "updated_at": datetime.now(timezone.utc)}}
     )
-    
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Perfil não encontrado")
-    
-    updated_perfil = await db.perfis_parceiros.find_one({"user_id": current_user.id})
-    return PerfilParceiro(**updated_perfil)
+        raise HTTPException(status_code=404, detail="Parceiro não encontrado")
+    return {"message": f"Parceiro {'adicionado ao' if destaque else 'removido do'} destaque"}
 
 # Include router in app
 app.include_router(api_router)
