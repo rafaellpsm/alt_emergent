@@ -28,9 +28,26 @@ async def check_users():
         print(f"Ativo: {user['ativo']}")
         print("---")
     
-    print("\n=== CANDIDATURAS PENDENTES ===")
+    print("\n=== CANDIDATURAS MEMBROS ===")
     candidaturas = await db.candidaturas_membros.find({}).to_list(length=None)
     for c in candidaturas:
+        print(f"Nome: {c['nome']}")
+        print(f"Email: {c['email']}")
+        print(f"Status: {c['status']}")
+        print("---")
+    
+    print("\n=== CANDIDATURAS PARCEIROS ===")
+    candidaturas_p = await db.candidaturas_parceiros.find({}).to_list(length=None)
+    for c in candidaturas_p:
+        print(f"Nome: {c['nome']}")
+        print(f"Email: {c['email']}")
+        print(f"Empresa: {c['nome_empresa']}")
+        print(f"Status: {c['status']}")
+        print("---")
+    
+    print("\n=== CANDIDATURAS ASSOCIADOS ===")
+    candidaturas_a = await db.candidaturas_associados.find({}).to_list(length=None)
+    for c in candidaturas_a:
         print(f"Nome: {c['nome']}")
         print(f"Email: {c['email']}")
         print(f"Status: {c['status']}")
