@@ -452,6 +452,7 @@ const CandidaturaMembroPage = () => {
     mensagem: ''
   });
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
