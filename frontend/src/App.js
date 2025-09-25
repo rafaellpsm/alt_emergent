@@ -12,6 +12,8 @@ import { Textarea } from './components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from './hooks/use-toast';
 import { Toaster } from './components/ui/toaster';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Badge } from './components/ui/badge';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -28,7 +30,6 @@ const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Verify token and get user info
       fetchUserInfo();
     } else {
       setLoading(false);
@@ -153,6 +154,112 @@ const Header = () => {
         )}
       </div>
     </header>
+  );
+};
+
+// Navigation for logged-in users
+const Navigation = () => {
+  const { user } = useAuth();
+  
+  if (!user) return null;
+  
+  return (
+    <nav className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex space-x-8">
+          <a 
+            href="/dashboard" 
+            className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+          >
+            Dashboard
+          </a>
+          
+          {user.role === 'admin' && (
+            <>
+              <a 
+                href="/admin/candidaturas" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Candidaturas
+              </a>
+              <a 
+                href="/admin/usuarios" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Usuários
+              </a>
+              <a 
+                href="/admin/conteudo" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Conteúdo
+              </a>
+              <a 
+                href="/admin/comunicacao" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Comunicação
+              </a>
+            </>
+          )}
+          
+          {user.role === 'membro' && (
+            <>
+              <a 
+                href="/imoveis" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Meus Imóveis
+              </a>
+              <a 
+                href="/membros" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Membros
+              </a>
+              <a 
+                href="/parceiros" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Parceiros
+              </a>
+            </>
+          )}
+          
+          {user.role === 'parceiro' && (
+            <>
+              <a 
+                href="/perfil-parceiro" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Meu Perfil
+              </a>
+              <a 
+                href="/membros" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+                Membros
+              </a>
+              <a 
+                href="/parceiros" 
+                className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+              >
+              Parceiros
+              </a>
+            </>
+          )}
+          
+          {(user.role === 'associado' || user.role === 'membro' || user.role === 'parceiro') && (
+            <a 
+              href="/noticias" 
+              className="py-3 px-1 border-b-2 border-transparent hover:border-blue-500 text-gray-700 hover:text-blue-600"
+            >
+              Notícias
+            </a>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 };
 
@@ -321,7 +428,6 @@ const LoginPage = () => {
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta.",
       });
-      // Navigation will happen automatically via useAuth
     } else {
       toast({
         title: "Erro no login",
@@ -400,47 +506,6 @@ const LoginPage = () => {
   );
 };
 
-// Cloudflare Turnstile Component
-const TurnstileWidget = ({ onVerify }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  useEffect(() => {
-    // Load Turnstile script if not already loaded
-    if (!window.turnstile) {
-      const script = document.createElement('script');
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setIsLoaded(true);
-      document.head.appendChild(script);
-    } else {
-      setIsLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded && window.turnstile) {
-      window.turnstile.render('#turnstile-widget', {
-        sitekey: '0x4AAAAAAABkWN-a6T5C_eLd',
-        callback: onVerify,
-        'error-callback': () => {
-          toast({
-            title: "Erro na verificação",
-            description: "Tente novamente.",
-            variant: "destructive",
-          });
-        },
-      });
-    }
-  }, [isLoaded, onVerify]);
-
-  return (
-    <div className="my-4">
-      <div id="turnstile-widget"></div>
-    </div>
-  );
-};
-
 // Application Forms
 const CandidaturaMembroPage = () => {
   const [formData, setFormData] = useState({
@@ -452,28 +517,13 @@ const CandidaturaMembroPage = () => {
     mensagem: ''
   });
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Temporarily skip turnstile validation for testing
-    // if (!turnstileToken) {
-    //   toast({
-    //     title: "Verificação necessária",
-    //     description: "Complete a verificação de segurança.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-    
     setLoading(true);
 
     try {
-      await axios.post(`${API}/candidaturas/membro`, {
-        ...formData
-        // turnstile_token: turnstileToken
-      });
+      await axios.post(`${API}/candidaturas/membro`, formData);
       toast({
         title: "Candidatura enviada com sucesso!",
         description: "Entraremos em contato em breve.",
@@ -487,11 +537,6 @@ const CandidaturaMembroPage = () => {
         num_imoveis: 1,
         mensagem: ''
       });
-      setTurnstileToken('');
-      // Reset Turnstile widget
-      if (window.turnstile) {
-        window.turnstile.reset('#turnstile-widget');
-      }
     } catch (error) {
       toast({
         title: "Erro ao enviar candidatura",
@@ -591,11 +636,6 @@ const CandidaturaMembroPage = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label>Verificação de Segurança</Label>
-                  <TurnstileWidget onVerify={setTurnstileToken} />
-                </div>
-                
                 <div className="flex space-x-4">
                   <Button 
                     type="submit" 
@@ -636,28 +676,13 @@ const CandidaturaParceiroPage = () => {
     mensagem: ''
   });
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Temporarily skip turnstile validation for testing
-    // if (!turnstileToken) {
-    //   toast({
-    //     title: "Verificação necessária",
-    //     description: "Complete a verificação de segurança.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-    
     setLoading(true);
 
     try {
-      await axios.post(`${API}/candidaturas/parceiro`, {
-        ...formData
-        // turnstile_token: turnstileToken
-      });
+      await axios.post(`${API}/candidaturas/parceiro`, formData);
       toast({
         title: "Candidatura enviada com sucesso!",
         description: "Entraremos em contato em breve.",
@@ -672,10 +697,6 @@ const CandidaturaParceiroPage = () => {
         website: '',
         mensagem: ''
       });
-      setTurnstileToken('');
-      if (window.turnstile) {
-        window.turnstile.reset('#turnstile-widget');
-      }
     } catch (error) {
       toast({
         title: "Erro ao enviar candidatura",
@@ -795,11 +816,6 @@ const CandidaturaParceiroPage = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label>Verificação de Segurança</Label>
-                  <TurnstileWidget onVerify={setTurnstileToken} />
-                </div>
-                
                 <div className="flex space-x-4">
                   <Button 
                     type="submit" 
@@ -839,28 +855,13 @@ const CandidaturaAssociadoPage = () => {
     mensagem: ''
   });
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Temporarily skip turnstile validation for testing
-    // if (!turnstileToken) {
-    //   toast({
-    //     title: "Verificação necessária",
-    //     description: "Complete a verificação de segurança.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-    
     setLoading(true);
 
     try {
-      await axios.post(`${API}/candidaturas/associado`, {
-        ...formData
-        // turnstile_token: turnstileToken
-      });
+      await axios.post(`${API}/candidaturas/associado`, formData);
       toast({
         title: "Candidatura enviada com sucesso!",
         description: "Entraremos em contato em breve.",
@@ -874,10 +875,6 @@ const CandidaturaAssociadoPage = () => {
         motivo_interesse: '',
         mensagem: ''
       });
-      setTurnstileToken('');
-      if (window.turnstile) {
-        window.turnstile.reset('#turnstile-widget');
-      }
     } catch (error) {
       toast({
         title: "Erro ao enviar candidatura",
@@ -977,11 +974,6 @@ const CandidaturaAssociadoPage = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label>Verificação de Segurança</Label>
-                  <TurnstileWidget onVerify={setTurnstileToken} />
-                </div>
-                
                 <div className="flex space-x-4">
                   <Button 
                     type="submit" 
@@ -1010,8 +1002,132 @@ const CandidaturaAssociadoPage = () => {
   );
 };
 
-// Admin Panel
-const AdminPanel = () => {
+// Admin Dashboard with Statistics
+const AdminDashboard = () => {
+  const [stats, setStats] = useState({
+    total_users: 0,
+    total_membros: 0,
+    total_parceiros: 0,
+    total_associados: 0,
+    candidaturas_pendentes: 0,
+    total_imoveis: 0,
+    total_noticias: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/dashboard`);
+      setStats(response.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar estatísticas",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Navigation />
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8">Dashboard Administrativo</h1>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total de Usuários</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats.total_users}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Candidaturas Pendentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats.candidaturas_pendentes}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Imóveis Cadastrados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.total_imoveis}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Notícias Publicadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{stats.total_noticias}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Membros</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{stats.total_membros}</div>
+              <p className="text-gray-600">Proprietários de imóveis</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Parceiros</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600 mb-2">{stats.total_parceiros}</div>
+              <p className="text-gray-600">Empresas parceiras</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Associados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-600 mb-2">{stats.total_associados}</div>
+              <p className="text-gray-600">Apoiadores da ALT</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Admin Panel for Applications
+const AdminCandidaturas = () => {
   const [candidaturasMembros, setCandidaturasMembros] = useState([]);
   const [candidaturasParceiros, setCandidaturasParceiros] = useState([]);
   const [candidaturasAssociados, setCandidaturasAssociados] = useState([]);
@@ -1046,10 +1162,10 @@ const AdminPanel = () => {
 
   const handleAprovar = async (tipo, id) => {
     try {
-      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/aprovar`);
+      const response = await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/aprovar`);
       toast({
         title: "Candidatura aprovada!",
-        description: "Email de boas-vindas enviado.",
+        description: `Email enviado. Senha temporária: ${response.data.temp_password}`,
       });
       fetchCandidaturas(); // Refresh data
     } catch (error) {
@@ -1064,7 +1180,7 @@ const AdminPanel = () => {
   const handleRecusar = async (tipo, id, motivo = '') => {
     try {
       await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/recusar`, 
-        { motivo }, 
+        {}, 
         { params: { motivo } }
       );
       toast({
@@ -1086,9 +1202,11 @@ const AdminPanel = () => {
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">{candidatura.nome}</CardTitle>
-          <span className="text-sm text-gray-500">
-            {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
-          </span>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary">
+              {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
+            </Badge>
+          </div>
         </div>
         <CardDescription>{candidatura.email}</CardDescription>
       </CardHeader>
@@ -1143,44 +1261,25 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <Navigation />
       <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8">Painel de Administração</h1>
+        <h1 className="text-3xl font-bold mb-8">Gerenciar Candidaturas</h1>
         
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {[
-                { id: 'membros', label: 'Membros', count: candidaturasMembros.length },
-                { id: 'parceiros', label: 'Parceiros', count: candidaturasParceiros.length },
-                { id: 'associados', label: 'Associados', count: candidaturasAssociados.length }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                  data-testid={`tab-${tab.id}`}
-                >
-                  {tab.label} ({tab.count})
-                </button>
-              ))}
-            </nav>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {activeTab === 'membros' && (
-              <div data-testid="membros-content">
-                <h2 className="text-xl font-semibold mb-4">Candidaturas para Membro</h2>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="membros">Membros ({candidaturasMembros.length})</TabsTrigger>
+            <TabsTrigger value="parceiros">Parceiros ({candidaturasParceiros.length})</TabsTrigger>
+            <TabsTrigger value="associados">Associados ({candidaturasAssociados.length})</TabsTrigger>
+          </TabsList>
+          
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <>
+              <TabsContent value="membros" className="space-y-4">
+                <h2 className="text-xl font-semibold">Candidaturas para Membro</h2>
                 {candidaturasMembros.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-gray-500">
@@ -1192,12 +1291,10 @@ const AdminPanel = () => {
                     <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="membro" />
                   ))
                 )}
-              </div>
-            )}
-            
-            {activeTab === 'parceiros' && (
-              <div data-testid="parceiros-content">
-                <h2 className="text-xl font-semibold mb-4">Candidaturas para Parceiro</h2>
+              </TabsContent>
+              
+              <TabsContent value="parceiros" className="space-y-4">
+                <h2 className="text-xl font-semibold">Candidaturas para Parceiro</h2>
                 {candidaturasParceiros.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-gray-500">
@@ -1209,12 +1306,10 @@ const AdminPanel = () => {
                     <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="parceiro" />
                   ))
                 )}
-              </div>
-            )}
-            
-            {activeTab === 'associados' && (
-              <div data-testid="associados-content">
-                <h2 className="text-xl font-semibold mb-4">Candidaturas para Associado</h2>
+              </TabsContent>
+              
+              <TabsContent value="associados" className="space-y-4">
+                <h2 className="text-xl font-semibold">Candidaturas para Associado</h2>
                 {candidaturasAssociados.length === 0 ? (
                   <Card>
                     <CardContent className="py-8 text-center text-gray-500">
@@ -1226,7 +1321,173 @@ const AdminPanel = () => {
                     <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="associado" />
                   ))
                 )}
-              </div>
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+// Content Management
+const AdminConteudo = () => {
+  const [noticias, setNoticias] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [novaNoticia, setNovaNoticia] = useState({
+    titulo: '',
+    conteudo: ''
+  });
+
+  useEffect(() => {
+    fetchNoticias();
+  }, []);
+
+  const fetchNoticias = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/admin/noticias`);
+      setNoticias(response.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar notícias",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleCreateNoticia = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/admin/noticias`, novaNoticia);
+      toast({
+        title: "Notícia criada com sucesso!",
+        description: "A notícia foi publicada na área dos membros.",
+      });
+      setNovaNoticia({ titulo: '', conteudo: '' });
+      setShowForm(false);
+      fetchNoticias();
+    } catch (error) {
+      toast({
+        title: "Erro ao criar notícia",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteNoticia = async (id) => {
+    try {
+      await axios.delete(`${API}/admin/noticias/${id}`);
+      toast({
+        title: "Notícia removida com sucesso!",
+      });
+      fetchNoticias();
+    } catch (error) {
+      toast({
+        title: "Erro ao remover notícia",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Gerenciar Conteúdo</h1>
+          <Button onClick={() => setShowForm(true)}>
+            Criar Nova Notícia
+          </Button>
+        </div>
+
+        {showForm && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Nova Notícia</CardTitle>
+              <CardDescription>
+                Crie uma nova notícia para ser exibida na área dos membros
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateNoticia} className="space-y-4">
+                <div>
+                  <Label htmlFor="titulo">Título</Label>
+                  <Input
+                    id="titulo"
+                    value={novaNoticia.titulo}
+                    onChange={(e) => setNovaNoticia({...novaNoticia, titulo: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="conteudo">Conteúdo</Label>
+                  <Textarea
+                    id="conteudo"
+                    rows={6}
+                    value={novaNoticia.conteudo}
+                    onChange={(e) => setNovaNoticia({...novaNoticia, conteudo: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <Button type="submit">Publicar</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowForm(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {noticias.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-gray-500">
+                  Nenhuma notícia publicada
+                </CardContent>
+              </Card>
+            ) : (
+              noticias.map(noticia => (
+                <Card key={noticia.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle>{noticia.titulo}</CardTitle>
+                        <CardDescription>
+                          Por {noticia.autor_nome} • {new Date(noticia.created_at).toLocaleDateString('pt-BR')}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteNoticia(noticia.id)}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="whitespace-pre-wrap">{noticia.conteudo}</p>
+                  </CardContent>
+                </Card>
+              ))
             )}
           </div>
         )}
@@ -1235,18 +1496,141 @@ const AdminPanel = () => {
   );
 };
 
-// Dashboard (placeholder for now)
+// Communication (Mass Email)
+const AdminComunicacao = () => {
+  const [emailData, setEmailData] = useState({
+    destinatarios: [],
+    assunto: '',
+    mensagem: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (emailData.destinatarios.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Selecione pelo menos um grupo de destinatários.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/admin/email-massa`, emailData);
+      toast({
+        title: "Email enviado com sucesso!",
+        description: `Enviado para ${response.data.destinatarios} usuários.`,
+      });
+      setEmailData({ destinatarios: [], assunto: '', mensagem: '' });
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar email",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleDestinatarioChange = (value, checked) => {
+    if (checked) {
+      setEmailData(prev => ({
+        ...prev,
+        destinatarios: [...prev.destinatarios, value]
+      }));
+    } else {
+      setEmailData(prev => ({
+        ...prev,
+        destinatarios: prev.destinatarios.filter(d => d !== value)
+      }));
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8">Comunicação</h1>
+        
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Enviar Email em Massa</CardTitle>
+            <CardDescription>
+              Envie emails para grupos específicos de usuários
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSendEmail} className="space-y-4">
+              <div>
+                <Label>Destinatários</Label>
+                <div className="space-y-2 mt-2">
+                  {[
+                    { value: 'admin', label: 'Administradores' },
+                    { value: 'membro', label: 'Membros' },
+                    { value: 'parceiro', label: 'Parceiros' },
+                    { value: 'associado', label: 'Associados' },
+                    { value: 'todos', label: 'Todos os Usuários' }
+                  ].map(option => (
+                    <label key={option.value} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={emailData.destinatarios.includes(option.value)}
+                        onChange={(e) => handleDestinatarioChange(option.value, e.target.checked)}
+                        className="rounded"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="assunto">Assunto</Label>
+                <Input
+                  id="assunto"
+                  value={emailData.assunto}
+                  onChange={(e) => setEmailData({...emailData, assunto: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="mensagem">Mensagem</Label>
+                <Textarea
+                  id="mensagem"
+                  rows={8}
+                  value={emailData.mensagem}
+                  onChange={(e) => setEmailData({...emailData, mensagem: e.target.value})}
+                  required
+                />
+              </div>
+              
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Enviando...' : 'Enviar Email'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+// Dashboard Page Router
 const DashboardPage = () => {
   const { user } = useAuth();
 
-  // If user is admin, show admin panel
   if (user?.role === 'admin') {
-    return <AdminPanel />;
+    return <AdminDashboard />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <Navigation />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8">Dashboard - {user?.role}</h1>
         
@@ -1254,12 +1638,12 @@ const DashboardPage = () => {
           <CardHeader>
             <CardTitle>Bem-vindo, {user?.nome}!</CardTitle>
             <CardDescription>
-              Seu painel de controle será implementado em breve.
+              Funcionalidades específicas para seu perfil estão sendo implementadas.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600">
-              Funcionalidades específicas para seu perfil de {user?.role} estão em desenvolvimento.
+              Em breve você terá acesso a todas as funcionalidades do seu perfil de {user?.role}.
             </p>
           </CardContent>
         </Card>
@@ -1287,6 +1671,34 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Admin Routes */}
+            <Route 
+              path="/admin/candidaturas" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminCandidaturas />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/admin/conteudo" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminConteudo />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/admin/comunicacao" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminComunicacao />
                 </ProtectedRoute>
               } 
             />
