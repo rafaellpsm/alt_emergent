@@ -1631,6 +1631,10 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             
+            <Route path="/candidatura/membro" element={<CandidaturaMembroPage />} />
+            <Route path="/candidatura/parceiro" element={<CandidaturaParceiroPage />} />
+            <Route path="/candidatura/associado" element={<CandidaturaAssociadoPage />} />
+            
             {/* Main page for authenticated users */}
             <Route 
               path="/main" 
