@@ -467,18 +467,30 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 @api_router.post("/candidaturas/membro", response_model=CandidaturaMembro)
 async def submit_candidatura_membro(candidatura: CandidaturaMembro):
     candidatura_dict = candidatura.dict()
+    # Convert HttpUrl to string for MongoDB storage
+    for key, value in candidatura_dict.items():
+        if hasattr(value, 'scheme'):  # HttpUrl object
+            candidatura_dict[key] = str(value)
     await db.candidaturas_membros.insert_one(candidatura_dict)
     return candidatura
 
 @api_router.post("/candidaturas/parceiro", response_model=CandidaturaParceiro)
 async def submit_candidatura_parceiro(candidatura: CandidaturaParceiro):
     candidatura_dict = candidatura.dict()
+    # Convert HttpUrl to string for MongoDB storage
+    for key, value in candidatura_dict.items():
+        if hasattr(value, 'scheme'):  # HttpUrl object
+            candidatura_dict[key] = str(value)
     await db.candidaturas_parceiros.insert_one(candidatura_dict)
     return candidatura
 
 @api_router.post("/candidaturas/associado", response_model=CandidaturaAssociado)
 async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
     candidatura_dict = candidatura.dict()
+    # Convert HttpUrl to string for MongoDB storage
+    for key, value in candidatura_dict.items():
+        if hasattr(value, 'scheme'):  # HttpUrl object
+            candidatura_dict[key] = str(value)
     await db.candidaturas_associados.insert_one(candidatura_dict)
     return candidatura
 
