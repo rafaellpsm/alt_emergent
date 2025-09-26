@@ -714,9 +714,9 @@ async def get_dashboard_stats(current_user: User = Depends(get_admin_user)):
     candidaturas_pendentes = candidaturas_membros + candidaturas_parceiros + candidaturas_associados
     
     # Count content
-    total_imoveis = await db.imoveis.count_documents({"ativo": True})
+    total_imoveis = await db.imoveis.count_documents({"ativo": True, "status_aprovacao": "aprovado"})
     total_noticias = await db.noticias.count_documents({"publicada": True})
-    imoveis_destaque = await db.imoveis.count_documents({"ativo": True, "destaque": True})
+    imoveis_destaque = await db.imoveis.count_documents({"ativo": True, "destaque": True, "status_aprovacao": "aprovado"})
     parceiros_destaque = await db.perfis_parceiros.count_documents({"ativo": True, "destaque": True})
     
     return DashboardStats(
