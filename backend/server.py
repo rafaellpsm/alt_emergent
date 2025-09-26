@@ -390,9 +390,9 @@ async def get_main_page_data(current_user: User = Depends(get_current_user)):
         {"publicada": True, "destaque": True}
     ).sort("created_at", -1).limit(3).to_list(length=None)
     
-    # Get featured properties (max 6)
+    # Get featured properties (max 6) - only approved ones
     imoveis_destaque = await db.imoveis.find(
-        {"ativo": True, "destaque": True}
+        {"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}
     ).sort("created_at", -1).limit(6).to_list(length=None)
     
     # Get featured partners (max 6)
