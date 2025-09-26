@@ -75,39 +75,30 @@ class APITester:
             self.log_result(f"{user_type.title()} Login", False, f"Login error: {str(e)}")
             return False
     
-    def test_meus_imoveis_endpoint(self):
-        """Test /api/meus-imoveis endpoint"""
+    def test_meus_imoveis_endpoint_as_member(self):
+        """Test /api/meus-imoveis endpoint as member user"""
         try:
             response = self.session.get(f"{API_BASE}/meus-imoveis")
             
             if response.status_code == 200:
                 data = response.json()
                 self.log_result(
-                    "Meus Imóveis API", 
+                    "Meus Imóveis API (Member)", 
                     True, 
-                    f"Endpoint working, returned {len(data)} properties",
-                    {"count": len(data), "sample": data[:2] if data else []}
-                )
-                return True
-            elif response.status_code == 403:
-                # This is expected for admin user trying to access member-only endpoint
-                self.log_result(
-                    "Meus Imóveis API", 
-                    True, 
-                    "Endpoint working correctly - returns 403 for non-member users (admin role)",
-                    {"status_code": response.status_code, "message": response.text}
+                    f"Member endpoint working, returned {len(data)} properties",
+                    {"count": len(data), "sample": data[:1] if data else []}
                 )
                 return True
             else:
                 self.log_result(
-                    "Meus Imóveis API", 
+                    "Meus Imóveis API (Member)", 
                     False, 
-                    f"Unexpected status code {response.status_code}: {response.text}"
+                    f"Failed with status code {response.status_code}: {response.text}"
                 )
                 return False
                 
         except Exception as e:
-            self.log_result("Meus Imóveis API", False, f"Request error: {str(e)}")
+            self.log_result("Meus Imóveis API (Member)", False, f"Request error: {str(e)}")
             return False
     
     def test_imoveis_endpoint(self):
