@@ -144,6 +144,7 @@ class Imovel(BaseModel):
     video_url: Optional[HttpUrl] = None
     link_booking: Optional[HttpUrl] = None
     link_airbnb: Optional[HttpUrl] = None
+    status_aprovacao: str = Field(default="pendente")  # pendente, aprovado, recusado
     ativo: bool = True
     destaque: bool = False  # For featuring on main page
     proprietario_id: str
