@@ -654,6 +654,11 @@ async def create_noticia(noticia_data: NoticiaCreate, current_user: User = Depen
     )
     
     noticia_dict = noticia.dict()
+    # Convert HttpUrl to string for MongoDB storage
+    for key, value in noticia_dict.items():
+        if hasattr(value, 'scheme'):  # HttpUrl object
+            noticia_dict[key] = str(value)
+    
     await db.noticias.insert_one(noticia_dict)
     return noticia
 
