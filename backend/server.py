@@ -508,14 +508,16 @@ async def get_meus_imoveis(current_user: User = Depends(get_membro_user)):
 
 @api_router.post("/imoveis", response_model=Imovel)
 async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(get_membro_user)):
-    imovel = Imovel(
-        proprietario_id=current_user.id,
-        **imovel_data.dict()
-    )
+    """Create new property (requires approval)"""
+    imovel_dict = imovel_data.dict()
+    imovel_dict["proprietario_id"] = current_user.id
+    imovel_dict["id"] = str(uuid.uuid4())
+    imovel_dict["status_aprovacao"] = "pendente"  # All new properties need approval
+    imovel_dict["created_at"] = datetime.now(timezone.utc)
+    imovel_dict["updated_at"] = datetime.now(timezone.utc)
     
-    imovel_dict = imovel.dict()
-    await db.imoveis.insert_one(imovel_dict)
-    return imovel
+    result = await db.imoveis.insert_one(imovel_dict)
+    return await db.imoveis.find_one({"_id": result.inserted_id})
 
 @api_router.get("/imoveis/{imovel_id}", response_model=Imovel)
 async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
