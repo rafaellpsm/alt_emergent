@@ -815,7 +815,7 @@ async def aprovar_candidatura(
     
     Por favor, faça login e altere sua senha no primeiro acesso.
     
-    Link de acesso: https://temporada-portal.preview.emergentagent.com/login
+    Link de acesso: https://temp-housing.preview.emergentagent.com/login
     
     Atenciosamente,
     Equipe ALT Ilhabela
