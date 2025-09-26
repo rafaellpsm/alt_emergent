@@ -498,7 +498,8 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
 # Enhanced Property Routes for Members
 @api_router.get("/imoveis", response_model=List[Imovel])
 async def get_imoveis(current_user: User = Depends(get_current_user)):
-    imoveis = await db.imoveis.find({"ativo": True}).sort("created_at", -1).to_list(length=None)
+    """Get all approved properties"""
+    imoveis = await db.imoveis.find({"status_aprovacao": "aprovado", "ativo": True}).sort("created_at", -1).to_list(length=None)
     return [Imovel(**imovel) for imovel in imoveis]
 
 @api_router.get("/meus-imoveis", response_model=List[Imovel])
