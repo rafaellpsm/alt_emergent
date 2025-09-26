@@ -1646,6 +1646,35 @@ function App() {
               } 
             />
             
+            {/* Member Routes */}
+            <Route 
+              path="/meus-imoveis" 
+              element={
+                <ProtectedRoute allowedRoles={['membro']}>
+                  <MeusImoveisPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/imoveis" 
+              element={
+                <ProtectedRoute allowedRoles={['membro']}>
+                  <TodosImoveisPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* General Routes - Accessible by all authenticated users */}
+            <Route 
+              path="/parceiros" 
+              element={
+                <ProtectedRoute>
+                  <ParceirosPage />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Admin Routes - All Restored */}
             <Route 
               path="/admin/dashboard" 
