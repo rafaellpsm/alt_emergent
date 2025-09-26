@@ -15,6 +15,8 @@ API_BASE = f"{BACKEND_URL}/api"
 # Test credentials
 ADMIN_EMAIL = "admin@alt-ilhabela.com"
 ADMIN_PASSWORD = "admin123"
+MEMBER_EMAIL = "membro@alt-ilhabela.com"
+MEMBER_PASSWORD = "membro123"
 
 class APITester:
     def __init__(self):
