@@ -179,6 +179,351 @@ const Navigation = () => {
   );
 };
 
+// All Properties View Page (for members to see all properties)  
+export const TodosImoveisPage = () => {
+  const [imoveis, setImoveis] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filtros, setFiltros] = useState({
+    tipo: '',
+    regiao: '',
+    preco_max: '',
+    possui_piscina: false,
+    permite_pets: false
+  });
+
+  useEffect(() => {
+    fetchTodosImoveis();
+  }, []);
+
+  const fetchTodosImoveis = async () => {
+    try {
+      const response = await axios.get(`${API}/imoveis/todos`);
+      setImoveis(response.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar imóveis",
+        description: "Tente recarregar a página.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const aplicarFiltros = () => {
+    // Filter logic can be implemented later
+    fetchTodosImoveis();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold text-primary-gray mb-8">Todos os Imóveis</h1>
+        
+        {/* Filter Section */}
+        <Card className="card-custom mb-8">
+          <CardHeader>
+            <CardTitle className="text-primary-gray">Filtros</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div>
+                <Label className="form-label">Tipo</Label>
+                <Select value={filtros.tipo} onValueChange={(value) => setFiltros({...filtros, tipo: value})}>
+                  <SelectTrigger className="form-input">
+                    <SelectValue placeholder="Todos os tipos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="casa">Casa</SelectItem>
+                    <SelectItem value="apartamento">Apartamento</SelectItem>
+                    <SelectItem value="pousada">Pousada</SelectItem>
+                    <SelectItem value="chale">Chalé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="form-label">Região</Label>
+                <Select value={filtros.regiao} onValueChange={(value) => setFiltros({...filtros, regiao: value})}>
+                  <SelectTrigger className="form-input">
+                    <SelectValue placeholder="Todas as regiões" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="centro">Centro</SelectItem>
+                    <SelectItem value="perequê">Perequê</SelectItem>
+                    <SelectItem value="vila">Vila</SelectItem>
+                    <SelectItem value="barra-velha">Barra Velha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="form-label">Preço máximo/dia</Label>
+                <Input
+                  type="number"
+                  className="form-input"
+                  placeholder="Ex: 500"
+                  value={filtros.preco_max}
+                  onChange={(e) => setFiltros({...filtros, preco_max: e.target.value})}
+                />
+              </div>
+              
+              <div className="flex items-end">
+                <Button onClick={aplicarFiltros} className="w-full btn-primary">
+                  Aplicar Filtros
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="spinner"></div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {imoveis.length === 0 ? (
+              <Card className="card-custom col-span-full">
+                <CardContent className="py-12 text-center text-gray-500">
+                  Nenhum imóvel encontrado
+                </CardContent>
+              </Card>
+            ) : (
+              imoveis.map((imovel) => (
+                <Card key={imovel.id} className="card-custom hover-lift">
+                  {imovel.fotos && imovel.fotos.length > 0 ? (
+                    <div className="property-image">
+                      <img 
+                        src={imovel.fotos[0]} 
+                        alt={imovel.titulo}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="property-image bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                      <span className="text-gray-500">Sem foto</span>
+                    </div>
+                  )}
+                  
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
+                        <CardDescription>{imovel.tipo} • {imovel.regiao}</CardDescription>
+                      </div>
+                      <Badge className="badge-beige">{imovel.tipo}</Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+                      {imovel.descricao}
+                    </p>
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="text-xs text-gray-500">
+                        <span>{imovel.num_quartos}q • {imovel.num_banheiros}b • {imovel.capacidade}p</span>
+                      </div>
+                      <div className="text-lg font-bold text-primary-teal">
+                        R$ {imovel.preco_diaria}/dia
+                      </div>
+                    </div>
+                    
+                    {/* Property features */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {imovel.possui_piscina && <Badge className="badge-teal text-xs">Piscina</Badge>}
+                      {imovel.possui_wifi && <Badge className="badge-teal text-xs">Wi-Fi</Badge>}
+                      {imovel.permite_pets && <Badge className="badge-teal text-xs">Pet-Friendly</Badge>}
+                      {imovel.tem_vista_mar && <Badge className="badge-teal text-xs">Vista Mar</Badge>}
+                    </div>
+                    
+                    {/* Booking links */}
+                    {(imovel.link_booking || imovel.link_airbnb) && (
+                      <div className="flex space-x-2">
+                        {imovel.link_booking && (
+                          <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
+                            <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">
+                              Booking
+                            </a>
+                          </Button>
+                        )}
+                        {imovel.link_airbnb && (
+                          <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
+                            <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">
+                              Airbnb
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Partners Page (for all users to see partners)
+export const ParceirosPage = () => {
+  const [parceiros, setParceiros] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+
+  useEffect(() => {
+    fetchParceiros();
+  }, []);
+
+  const fetchParceiros = async () => {
+    try {
+      const response = await axios.get(`${API}/parceiros`);
+      setParceiros(response.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar parceiros",
+        description: "Tente recarregar a página.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const categoriasDisponiveis = [...new Set(parceiros.map(p => p.categoria))];
+
+  const parceirsFiltrados = categoriaFiltro 
+    ? parceiros.filter(p => p.categoria === categoriaFiltro)
+    : parceiros;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold text-primary-gray mb-8">Nossos Parceiros</h1>
+        
+        {/* Category Filter */}
+        {categoriasDisponiveis.length > 1 && (
+          <Card className="card-custom mb-8">
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-4">
+                <Label className="form-label">Filtrar por categoria:</Label>
+                <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
+                  <SelectTrigger className="form-input w-48">
+                    <SelectValue placeholder="Todas as categorias" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todas</SelectItem>
+                    {categoriasDisponiveis.map(categoria => (
+                      <SelectItem key={categoria} value={categoria}>{categoria}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="spinner"></div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {parceirsFiltrados.length === 0 ? (
+              <Card className="card-custom col-span-full">
+                <CardContent className="py-12 text-center text-gray-500">
+                  Nenhum parceiro encontrado
+                </CardContent>
+              </Card>
+            ) : (
+              parceirsFiltrados.map((parceiro) => (
+                <Card key={parceiro.id} className="card-custom hover-lift">
+                  {parceiro.fotos && parceiro.fotos.length > 0 && (
+                    <div className="aspect-video bg-gray-200 rounded-t-lg mb-4 overflow-hidden">
+                      <img 
+                        src={parceiro.fotos[0]} 
+                        alt={parceiro.nome_empresa}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg text-primary-gray">{parceiro.nome_empresa}</CardTitle>
+                      <Badge className="badge-beige">{parceiro.categoria}</Badge>
+                    </div>
+                    {parceiro.nome_responsavel && (
+                      <CardDescription>Por {parceiro.nome_responsavel}</CardDescription>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
+                      {parceiro.descricao}
+                    </p>
+                    
+                    {/* Contact Info */}
+                    <div className="space-y-2 mb-4 text-sm">
+                      {parceiro.telefone && (
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">Telefone:</span>
+                          <span className="text-gray-600">{parceiro.telefone}</span>
+                        </div>
+                      )}
+                      {parceiro.email && (
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">Email:</span>
+                          <span className="text-gray-600">{parceiro.email}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Services offered */}
+                    {parceiro.servicos_oferecidos && (
+                      <div className="mb-4">
+                        <span className="font-medium text-sm">Serviços:</span>
+                        <p className="text-gray-600 text-xs mt-1">{parceiro.servicos_oferecidos}</p>
+                      </div>
+                    )}
+                    
+                    {/* Links */}
+                    <div className="flex space-x-2">
+                      {parceiro.website && (
+                        <Button size="sm" variant="outline" className="flex-1" asChild>
+                          <a href={parceiro.website} target="_blank" rel="noopener noreferrer">
+                            Site
+                          </a>
+                        </Button>
+                      )}
+                      {parceiro.instagram && (
+                        <Button size="sm" variant="outline" className="flex-1" asChild>
+                          <a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">
+                            Instagram
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Member Properties Management Page
 export const MeusImoveisPage = () => {
   const [imoveis, setImoveis] = useState([]);
