@@ -190,7 +190,7 @@ export const TodosImoveisPage = () => {
 
   const fetchTodosImoveis = async () => {
     try {
-      const response = await axios.get(`${API}/imoveis/todos`);
+      const response = await axios.get(`${API}/imoveis`);
       setImoveis(response.data);
     } catch (error) {
       toast({
