@@ -197,9 +197,13 @@ class APITester:
         
         # Test the specific endpoints mentioned in review request
         print("\n🎯 Testing Priority Endpoints:")
-        self.test_meus_imoveis_endpoint()
-        self.test_imoveis_endpoint() 
+        self.test_imoveis_endpoint()
         self.test_parceiros_endpoint()
+        
+        # Test member-specific endpoint with member credentials
+        print("\n👤 Testing Member-Specific Endpoints:")
+        if self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
+            self.test_meus_imoveis_endpoint_as_member()
         
         # Summary
         print("\n" + "=" * 60)
