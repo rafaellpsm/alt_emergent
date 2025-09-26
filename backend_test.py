@@ -37,12 +37,15 @@ class APITester:
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status} - {test_name}: {message}")
         
-    def test_login(self):
-        """Test admin login functionality"""
+    def test_login(self, email=None, password=None, user_type="admin"):
+        """Test login functionality"""
+        email = email or ADMIN_EMAIL
+        password = password or ADMIN_PASSWORD
+        
         try:
             login_data = {
-                "email": ADMIN_EMAIL,
-                "password": ADMIN_PASSWORD
+                "email": email,
+                "password": password
             }
             
             response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
@@ -56,20 +59,20 @@ class APITester:
                     })
                     user_info = data.get("user", {})
                     self.log_result(
-                        "Admin Login", 
+                        f"{user_type.title()} Login", 
                         True, 
                         f"Login successful for {user_info.get('email', 'unknown')} with role {user_info.get('role', 'unknown')}"
                     )
                     return True
                 else:
-                    self.log_result("Admin Login", False, "No access token in response")
+                    self.log_result(f"{user_type.title()} Login", False, "No access token in response")
                     return False
             else:
-                self.log_result("Admin Login", False, f"Login failed with status {response.status_code}: {response.text}")
+                self.log_result(f"{user_type.title()} Login", False, f"Login failed with status {response.status_code}: {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_result("Admin Login", False, f"Login error: {str(e)}")
+            self.log_result(f"{user_type.title()} Login", False, f"Login error: {str(e)}")
             return False
     
     def test_meus_imoveis_endpoint(self):
