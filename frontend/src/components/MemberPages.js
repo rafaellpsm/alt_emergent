@@ -166,13 +166,6 @@ const Navigation = () => {
           >
             Parceiros
           </a>
-          
-          <a 
-            href="/noticias" 
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Notícias
-          </a>
         </div>
       </div>
     </nav>
