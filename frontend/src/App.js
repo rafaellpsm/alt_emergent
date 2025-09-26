@@ -1621,6 +1621,202 @@ const LoginPage = () => {
 // Enhanced Application Forms remain the same but with improved styling...
 // [Previous form components with updated CSS classes applied]
 
+// Admin Property Management
+const AdminImoveis = () => {
+  const [imoveisPendentes, setImoveisPendentes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchImoveisPendentes();
+  }, []);
+
+  const fetchImoveisPendentes = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/imoveis-pendentes`);
+      setImoveisPendentes(response.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar imóveis",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleAprovar = async (imovelId) => {
+    try {
+      await axios.post(`${API}/admin/imoveis/${imovelId}/aprovar`);
+      toast({
+        title: "Imóvel aprovado!",
+        description: "Email de notificação enviado ao proprietário.",
+      });
+      fetchImoveisPendentes();
+    } catch (error) {
+      toast({
+        title: "Erro ao aprovar",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRecusar = async (imovelId, motivo = '') => {
+    try {
+      await axios.post(`${API}/admin/imoveis/${imovelId}/recusar`, {}, { params: { motivo } });
+      toast({
+        title: "Imóvel recusado",
+        description: "Email de notificação enviado ao proprietário.",
+      });
+      fetchImoveisPendentes();
+    } catch (error) {
+      toast({
+        title: "Erro ao recusar",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Imóveis</h1>
+        
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="spinner"></div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <Card className="card-custom">
+              <CardHeader>
+                <CardTitle className="text-primary-gray">Imóveis Pendentes de Aprovação ({imoveisPendentes.length})</CardTitle>
+                <CardDescription>
+                  Analise e aprove os imóveis enviados pelos membros
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {imoveisPendentes.length === 0 ? (
+                  <div className="py-12 text-center text-gray-500">
+                    Nenhum imóvel pendente de aprovação
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {imoveisPendentes.map((imovel) => (
+                      <Card key={imovel.id} className="border border-orange-200 bg-orange-50">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
+                              <CardDescription>
+                                {imovel.tipo} • {imovel.regiao} • R$ {imovel.preco_diaria}/dia
+                              </CardDescription>
+                              <Badge className="mt-2 bg-orange-100 text-orange-800">Pendente Aprovação</Badge>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                onClick={() => handleAprovar(imovel.id)}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                size="sm"
+                              >
+                                Aprovar
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  const motivo = window.prompt('Motivo da recusa (opcional):');
+                                  if (motivo !== null) {
+                                    handleRecusar(imovel.id, motivo);
+                                  }
+                                }}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                Recusar
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <div>
+                                <strong>Descrição:</strong>
+                                <p className="text-gray-600 text-sm mt-1">{imovel.descricao}</p>
+                              </div>
+                              <div>
+                                <strong>Endereço:</strong>
+                                <p className="text-gray-600 text-sm mt-1">{imovel.endereco_completo}</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div><strong>Quartos:</strong> {imovel.num_quartos}</div>
+                                <div><strong>Banheiros:</strong> {imovel.num_banheiros}</div>
+                                <div><strong>Capacidade:</strong> {imovel.capacidade} pessoas</div>
+                                {imovel.area_m2 && <div><strong>Área:</strong> {imovel.area_m2}m²</div>}
+                              </div>
+                            </div>
+                            <div className="space-y-3">
+                              <div>
+                                <strong>Comodidades:</strong>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {imovel.possui_piscina && <Badge className="badge-teal text-xs">Piscina</Badge>}
+                                  {imovel.possui_churrasqueira && <Badge className="badge-teal text-xs">Churrasqueira</Badge>}
+                                  {imovel.possui_wifi && <Badge className="badge-teal text-xs">Wi-Fi</Badge>}
+                                  {imovel.permite_pets && <Badge className="badge-teal text-xs">Pet-Friendly</Badge>}
+                                  {imovel.tem_vista_mar && <Badge className="badge-teal text-xs">Vista Mar</Badge>}
+                                  {imovel.tem_ar_condicionado && <Badge className="badge-teal text-xs">Ar Condicionado</Badge>}
+                                </div>
+                              </div>
+                              <div className="text-sm">
+                                <strong>Preços:</strong>
+                                <div className="grid grid-cols-1 gap-1 mt-1 text-gray-600">
+                                  <div>Diária: R$ {imovel.preco_diaria}</div>
+                                  {imovel.preco_semanal && <div>Semanal: R$ {imovel.preco_semanal}</div>}
+                                  {imovel.preco_mensal && <div>Mensal: R$ {imovel.preco_mensal}</div>}
+                                </div>
+                              </div>
+                              {(imovel.link_booking || imovel.link_airbnb) && (
+                                <div>
+                                  <strong>Links:</strong>
+                                  <div className="flex space-x-2 mt-1">
+                                    {imovel.link_booking && (
+                                      <Button size="sm" variant="outline" asChild>
+                                        <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">
+                                          Booking
+                                        </a>
+                                      </Button>
+                                    )}
+                                    {imovel.link_airbnb && (
+                                      <Button size="sm" variant="outline" asChild>
+                                        <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">
+                                          Airbnb
+                                        </a>
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-4 pt-3 border-t text-xs text-gray-500">
+                            Enviado em: {new Date(imovel.created_at).toLocaleString('pt-BR')}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   return (
