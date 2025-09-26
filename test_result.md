@@ -217,7 +217,6 @@ test_plan:
     - "MeusImoveisPage Component" 
     - "TodosImoveisPage Component"
     - "ParceirosPage Component"
-    - "Member Properties API Endpoints"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
