@@ -933,6 +933,99 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     return {"message": "Usuário desativado com sucesso"}
 
+# Property Approval Routes (Admin)
+@api_router.get("/admin/imoveis-pendentes", response_model=List[Imovel])
+async def get_imoveis_pendentes(current_user: User = Depends(get_admin_user)):
+    """Get all properties pending approval"""
+    imoveis = await db.imoveis.find({"status_aprovacao": "pendente"}).to_list(length=None)
+    return [Imovel(**imovel) for imovel in imoveis]
+
+@api_router.post("/admin/imoveis/{imovel_id}/aprovar")
+async def aprovar_imovel(imovel_id: str, current_user: User = Depends(get_admin_user)):
+    """Approve property"""
+    # Update property status
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"status_aprovacao": "aprovado", "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    
+    # Get property and owner info for notification
+    imovel = await db.imoveis.find_one({"id": imovel_id})
+    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
+    
+    # Send notification email
+    if owner and owner.get("email"):
+        try:
+            send_email(
+                to_email=owner["email"],
+                subject="Imóvel Aprovado - ALT Ilhabela",
+                body=f"""
+Olá {owner.get('nome', 'Proprietário')},
+
+Ótimas notícias! Seu imóvel "{imovel['titulo']}" foi aprovado e já está disponível no portal da ALT Ilhabela.
+
+Seu imóvel agora pode ser visualizado por outros membros e turistas que acessam nossa plataforma.
+
+Para gerenciar seus imóveis, acesse: https://temporada-portal.preview.emergentagent.com/login
+
+Atenciosamente,
+Equipe ALT Ilhabela
+                """
+            )
+        except Exception as e:
+            print(f"Erro ao enviar email de aprovação: {e}")
+    
+    return {"message": "Imóvel aprovado com sucesso"}
+
+@api_router.post("/admin/imoveis/{imovel_id}/recusar")
+async def recusar_imovel(
+    imovel_id: str, 
+    motivo: str = "", 
+    current_user: User = Depends(get_admin_user)
+):
+    """Reject property"""
+    # Update property status
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"status_aprovacao": "recusado", "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    
+    # Get property and owner info for notification
+    imovel = await db.imoveis.find_one({"id": imovel_id})
+    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
+    
+    # Send notification email
+    if owner and owner.get("email"):
+        try:
+            send_email(
+                to_email=owner["email"],
+                subject="Imóvel Não Aprovado - ALT Ilhabela",
+                body=f"""
+Olá {owner.get('nome', 'Proprietário')},
+
+Infelizmente, seu imóvel "{imovel['titulo']}" não foi aprovado para publicação no portal da ALT Ilhabela.
+
+{f'Motivo: {motivo}' if motivo else ''}
+
+Você pode revisar as informações e enviar uma nova solicitação através da sua área de membros.
+
+Para mais informações, entre em contato conosco.
+
+Atenciosamente,
+Equipe ALT Ilhabela
+                """
+            )
+        except Exception as e:
+            print(f"Erro ao enviar email de recusa: {e}")
+    
+    return {"message": "Imóvel recusado com sucesso"}
+
 # Admin - Toggle Featured Content
 @api_router.put("/admin/imoveis/{imovel_id}/destaque")
 async def toggle_imovel_destaque(
