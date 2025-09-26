@@ -365,6 +365,363 @@ export const TodosImoveisPage = () => {
   );
 };
 
+// Partner Profile Management Page
+export const MeuPerfilPage = () => {
+  const [perfil, setPerfil] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    nome_empresa: '',
+    descricao: '',
+    categoria: '',
+    telefone: '',
+    endereco: '',
+    website: '',
+    instagram: '',
+    facebook: '',
+    whatsapp: '',
+    horario_funcionamento: '',
+    servicos_oferecidos: ''
+  });
+
+  useEffect(() => {
+    fetchPerfil();
+  }, []);
+
+  const fetchPerfil = async () => {
+    try {
+      const response = await axios.get(`${API}/meu-perfil-parceiro`);
+      setPerfil(response.data);
+      if (response.data) {
+        setFormData({
+          nome_empresa: response.data.nome_empresa || '',
+          descricao: response.data.descricao || '',
+          categoria: response.data.categoria || '',
+          telefone: response.data.telefone || '',
+          endereco: response.data.endereco || '',
+          website: response.data.website || '',
+          instagram: response.data.instagram || '',
+          facebook: response.data.facebook || '',
+          whatsapp: response.data.whatsapp || '',
+          horario_funcionamento: response.data.horario_funcionamento || '',
+          servicos_oferecidos: response.data.servicos_oferecidos || ''
+        });
+      }
+    } catch (error) {
+      if (error.response?.status !== 404) {
+        toast({
+          title: "Erro ao carregar perfil",
+          description: "Tente recarregar a página.",
+          variant: "destructive",
+        });
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (perfil) {
+        await axios.put(`${API}/perfil-parceiro/${perfil.id}`, formData);
+        toast({
+          title: "Perfil atualizado com sucesso!",
+        });
+      } else {
+        await axios.post(`${API}/perfil-parceiro`, formData);
+        toast({
+          title: "Perfil criado com sucesso!",
+        });
+      }
+      setEditing(false);
+      fetchPerfil();
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar perfil",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-primary-gray">Meu Perfil de Parceiro</h1>
+          {perfil && !editing && (
+            <Button onClick={() => setEditing(true)} className="btn-primary">
+              Editar Perfil
+            </Button>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="spinner"></div>
+          </div>
+        ) : (!perfil || editing) ? (
+          <Card className="card-custom max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-primary-gray">
+                {perfil ? 'Editar Perfil' : 'Criar Perfil de Parceiro'}
+              </CardTitle>
+              <CardDescription>
+                {perfil ? 'Atualize as informações da sua empresa' : 'Complete as informações da sua empresa para aparecer na área de parceiros'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nome_empresa" className="form-label">Nome da Empresa *</Label>
+                    <Input
+                      id="nome_empresa"
+                      className="form-input"
+                      value={formData.nome_empresa}
+                      onChange={(e) => setFormData({...formData, nome_empresa: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="categoria" className="form-label">Categoria *</Label>
+                    <Select 
+                      value={formData.categoria} 
+                      onValueChange={(value) => setFormData({...formData, categoria: value})}
+                    >
+                      <SelectTrigger className="form-input">
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Gastronomia">Gastronomia</SelectItem>
+                        <SelectItem value="Hospedagem">Hospedagem</SelectItem>
+                        <SelectItem value="Turismo">Turismo</SelectItem>
+                        <SelectItem value="Transporte">Transporte</SelectItem>
+                        <SelectItem value="Serviços">Serviços</SelectItem>
+                        <SelectItem value="Comércio">Comércio</SelectItem>
+                        <SelectItem value="Entretenimento">Entretenimento</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="descricao" className="form-label">Descrição da Empresa *</Label>
+                  <Textarea
+                    id="descricao"
+                    className="form-input"
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                    required
+                    rows={4}
+                    placeholder="Descreva sua empresa, serviços e diferenciais..."
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="telefone" className="form-label">Telefone *</Label>
+                    <Input
+                      id="telefone"
+                      className="form-input"
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                      required
+                      placeholder="+55 12 99999-9999"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="whatsapp" className="form-label">WhatsApp</Label>
+                    <Input
+                      id="whatsapp"
+                      className="form-input"
+                      value={formData.whatsapp}
+                      onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
+                      placeholder="+55 12 99999-9999"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="endereco" className="form-label">Endereço Completo *</Label>
+                  <Textarea
+                    id="endereco"
+                    className="form-input"
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                    required
+                    placeholder="Rua, número, bairro, cidade..."
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="website" className="form-label">Website</Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      className="form-input"
+                      value={formData.website}
+                      onChange={(e) => setFormData({...formData, website: e.target.value})}
+                      placeholder="https://exemplo.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="instagram" className="form-label">Instagram</Label>
+                    <Input
+                      id="instagram"
+                      type="url"
+                      className="form-input"
+                      value={formData.instagram}
+                      onChange={(e) => setFormData({...formData, instagram: e.target.value})}
+                      placeholder="https://instagram.com/empresa"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="facebook" className="form-label">Facebook</Label>
+                    <Input
+                      id="facebook"
+                      type="url"
+                      className="form-input"
+                      value={formData.facebook}
+                      onChange={(e) => setFormData({...formData, facebook: e.target.value})}
+                      placeholder="https://facebook.com/empresa"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="horario_funcionamento" className="form-label">Horário de Funcionamento</Label>
+                    <Input
+                      id="horario_funcionamento"
+                      className="form-input"
+                      value={formData.horario_funcionamento}
+                      onChange={(e) => setFormData({...formData, horario_funcionamento: e.target.value})}
+                      placeholder="Segunda a Sexta: 9h às 18h"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="servicos_oferecidos" className="form-label">Serviços Oferecidos</Label>
+                    <Input
+                      id="servicos_oferecidos"
+                      className="form-input"
+                      value={formData.servicos_oferecidos}
+                      onChange={(e) => setFormData({...formData, servicos_oferecidos: e.target.value})}
+                      placeholder="Serviço A, Serviço B, Serviço C"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-4">
+                  <Button type="submit" className="flex-1 btn-primary">
+                    {perfil ? 'Atualizar' : 'Criar'} Perfil
+                  </Button>
+                  {editing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditing(false)}
+                    >
+                      Cancelar
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <Card className="card-custom">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-2xl text-primary-gray">{perfil.nome_empresa}</CardTitle>
+                    <Badge className="badge-teal mt-2">{perfil.categoria}</Badge>
+                  </div>
+                  <Button onClick={() => setEditing(true)} variant="outline">
+                    Editar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-primary-gray mb-2">Descrição</h3>
+                      <p className="text-gray-600">{perfil.descricao}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-primary-gray mb-2">Contato</h3>
+                      <div className="space-y-1 text-sm">
+                        <p><strong>Telefone:</strong> {perfil.telefone}</p>
+                        {perfil.whatsapp && <p><strong>WhatsApp:</strong> {perfil.whatsapp}</p>}
+                        <p><strong>Endereço:</strong> {perfil.endereco}</p>
+                      </div>
+                    </div>
+                    
+                    {perfil.horario_funcionamento && (
+                      <div>
+                        <h3 className="font-semibold text-primary-gray mb-2">Horário</h3>
+                        <p className="text-gray-600 text-sm">{perfil.horario_funcionamento}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {perfil.servicos_oferecidos && (
+                      <div>
+                        <h3 className="font-semibold text-primary-gray mb-2">Serviços</h3>
+                        <p className="text-gray-600 text-sm">{perfil.servicos_oferecidos}</p>
+                      </div>
+                    )}
+                    
+                    <div>
+                      <h3 className="font-semibold text-primary-gray mb-2">Links</h3>
+                      <div className="space-y-2">
+                        {perfil.website && (
+                          <Button size="sm" variant="outline" className="w-full" asChild>
+                            <a href={perfil.website} target="_blank" rel="noopener noreferrer">
+                              Website
+                            </a>
+                          </Button>
+                        )}
+                        {perfil.instagram && (
+                          <Button size="sm" variant="outline" className="w-full" asChild>
+                            <a href={perfil.instagram} target="_blank" rel="noopener noreferrer">
+                              Instagram
+                            </a>
+                          </Button>
+                        )}
+                        {perfil.facebook && (
+                          <Button size="sm" variant="outline" className="w-full" asChild>
+                            <a href={perfil.facebook} target="_blank" rel="noopener noreferrer">
+                              Facebook
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Partners Page (for all users to see partners)
 export const ParceirosPage = () => {
   const [parceiros, setParceiros] = useState([]);
