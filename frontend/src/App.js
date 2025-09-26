@@ -1658,6 +1658,16 @@ function App() {
               } 
             />
             
+            {/* Partner Routes */}
+            <Route 
+              path="/meu-perfil" 
+              element={
+                <ProtectedRoute allowedRoles={['parceiro']}>
+                  <MeuPerfilPage />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* General Routes - Accessible by all authenticated users */}
             <Route 
               path="/parceiros" 
