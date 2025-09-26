@@ -1900,6 +1900,15 @@ function App() {
             />
             
             <Route 
+              path="/admin/imoveis" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminImoveis />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
               path="/admin/conteudo" 
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
