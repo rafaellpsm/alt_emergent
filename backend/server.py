@@ -175,6 +175,13 @@ class ImovelCreate(BaseModel):
     video_url: Optional[HttpUrl] = None
     link_booking: Optional[HttpUrl] = None
     link_airbnb: Optional[HttpUrl] = None
+    
+    @field_validator('video_url', 'link_booking', 'link_airbnb', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == '' or v is None:
+            return None
+        return v
 
 class ImovelUpdate(BaseModel):
     titulo: Optional[str] = None
