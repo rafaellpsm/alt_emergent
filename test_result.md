@@ -119,6 +119,21 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ BACKEND TESTING COMPLETE - All 3 priority API endpoints working correctly: /api/meus-imoveis (returns 2 properties for member user), /api/imoveis (returns 2 properties for any authenticated user), /api/parceiros (returns 1 partner profile). Authentication working with admin@alt-ilhabela.com and member test user. All endpoints return proper JSON data structures with expected fields."
+        - working: true
+          agent: "testing"
+          comment: "✅ RE-TESTED SUCCESSFULLY - All API endpoints still working correctly after property creation fix. /api/meus-imoveis returns 3 properties, /api/imoveis returns 3 properties, /api/parceiros returns 1 partner. No issues found."
+
+  - task: "Property Creation with Empty URL Validation Fix"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY CREATION FIX VERIFIED - Fixed Pydantic validation error for empty URL strings. Added field_validator to both Imovel and ImovelCreate models to convert empty strings to None. POST /api/imoveis now works correctly with empty URL fields (video_url, link_booking, link_airbnb). Property created with status_aprovacao='pendente' as expected. Test data: 'Teste Casa Nova' property created successfully with property_id='eabc9937-92f8-49db-a5b6-09fec49ba51a'."
 
   - task: "Property Approval System"
     implemented: false  
