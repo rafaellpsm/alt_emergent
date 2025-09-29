@@ -153,6 +153,98 @@ class APITester:
             self.log_result("Parceiros API", False, f"Request error: {str(e)}")
             return False
     
+    def test_create_property_with_empty_urls(self):
+        """Test POST /api/imoveis with empty URL strings - specific fix validation"""
+        try:
+            # Test data with empty string URL fields as specified in review request
+            property_data = {
+                "titulo": "Teste Casa Nova",
+                "descricao": "Casa para teste do sistema de aprovação",
+                "tipo": "casa",
+                "regiao": "centro",
+                "endereco_completo": "Rua de Teste, 123",
+                "preco_diaria": 200.0,
+                "num_quartos": 2,
+                "num_banheiros": 1,
+                "capacidade": 4,
+                "area_m2": 80,
+                "possui_piscina": False,
+                "possui_churrasqueira": False,
+                "possui_wifi": True,
+                "permite_pets": False,
+                "tem_vista_mar": False,
+                "tem_ar_condicionado": True,
+                "video_url": "",  # Empty string - this should be converted to null
+                "link_booking": "",  # Empty string - this should be converted to null
+                "link_airbnb": ""  # Empty string - this should be converted to null
+            }
+            
+            response = self.session.post(f"{API_BASE}/imoveis", json=property_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify the property was created with correct status
+                if data.get("status_aprovacao") == "pendente":
+                    # Verify empty URLs were handled correctly (should be null, not empty strings)
+                    url_fields_handled = True
+                    url_issues = []
+                    
+                    for field in ["video_url", "link_booking", "link_airbnb"]:
+                        if data.get(field) == "":
+                            url_fields_handled = False
+                            url_issues.append(f"{field} is empty string instead of null")
+                    
+                    if url_fields_handled:
+                        self.log_result(
+                            "Property Creation with Empty URLs", 
+                            True, 
+                            f"✅ Property created successfully with status 'pendente'. Empty URL fields converted to null as expected.",
+                            {
+                                "property_id": data.get("id"),
+                                "status_aprovacao": data.get("status_aprovacao"),
+                                "titulo": data.get("titulo"),
+                                "video_url": data.get("video_url"),
+                                "link_booking": data.get("link_booking"),
+                                "link_airbnb": data.get("link_airbnb")
+                            }
+                        )
+                        return True
+                    else:
+                        self.log_result(
+                            "Property Creation with Empty URLs", 
+                            False, 
+                            f"Property created but URL field handling failed: {', '.join(url_issues)}"
+                        )
+                        return False
+                else:
+                    self.log_result(
+                        "Property Creation with Empty URLs", 
+                        False, 
+                        f"Property created but status_aprovacao is '{data.get('status_aprovacao')}' instead of 'pendente'"
+                    )
+                    return False
+            else:
+                # Check if this is a Pydantic validation error
+                error_text = response.text
+                if "validation error" in error_text.lower() or "pydantic" in error_text.lower():
+                    self.log_result(
+                        "Property Creation with Empty URLs", 
+                        False, 
+                        f"❌ PYDANTIC VALIDATION ERROR STILL EXISTS - Status {response.status_code}: {error_text}"
+                    )
+                else:
+                    self.log_result(
+                        "Property Creation with Empty URLs", 
+                        False, 
+                        f"Property creation failed with status {response.status_code}: {error_text}"
+                    )
+                return False
+                
+        except Exception as e:
+            self.log_result("Property Creation with Empty URLs", False, f"Request error: {str(e)}")
+            return False
+    
     def test_api_root(self):
         """Test basic API connectivity"""
         try:
