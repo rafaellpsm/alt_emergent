@@ -3,96 +3,28 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-09-26T15:43:20.760330",
+    "timestamp": "2025-09-29T20:49:54.549398",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-09-26T15:43:21.037073",
+    "timestamp": "2025-09-29T20:49:54.815574",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
-    "success": true,
-    "message": "Endpoint working, returned 2 properties",
-    "timestamp": "2025-09-26T15:43:21.047979",
-    "response_data": {
-      "count": 2,
-      "sample": [
-        {
-          "id": "a0ad0818-77c9-4559-8712-473ef4c0332d",
-          "titulo": "Casa de Praia em Ilhabela",
-          "descricao": "Linda casa com vista para o mar, ideal para fam\u00edlias",
-          "tipo": "Casa",
-          "regiao": "Centro",
-          "endereco_completo": "Rua das Flores, 123 - Centro, Ilhabela/SP",
-          "preco_diaria": 350.0,
-          "preco_semanal": 2100.0,
-          "preco_mensal": 8000.0,
-          "num_quartos": 3,
-          "num_banheiros": 2,
-          "capacidade": 6,
-          "area_m2": 120.0,
-          "possui_piscina": true,
-          "possui_churrasqueira": true,
-          "possui_wifi": true,
-          "permite_pets": false,
-          "tem_vista_mar": true,
-          "tem_ar_condicionado": true,
-          "fotos": [],
-          "video_url": null,
-          "link_booking": null,
-          "link_airbnb": null,
-          "ativo": true,
-          "destaque": true,
-          "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
-          "cliques_link": 0,
-          "created_at": "2025-09-26T15:42:30.952000",
-          "updated_at": "2025-09-26T15:42:30.952000"
-        },
-        {
-          "id": "325d89dd-5fad-48be-8fba-407e578bf160",
-          "titulo": "Apartamento Moderno",
-          "descricao": "Apartamento moderno no centro de Ilhabela",
-          "tipo": "Apartamento",
-          "regiao": "Centro",
-          "endereco_completo": "Av. Brasil, 456 - Centro, Ilhabela/SP",
-          "preco_diaria": 200.0,
-          "preco_semanal": 1200.0,
-          "preco_mensal": null,
-          "num_quartos": 2,
-          "num_banheiros": 1,
-          "capacidade": 4,
-          "area_m2": 80.0,
-          "possui_piscina": false,
-          "possui_churrasqueira": false,
-          "possui_wifi": true,
-          "permite_pets": true,
-          "tem_vista_mar": false,
-          "tem_ar_condicionado": true,
-          "fotos": [],
-          "video_url": null,
-          "link_booking": null,
-          "link_airbnb": null,
-          "ativo": true,
-          "destaque": false,
-          "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
-          "cliques_link": 0,
-          "created_at": "2025-09-26T15:42:30.952000",
-          "updated_at": "2025-09-26T15:42:30.952000"
-        }
-      ]
-    }
+    "success": false,
+    "message": "Failed with status code 500: Internal Server Error",
+    "timestamp": "2025-09-29T20:49:54.829895",
+    "response_data": null
   },
   {
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-09-26T15:43:21.097281",
+    "timestamp": "2025-09-29T20:49:54.843509",
     "response_data": {
       "count": 1,
       "sample": [
@@ -131,50 +63,21 @@
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-09-26T15:43:21.336692",
+    "timestamp": "2025-09-29T20:49:55.118619",
     "response_data": null
   },
   {
     "test": "Meus Im\u00f3veis API (Member)",
-    "success": true,
-    "message": "Member endpoint working, returned 2 properties",
-    "timestamp": "2025-09-26T15:43:21.345850",
-    "response_data": {
-      "count": 2,
-      "sample": [
-        {
-          "id": "a0ad0818-77c9-4559-8712-473ef4c0332d",
-          "titulo": "Casa de Praia em Ilhabela",
-          "descricao": "Linda casa com vista para o mar, ideal para fam\u00edlias",
-          "tipo": "Casa",
-          "regiao": "Centro",
-          "endereco_completo": "Rua das Flores, 123 - Centro, Ilhabela/SP",
-          "preco_diaria": 350.0,
-          "preco_semanal": 2100.0,
-          "preco_mensal": 8000.0,
-          "num_quartos": 3,
-          "num_banheiros": 2,
-          "capacidade": 6,
-          "area_m2": 120.0,
-          "possui_piscina": true,
-          "possui_churrasqueira": true,
-          "possui_wifi": true,
-          "permite_pets": false,
-          "tem_vista_mar": true,
-          "tem_ar_condicionado": true,
-          "fotos": [],
-          "video_url": null,
-          "link_booking": null,
-          "link_airbnb": null,
-          "ativo": true,
-          "destaque": true,
-          "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
-          "cliques_link": 0,
-          "created_at": "2025-09-26T15:42:30.952000",
-          "updated_at": "2025-09-26T15:42:30.952000"
-        }
-      ]
-    }
+    "success": false,
+    "message": "Failed with status code 500: Internal Server Error",
+    "timestamp": "2025-09-29T20:49:55.127787",
+    "response_data": null
+  },
+  {
+    "test": "Property Creation with Empty URLs",
+    "success": false,
+    "message": "\u274c PYDANTIC VALIDATION ERROR STILL EXISTS - Status 422: {\"detail\":[{\"type\":\"url_parsing\",\"loc\":[\"body\",\"video_url\"],\"msg\":\"Input should be a valid URL, input is empty\",\"input\":\"\",\"ctx\":{\"error\":\"input is empty\"},\"url\":\"https://errors.pydantic.dev/2.11/v/url_parsing\"},{\"type\":\"url_parsing\",\"loc\":[\"body\",\"link_booking\"],\"msg\":\"Input should be a valid URL, input is empty\",\"input\":\"\",\"ctx\":{\"error\":\"input is empty\"},\"url\":\"https://errors.pydantic.dev/2.11/v/url_parsing\"},{\"type\":\"url_parsing\",\"loc\":[\"body\",\"link_airbnb\"],\"msg\":\"Input should be a valid URL, input is empty\",\"input\":\"\",\"ctx\":{\"error\":\"input is empty\"},\"url\":\"https://errors.pydantic.dev/2.11/v/url_parsing\"}]}",
+    "timestamp": "2025-09-29T20:49:55.137502",
+    "response_data": null
   }
 ]
