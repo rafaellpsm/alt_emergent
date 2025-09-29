@@ -152,6 +152,13 @@ class Imovel(BaseModel):
     cliques_link: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    @field_validator('video_url', 'link_booking', 'link_airbnb', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == '' or v is None:
+            return None
+        return v
 
 class ImovelCreate(BaseModel):
     titulo: str
