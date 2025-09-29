@@ -296,6 +296,10 @@ class APITester:
         print("\n👤 Testing Member-Specific Endpoints:")
         if self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
             self.test_meus_imoveis_endpoint_as_member()
+            
+            # Test the specific property creation fix
+            print("\n🔧 Testing Property Creation Fix (Empty URL Validation):")
+            self.test_create_property_with_empty_urls()
         
         # Summary
         print("\n" + "=" * 60)
