@@ -936,6 +936,7 @@ export const MeusImoveisPage = () => {
         await axios.post(`${API}/imoveis`, formData);
         toast({
           title: "Imóvel cadastrado com sucesso!",
+          description: "Seu imóvel será analisado pelo administrador e você receberá um email quando for aprovado.",
         });
       }
       
@@ -944,9 +945,30 @@ export const MeusImoveisPage = () => {
       resetForm();
       fetchImoveis();
     } catch (error) {
+      console.error('Error creating/updating property:', error);
+      
+      let errorMessage = "Tente novamente.";
+      
+      // Handle different types of errors
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        
+        // Handle Pydantic validation errors
+        if (Array.isArray(errorData.detail)) {
+          errorMessage = errorData.detail.map(err => {
+            const field = err.loc ? err.loc[err.loc.length - 1] : 'campo';
+            return `${field}: ${err.msg}`;
+          }).join(', ');
+        } else if (typeof errorData.detail === 'string') {
+          errorMessage = errorData.detail;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      
       toast({
         title: "Erro ao salvar imóvel",
-        description: error.response?.data?.detail || "Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
