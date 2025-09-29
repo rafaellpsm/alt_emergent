@@ -511,9 +511,19 @@ async def get_meus_imoveis(current_user: User = Depends(get_membro_user)):
 async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(get_membro_user)):
     """Create new property (requires approval)"""
     imovel_dict = imovel_data.dict()
+    
+    # Convert empty strings to None for optional URL fields
+    url_fields = ['video_url', 'link_booking', 'link_airbnb']
+    for field in url_fields:
+        if imovel_dict.get(field) == '' or imovel_dict.get(field) is None:
+            imovel_dict[field] = None
+    
     imovel_dict["proprietario_id"] = current_user.id
     imovel_dict["id"] = str(uuid.uuid4())
     imovel_dict["status_aprovacao"] = "pendente"  # All new properties need approval
+    imovel_dict["fotos"] = []  # Initialize empty photos array
+    imovel_dict["visualizacoes"] = 0
+    imovel_dict["cliques_link"] = 0
     imovel_dict["created_at"] = datetime.now(timezone.utc)
     imovel_dict["updated_at"] = datetime.now(timezone.utc)
     
