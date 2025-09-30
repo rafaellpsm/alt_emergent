@@ -47,6 +47,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 app = FastAPI(title="ALT Ilhabela Portal", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 
+# Mount uploads directory for static files
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 # Security
 security = HTTPBearer()
 
