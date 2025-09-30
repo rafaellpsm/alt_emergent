@@ -245,7 +245,7 @@ export const TodosImoveisPage = () => {
                     <SelectValue placeholder="Todas as regiões" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="todas">Todas</SelectItem>
                     <SelectItem value="centro">Centro</SelectItem>
                     <SelectItem value="perequê">Perequê</SelectItem>
                     <SelectItem value="vila">Vila</SelectItem>
