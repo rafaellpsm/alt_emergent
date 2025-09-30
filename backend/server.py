@@ -17,6 +17,8 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 from pathlib import Path
 import secrets
+import aiofiles
+import shutil
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
