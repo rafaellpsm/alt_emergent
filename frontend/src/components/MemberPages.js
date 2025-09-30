@@ -998,7 +998,8 @@ export const MeusImoveisPage = () => {
       tem_ar_condicionado: false,
       video_url: '',
       link_booking: '',
-      link_airbnb: ''
+      link_airbnb: '',
+      fotos: []
     });
   };
 
