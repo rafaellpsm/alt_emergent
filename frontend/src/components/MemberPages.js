@@ -771,7 +771,7 @@ export const ParceirosPage = () => {
                     <SelectValue placeholder="Todas as categorias" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="todas">Todas</SelectItem>
                     {categoriasDisponiveis.map(categoria => (
                       <SelectItem key={categoria} value={categoria}>{categoria}</SelectItem>
                     ))}
