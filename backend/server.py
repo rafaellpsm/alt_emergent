@@ -1060,6 +1060,61 @@ Equipe ALT Ilhabela
     
     return {"message": "Imóvel recusado com sucesso"}
 
+# File Upload Routes
+@api_router.post("/upload/foto")
+async def upload_foto(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload photo for properties or partners"""
+    
+    # Validate file type
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Arquivo inválido")
+    
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Tipo de arquivo não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Check file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="Arquivo muito grande. Máximo 10MB.")
+    
+    # Generate unique filename
+    file_id = str(uuid.uuid4())
+    filename = f"{file_id}{file_ext}"
+    file_path = UPLOAD_DIR / filename
+    
+    # Save file
+    try:
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao salvar arquivo")
+    
+    # Return file URL
+    file_url = f"/uploads/{filename}"
+    return {"url": file_url, "filename": filename}
+
+@api_router.delete("/upload/foto/{filename}")
+async def delete_foto(
+    filename: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete uploaded photo"""
+    file_path = UPLOAD_DIR / filename
+    
+    try:
+        if file_path.exists():
+            file_path.unlink()
+        return {"message": "Foto removida com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao remover foto")
+
 # Admin - Toggle Featured Content
 @api_router.put("/admin/imoveis/{imovel_id}/destaque")
 async def toggle_imovel_destaque(
