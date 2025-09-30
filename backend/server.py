@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator
 from typing import List, Optional, Dict, Any
