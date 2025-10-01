@@ -1076,16 +1076,26 @@ class APITester:
             
             # Test the specific fixes mentioned in review request
             print("\n🔧 Testing Priority Fixes from Review Request:")
-            print("1. Property Creation Fix (MongoDB ObjectId issue):")
+            print("1. Property Creation Fix (BSON/HttpUrl fix):")
             self.test_create_property_with_empty_urls()
             
-            print("\n2. Property Details Loading Fix (ObjectId removal):")
+            print("\n2. Photo Upload System:")
+            self.test_photo_upload_system()
+            self.test_photo_upload_file_restrictions()
+            
+            print("\n3. Property Creation with Photos (End-to-End):")
+            self.test_create_property_with_photos()
+            
+            print("\n4. Property Details with Photo Gallery:")
+            self.test_property_details_with_photos()
+            
+            print("\n5. Property Details Loading Fix (ObjectId removal):")
             self.test_property_details_loading()
             
-            print("\n3. Property Owner Information (New endpoint):")
+            print("\n6. Property Owner Information (New endpoint):")
             self.test_property_owner_information()
             
-            print("\n4. Password Change System (New endpoint):")
+            print("\n7. Password Change System (New endpoint):")
             self.test_password_change_system()
             self.test_password_change_wrong_current()
         
