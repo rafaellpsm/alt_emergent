@@ -520,8 +520,13 @@ async def alterar_senha(
     if not senha_atual or not nova_senha:
         raise HTTPException(status_code=400, detail="Senha atual e nova senha são obrigatórias")
     
+    # Get user from database to access hashed_password
+    user_doc = await db.users.find_one({"id": current_user.id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
     # Verify current password
-    if not pwd_context.verify(senha_atual, current_user.hashed_password):
+    if not pwd_context.verify(senha_atual, user_doc["hashed_password"]):
         raise HTTPException(status_code=400, detail="Senha atual incorreta")
     
     # Hash new password
