@@ -289,7 +289,7 @@ export const TodosImoveisPage = () => {
               </Card>
             ) : (
               imoveis.map((imovel) => (
-                <Card key={imovel.id} className="card-custom hover-lift">
+                <Card key={imovel.id} className="card-custom hover-lift cursor-pointer" onClick={() => window.location.href = `/imovel/${imovel.id}`}>
                   {imovel.fotos && imovel.fotos.length > 0 ? (
                     <div className="property-image">
                       <img 
