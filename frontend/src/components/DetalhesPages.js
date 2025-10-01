@@ -145,9 +145,8 @@ export const ImovelDetalhePage = () => {
       setImovel(response.data);
       
       // Buscar dados do proprietário
-      const propResponse = await axios.get(`${API}/admin/users`);
-      const prop = propResponse.data.find(u => u.id === response.data.proprietario_id);
-      setProprietario(prop);
+      const propResponse = await axios.get(`${API}/imoveis/${id}/proprietario`);
+      setProprietario(propResponse.data);
     } catch (error) {
       toast({
         title: "Erro ao carregar imóvel",
