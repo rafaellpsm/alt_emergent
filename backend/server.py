@@ -152,10 +152,9 @@ class Imovel(BaseModel):
     permite_pets: bool = False
     tem_vista_mar: bool = False
     tem_ar_condicionado: bool = False
-    fotos: List[str] = []
-    video_url: Optional[HttpUrl] = None
-    link_booking: Optional[HttpUrl] = None
-    link_airbnb: Optional[HttpUrl] = None
+    fotos: List[str] = []  # Changed from HttpUrl to str for photo URLs
+    link_booking: Optional[str] = None
+    link_airbnb: Optional[str] = None
     status_aprovacao: str = Field(default="pendente")  # pendente, aprovado, recusado
     ativo: bool = True
     destaque: bool = False  # For featuring on main page
