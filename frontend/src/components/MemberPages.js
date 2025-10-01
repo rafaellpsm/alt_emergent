@@ -731,6 +731,7 @@ export const MeuPerfilPage = () => {
 
 // Partners Page (for all users to see partners)
 export const ParceirosPage = () => {
+  const navigate = useNavigate();
   const [parceiros, setParceiros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
