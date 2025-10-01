@@ -136,8 +136,8 @@ backend:
           comment: "✅ PROPERTY CREATION FIX VERIFIED - Fixed Pydantic validation error for empty URL strings. Added field_validator to both Imovel and ImovelCreate models to convert empty strings to None. POST /api/imoveis now works correctly with empty URL fields (video_url, link_booking, link_airbnb). Property created with status_aprovacao='pendente' as expected. Test data: 'Teste Casa Nova' property created successfully with property_id='eabc9937-92f8-49db-a5b6-09fec49ba51a'."
 
   - task: "Property Approval System"
-    implemented: false  
-    working: false
+    implemented: true  
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
@@ -146,6 +146,9 @@ backend:
         - working: false
           agent: "main"
           comment: "Not yet implemented - properties need approval workflow (member creates -> admin approves)"
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY APPROVAL SYSTEM WORKING - Tested property approval endpoint /admin/imoveis/{id}/aprovar successfully. Property status changed from 'pendente' to 'aprovado'. Email notification system is fully functional - confirmed email sent to property owner (membro@alt-ilhabela.com) with subject 'Imóvel Aprovado - ALT Ilhabela'. SMTP connection working correctly with smtp.gmail.com:587 using ilhabelaalt@gmail.com credentials."
 
   - task: "Partner Profile Approval System"
     implemented: false
