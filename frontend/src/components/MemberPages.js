@@ -1292,21 +1292,9 @@ export const MeusImoveisPage = () => {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="video_url" className="form-label">Link do Vídeo</Label>
-                    <Input
-                      id="video_url"
-                      type="url"
-                      className="form-input"
-                      value={formData.video_url}
-                      onChange={(e) => setFormData({...formData, video_url: e.target.value})}
-                      placeholder="https://youtube.com/watch?v=..."
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="link_booking" className="form-label">Link Booking</Label>
+                    <Label htmlFor="link_booking" className="form-label">Link Booking.com</Label>
                     <Input
                       id="link_booking"
                       type="url"
@@ -1325,10 +1313,59 @@ export const MeusImoveisPage = () => {
                       className="form-input"
                       value={formData.link_airbnb}
                       onChange={(e) => setFormData({...formData, link_airbnb: e.target.value})}
-                      placeholder="https://airbnb.com/rooms/..."
+                      placeholder="https://airbnb.com/..."
                     />
                   </div>
                 </div>
+
+                {/* Seção de Fotos */}
+                <div className="mt-6">
+                  <PhotoUpload 
+                    photos={formData.fotos} 
+                    onPhotosChange={(newPhotos) => setFormData({...formData, fotos: newPhotos})}
+                    maxPhotos={20}
+                    label="Fotos do Imóvel"
+                  />
+                  
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-900 mb-2">📸 Dicas para Fotos Incríveis</h4>
+                    <div className="text-sm text-blue-800 space-y-1">
+                      <p>• <strong>Proporção recomendada:</strong> 16:9 ou 4:3 (paisagem horizontal)</p>
+                      <p>• <strong>Primeira foto:</strong> Será a foto principal do imóvel</p>
+                      <p>• <strong>Sequência sugerida:</strong> Fachada → Sala → Quartos → Cozinha → Banheiros → Área externa</p>
+                      <p>• <strong>Qualidade:</strong> Use boa iluminação natural e mantenha o ambiente limpo</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fotos na Descrição */}
+                {formData.fotos.length > 0 && (
+                  <div>
+                    <Label className="form-label">Fotos para Inserir na Descrição</Label>
+                    <div className="grid grid-cols-3 gap-2 p-3 border rounded-lg bg-gray-50">
+                      {formData.fotos.map((foto, index) => (
+                        <div 
+                          key={index} 
+                          className="relative group cursor-pointer border rounded overflow-hidden hover:ring-2 hover:ring-primary-teal"
+                          onClick={() => {
+                            // Adicionar URL da foto na descrição
+                            const fotoUrl = `![Foto ${index + 1}](${foto})`;
+                            const newDescricao = formData.descricao + `\n\n${fotoUrl}\n`;
+                            setFormData({...formData, descricao: newDescricao});
+                          }}
+                        >
+                          <img src={foto} alt={`Foto ${index + 1}`} className="w-full h-16 object-cover" />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                            <span className="text-white text-xs opacity-0 group-hover:opacity-100">Clique para inserir</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                      💡 Clique em uma foto acima para inseri-la na descrição
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex space-x-4">
                   <Button type="submit" className="flex-1 btn-primary">
