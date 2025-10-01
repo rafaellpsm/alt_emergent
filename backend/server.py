@@ -586,6 +586,8 @@ async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_us
         {"$inc": {"visualizacoes": 1}}
     )
     
+    # Remove MongoDB ObjectId before returning
+    imovel.pop("_id", None)
     return Imovel(**imovel)
 
 @api_router.put("/imoveis/{imovel_id}", response_model=Imovel)
