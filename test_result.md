@@ -164,6 +164,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ PROPERTY APPROVAL SYSTEM WORKING - Tested property approval endpoint /admin/imoveis/{id}/aprovar successfully. Property status changed from 'pendente' to 'aprovado'. Email notification system is fully functional - confirmed email sent to property owner (membro@alt-ilhabela.com) with subject 'Imóvel Aprovado - ALT Ilhabela'. SMTP connection working correctly with smtp.gmail.com:587 using ilhabelaalt@gmail.com credentials."
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY APPROVAL & LISTING FIXES FULLY VERIFIED - REVIEW REQUEST COMPLETE: All 4 priority areas tested successfully: 1) Property Approval System - Admin can approve properties via POST /api/admin/imoveis/{id}/aprovar, status changes from 'pendente' to 'aprovado', approved properties appear in listings. 2) Property Listings - /api/meus-imoveis shows all member properties (13 total: 11 approved, 2 pending), /api/imoveis shows only approved properties (13 approved). 3) ObjectId Removal - All property endpoints (/api/imoveis, /api/meus-imoveis, /api/admin/imoveis-pendentes) properly remove MongoDB ObjectId, no serialization errors. 4) Admin Navigation - Admin can access regular property listings (/api/imoveis, /api/parceiros). Fixed issue where properties weren't appearing in approved listings due to missing ativo=true field. All 29/29 comprehensive tests passed. SUCCESS CRITERIA MET: 4/4."
 
   - task: "Partner Profile Approval System"
     implemented: false
