@@ -3,84 +3,147 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-10-01T18:42:10.689888",
+    "timestamp": "2025-10-01T18:42:57.029479",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T18:42:10.952358",
+    "timestamp": "2025-10-01T18:42:57.269112",
     "response_data": null
   },
   {
     "test": "Member Login",
+    "success": true,
+    "message": "Login successful for membro@alt-ilhabela.com with role membro",
+    "timestamp": "2025-10-01T18:42:57.503425",
+    "response_data": null
+  },
+  {
+    "test": "Property Approval Flow - Create Property",
+    "success": true,
+    "message": "\u2705 Property created with 'pendente' status: Casa Teste Aprova\u00e7\u00e3o",
+    "timestamp": "2025-10-01T18:42:57.516334",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-01T18:42:57.791561",
+    "response_data": null
+  },
+  {
+    "test": "Property Approval Flow - Check Pending",
+    "success": true,
+    "message": "\u2705 Test property found in pending list (4 total pending)",
+    "timestamp": "2025-10-01T18:42:57.801564",
+    "response_data": null
+  },
+  {
+    "test": "Property Approval Flow - Approve Property",
+    "success": true,
+    "message": "\u2705 Property approved successfully: Im\u00f3vel aprovado com sucesso",
+    "timestamp": "2025-10-01T18:42:58.942483",
+    "response_data": null
+  },
+  {
+    "test": "Property Approval Flow - Check Approved Listings",
     "success": false,
-    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T18:42:11.189070",
+    "message": "Approved property e9c40ea0-ba51-4c97-a0cb-6e3ccad83877 not found in approved properties list",
+    "timestamp": "2025-10-01T18:42:58.951774",
     "response_data": null
   },
   {
     "test": "Member Login",
-    "success": false,
-    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T18:42:11.425019",
+    "success": true,
+    "message": "Login successful for membro@alt-ilhabela.com with role membro",
+    "timestamp": "2025-10-01T18:42:59.187959",
     "response_data": null
   },
   {
-    "test": "Property Listings - Member Login",
+    "test": "Property Listings - Meus Im\u00f3veis",
+    "success": true,
+    "message": "\u2705 Member properties endpoint working: 10 total (9 approved, 1 pending)",
+    "timestamp": "2025-10-01T18:42:59.197627",
+    "response_data": null
+  },
+  {
+    "test": "Property Listings - Todos os Im\u00f3veis",
+    "success": true,
+    "message": "\u2705 All properties endpoint working: 3 approved properties only",
+    "timestamp": "2025-10-01T18:42:59.207441",
+    "response_data": null
+  },
+  {
+    "test": "Property Listings - Cross-Endpoint Consistency",
     "success": false,
-    "message": "Failed to login as member",
-    "timestamp": "2025-10-01T18:42:11.425050",
+    "message": "\u274c 6 approved member properties missing from /api/imoveis",
+    "timestamp": "2025-10-01T18:42:59.207467",
     "response_data": null
   },
   {
     "test": "ObjectId Removal - /api/imoveis",
     "success": true,
     "message": "\u2705 No ObjectId found in /api/imoveis response (3 properties checked)",
-    "timestamp": "2025-10-01T18:42:11.434333",
+    "timestamp": "2025-10-01T18:42:59.215683",
     "response_data": null
   },
   {
     "test": "Member Login",
-    "success": false,
-    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T18:42:11.670255",
+    "success": true,
+    "message": "Login successful for membro@alt-ilhabela.com with role membro",
+    "timestamp": "2025-10-01T18:42:59.489046",
     "response_data": null
   },
   {
     "test": "ObjectId Removal - /api/meus-imoveis",
-    "success": false,
-    "message": "Failed to login as member for meus-imoveis testing",
-    "timestamp": "2025-10-01T18:42:11.670287",
+    "success": true,
+    "message": "\u2705 No ObjectId found in /api/meus-imoveis response (10 properties checked)",
+    "timestamp": "2025-10-01T18:42:59.497250",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T18:42:11.903338",
+    "timestamp": "2025-10-01T18:42:59.730402",
+    "response_data": null
+  },
+  {
+    "test": "ObjectId Removal - /api/admin/imoveis-pendentes",
+    "success": true,
+    "message": "\u2705 No ObjectId found in /api/admin/imoveis-pendentes response (3 properties checked)",
+    "timestamp": "2025-10-01T18:42:59.738967",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-01T18:43:00.012554",
     "response_data": null
   },
   {
     "test": "Cross-Role Access - Admin to /api/imoveis",
     "success": true,
     "message": "\u2705 Admin can access regular property listings (3 properties)",
-    "timestamp": "2025-10-01T18:42:11.911709",
+    "timestamp": "2025-10-01T18:43:00.023578",
     "response_data": null
   },
   {
     "test": "Cross-Role Access - Admin to /api/parceiros",
     "success": true,
     "message": "\u2705 Admin can access partner listings (1 partners)",
-    "timestamp": "2025-10-01T18:42:11.917254",
+    "timestamp": "2025-10-01T18:43:00.032508",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
     "success": true,
     "message": "Endpoint working, returned 3 properties",
-    "timestamp": "2025-10-01T18:42:11.923939",
+    "timestamp": "2025-10-01T18:43:00.040168",
     "response_data": {
       "count": 3,
       "sample": [
@@ -155,7 +218,7 @@
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-10-01T18:42:11.930635",
+    "timestamp": "2025-10-01T18:43:00.095645",
     "response_data": {
       "count": 1,
       "sample": [
@@ -192,25 +255,107 @@
   },
   {
     "test": "Member Login",
-    "success": false,
-    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T18:42:12.204106",
+    "success": true,
+    "message": "Login successful for membro@alt-ilhabela.com with role membro",
+    "timestamp": "2025-10-01T18:43:00.328991",
     "response_data": null
+  },
+  {
+    "test": "Meus Im\u00f3veis API (Member)",
+    "success": true,
+    "message": "Member endpoint working, returned 10 properties",
+    "timestamp": "2025-10-01T18:43:00.336902",
+    "response_data": {
+      "count": 10,
+      "sample": [
+        {
+          "id": "e9c40ea0-ba51-4c97-a0cb-6e3ccad83877",
+          "titulo": "Casa Teste Aprova\u00e7\u00e3o",
+          "descricao": "Propriedade para testar fluxo de aprova\u00e7\u00e3o",
+          "tipo": "casa",
+          "regiao": "centro",
+          "endereco_completo": "Rua da Aprova\u00e7\u00e3o, 123",
+          "preco_diaria": 200.0,
+          "preco_semanal": null,
+          "preco_mensal": null,
+          "num_quartos": 2,
+          "num_banheiros": 1,
+          "capacidade": 4,
+          "area_m2": null,
+          "possui_piscina": false,
+          "possui_churrasqueira": false,
+          "possui_wifi": true,
+          "permite_pets": false,
+          "tem_vista_mar": false,
+          "tem_ar_condicionado": false,
+          "fotos": [],
+          "link_booking": null,
+          "link_airbnb": null,
+          "status_aprovacao": "aprovado",
+          "ativo": true,
+          "destaque": false,
+          "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
+          "visualizacoes": 0,
+          "cliques_link": 0,
+          "created_at": "2025-10-01T18:42:57.512000",
+          "updated_at": "2025-10-01T18:42:57.811000"
+        }
+      ]
+    }
+  },
+  {
+    "test": "Property Creation with Empty URLs",
+    "success": true,
+    "message": "\u2705 Property created successfully with status 'pendente'. Empty URL fields converted to null as expected.",
+    "timestamp": "2025-10-01T18:43:00.386442",
+    "response_data": {
+      "property_id": "5632d21a-d31b-4deb-b359-d27f57ffc201",
+      "status_aprovacao": "pendente",
+      "titulo": "Casa Teste Fotos",
+      "link_booking": null,
+      "link_airbnb": null,
+      "fotos": []
+    }
+  },
+  {
+    "test": "Property Details Loading",
+    "success": true,
+    "message": "\u2705 Property details loaded successfully. ObjectId properly removed. Property: Cobertura Pendente de Aprova\u00e7\u00e3o",
+    "timestamp": "2025-10-01T18:43:00.402619",
+    "response_data": {
+      "property_id": "69b2eb91-08ca-4e44-ac32-2f1371f36132",
+      "titulo": "Cobertura Pendente de Aprova\u00e7\u00e3o",
+      "has_mongodb_id": false,
+      "visualizacoes": 9
+    }
+  },
+  {
+    "test": "Property Owner Information",
+    "success": true,
+    "message": "\u2705 Property owner information retrieved successfully. Owner: Jo\u00e3o Silva (Role: membro)",
+    "timestamp": "2025-10-01T18:43:00.459277",
+    "response_data": {
+      "property_id": "69b2eb91-08ca-4e44-ac32-2f1371f36132",
+      "owner_name": "Jo\u00e3o Silva",
+      "owner_role": "membro",
+      "owner_id": "51e79d47-4193-494c-98c0-a15c1b208266",
+      "security_check": "No sensitive data exposed"
+    }
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T18:42:12.447355",
+    "timestamp": "2025-10-01T18:43:00.692735",
     "response_data": null
   },
   {
     "test": "Get Pending Properties",
     "success": true,
-    "message": "Found 3 pending properties for approval",
-    "timestamp": "2025-10-01T18:42:12.454368",
+    "message": "Found 4 pending properties for approval",
+    "timestamp": "2025-10-01T18:43:00.700253",
     "response_data": {
-      "count": 3,
+      "count": 4,
       "properties": [
         {
           "id": "6b8a5484-d8ed-4f07-ab3e-4ca80142d699",
