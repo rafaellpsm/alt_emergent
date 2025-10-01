@@ -572,7 +572,7 @@ async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(
     imovel_dict["updated_at"] = datetime.now(timezone.utc)
     
     result = await db.imoveis.insert_one(imovel_dict)
-    return await db.imoveis.find_one({"_id": result.inserted_id})
+    return await db.imoveis.find_one({"id": imovel_dict["id"]})
 
 @api_router.get("/imoveis/{imovel_id}", response_model=Imovel)
 async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
