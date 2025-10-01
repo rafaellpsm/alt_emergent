@@ -15,8 +15,8 @@ BACKEND_URL = "https://temp-housing.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials
-MEMBER_EMAIL = "membro@alt-ilhabela.com"
-MEMBER_PASSWORD = "membro123"
+MEMBER_EMAIL = "test-member@alt-ilhabela.com"
+MEMBER_PASSWORD = "testmember123"
 
 class PhotoSystemTester:
     def __init__(self):
