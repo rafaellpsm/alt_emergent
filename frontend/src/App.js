@@ -361,7 +361,11 @@ const MainPage = () => {
             <h2 className="text-3xl font-bold mb-6 text-primary-gray">Imóveis em Destaque</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pageData.imoveis_destaque.map((imovel) => (
-                <div key={imovel.id} className="property-card hover-lift cursor-pointer" onClick={() => window.location.href = `/imovel/${imovel.id}`}>
+                <div 
+                  key={imovel.id} 
+                  className="property-card hover-lift cursor-pointer" 
+                  onClick={() => navigate(`/imovel/${imovel.id}`)}
+                >
                   {imovel.fotos.length > 0 ? (
                     <div className="property-image">
                       <img 
