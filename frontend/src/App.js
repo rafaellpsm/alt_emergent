@@ -1887,6 +1887,25 @@ function App() {
               } 
             />
             
+            {/* Detail Pages */}
+            <Route 
+              path="/imovel/:id" 
+              element={
+                <ProtectedRoute>
+                  <ImovelDetalhePage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/parceiro/:id" 
+              element={
+                <ProtectedRoute>
+                  <ParceiroDetalhePage />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Admin Routes - All Restored */}
             <Route 
               path="/admin/dashboard" 
