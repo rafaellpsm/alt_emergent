@@ -572,6 +572,32 @@ class APITester:
             self.log_result("Login with New Password", False, f"Request error: {str(e)}")
             return False
 
+    def change_password_back(self):
+        """Helper method to change password back to original"""
+        try:
+            password_data = {
+                "senhaAtual": "novaSenha123",  # Current new password
+                "novaSenha": MEMBER_PASSWORD   # Back to original
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/alterar-senha", json=password_data)
+            
+            if response.status_code == 200:
+                self.log_result(
+                    "Password Reset to Original", 
+                    True, 
+                    "Password successfully reset to original for future tests"
+                )
+            else:
+                self.log_result(
+                    "Password Reset to Original", 
+                    False, 
+                    f"Failed to reset password - Status {response.status_code}: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Password Reset to Original", False, f"Request error: {str(e)}")
+
     def test_photo_upload_system(self):
         """Test POST /api/upload/foto endpoint - photo upload system"""
         try:
