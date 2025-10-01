@@ -616,6 +616,7 @@ async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(
     imovel_dict["proprietario_id"] = current_user.id
     imovel_dict["id"] = str(uuid.uuid4())
     imovel_dict["status_aprovacao"] = "pendente"  # All new properties need approval
+    imovel_dict["ativo"] = True  # Properties are active by default
     imovel_dict["fotos"] = imovel_dict.get("fotos", [])  # Initialize empty photos array if not present
     imovel_dict["visualizacoes"] = 0
     imovel_dict["cliques_link"] = 0
