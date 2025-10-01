@@ -1916,6 +1916,16 @@ function App() {
               } 
             />
             
+            {/* Change Password */}
+            <Route 
+              path="/alterar-senha" 
+              element={
+                <ProtectedRoute>
+                  <AlterarSenhaPage />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Admin Routes - All Restored */}
             <Route 
               path="/admin/dashboard" 
