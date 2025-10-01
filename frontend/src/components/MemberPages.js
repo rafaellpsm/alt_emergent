@@ -1015,27 +1015,28 @@ export const MeusImoveisPage = () => {
   const handleEdit = (imovel) => {
     setEditingImovel(imovel);
     setFormData({
-      titulo: imovel.titulo,
-      descricao: imovel.descricao,
-      tipo: imovel.tipo,
-      regiao: imovel.regiao,
-      endereco_completo: imovel.endereco_completo,
-      preco_diaria: imovel.preco_diaria,
+      titulo: imovel.titulo || '',
+      descricao: imovel.descricao || '',
+      tipo: imovel.tipo || '',
+      regiao: imovel.regiao || '',
+      endereco_completo: imovel.endereco_completo || '',
+      preco_diaria: imovel.preco_diaria || '',
       preco_semanal: imovel.preco_semanal || '',
       preco_mensal: imovel.preco_mensal || '',
-      num_quartos: imovel.num_quartos,
-      num_banheiros: imovel.num_banheiros,
-      capacidade: imovel.capacidade,
+      num_quartos: imovel.num_quartos || 1,
+      num_banheiros: imovel.num_banheiros || 1,
+      capacidade: imovel.capacidade || 2,
       area_m2: imovel.area_m2 || '',
-      possui_piscina: imovel.possui_piscina,
-      possui_churrasqueira: imovel.possui_churrasqueira,
-      possui_wifi: imovel.possui_wifi,
-      permite_pets: imovel.permite_pets,
-      tem_vista_mar: imovel.tem_vista_mar,
-      tem_ar_condicionado: imovel.tem_ar_condicionado,
+      possui_piscina: imovel.possui_piscina || false,
+      possui_churrasqueira: imovel.possui_churrasqueira || false,
+      possui_wifi: imovel.possui_wifi !== undefined ? imovel.possui_wifi : true,
+      permite_pets: imovel.permite_pets || false,
+      tem_vista_mar: imovel.tem_vista_mar || false,
+      tem_ar_condicionado: imovel.tem_ar_condicionado || false,
       video_url: imovel.video_url || '',
       link_booking: imovel.link_booking || '',
-      link_airbnb: imovel.link_airbnb || ''
+      link_airbnb: imovel.link_airbnb || '',
+      fotos: Array.isArray(imovel.fotos) ? imovel.fotos : [] // Garantir que seja um array
     });
     setShowForm(true);
   };
