@@ -250,6 +250,354 @@ class APITester:
             self.log_result("Property Creation with Empty URLs", False, f"Request error: {str(e)}")
             return False
 
+    def test_property_details_loading(self):
+        """Test GET /api/imoveis/{id} endpoint - ObjectId removal fix"""
+        try:
+            # First get list of properties to get an ID
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Details Loading", 
+                    False, 
+                    f"Could not get property list - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            properties = response.json()
+            if not properties:
+                self.log_result(
+                    "Property Details Loading", 
+                    False, 
+                    "No properties available to test details loading"
+                )
+                return False
+            
+            # Test getting details for the first property
+            property_id = properties[0].get("id")
+            if not property_id:
+                self.log_result(
+                    "Property Details Loading", 
+                    False, 
+                    "Property ID not found in property list"
+                )
+                return False
+            
+            # Test the specific endpoint
+            response = self.session.get(f"{API_BASE}/imoveis/{property_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if response is proper JSON without MongoDB ObjectId issues
+                required_fields = ["id", "titulo", "descricao", "tipo", "regiao"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result(
+                        "Property Details Loading", 
+                        False, 
+                        f"Missing required fields in response: {missing_fields}"
+                    )
+                    return False
+                
+                # Check if _id field is properly removed
+                if "_id" in data:
+                    self.log_result(
+                        "Property Details Loading", 
+                        False, 
+                        "MongoDB _id field still present in response - ObjectId removal fix not working"
+                    )
+                    return False
+                
+                self.log_result(
+                    "Property Details Loading", 
+                    True, 
+                    f"✅ Property details loaded successfully. ObjectId properly removed. Property: {data.get('titulo')}",
+                    {
+                        "property_id": property_id,
+                        "titulo": data.get("titulo"),
+                        "has_mongodb_id": "_id" in data,
+                        "visualizacoes": data.get("visualizacoes", 0)
+                    }
+                )
+                return True
+            else:
+                # Check for serialization errors
+                error_text = response.text
+                if "not JSON serializable" in error_text or "ObjectId" in error_text:
+                    self.log_result(
+                        "Property Details Loading", 
+                        False, 
+                        f"❌ MONGODB OBJECTID SERIALIZATION ERROR STILL EXISTS - Status {response.status_code}: {error_text}"
+                    )
+                else:
+                    self.log_result(
+                        "Property Details Loading", 
+                        False, 
+                        f"Property details loading failed - Status {response.status_code}: {error_text}"
+                    )
+                return False
+                
+        except Exception as e:
+            self.log_result("Property Details Loading", False, f"Request error: {str(e)}")
+            return False
+
+    def test_property_owner_information(self):
+        """Test GET /api/imoveis/{id}/proprietario endpoint - new endpoint"""
+        try:
+            # First get list of properties to get an ID
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Owner Information", 
+                    False, 
+                    f"Could not get property list - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            properties = response.json()
+            if not properties:
+                self.log_result(
+                    "Property Owner Information", 
+                    False, 
+                    "No properties available to test owner information"
+                )
+                return False
+            
+            # Test getting owner info for the first property
+            property_id = properties[0].get("id")
+            if not property_id:
+                self.log_result(
+                    "Property Owner Information", 
+                    False, 
+                    "Property ID not found in property list"
+                )
+                return False
+            
+            # Test the new endpoint
+            response = self.session.get(f"{API_BASE}/imoveis/{property_id}/proprietario")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if response has expected owner information fields
+                required_fields = ["id", "nome", "role"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result(
+                        "Property Owner Information", 
+                        False, 
+                        f"Missing required owner fields in response: {missing_fields}"
+                    )
+                    return False
+                
+                # Verify it's returning public info only (no sensitive data)
+                sensitive_fields = ["hashed_password", "email"]
+                exposed_sensitive = [field for field in sensitive_fields if field in data]
+                
+                if exposed_sensitive:
+                    self.log_result(
+                        "Property Owner Information", 
+                        False, 
+                        f"❌ SECURITY ISSUE: Sensitive fields exposed: {exposed_sensitive}"
+                    )
+                    return False
+                
+                self.log_result(
+                    "Property Owner Information", 
+                    True, 
+                    f"✅ Property owner information retrieved successfully. Owner: {data.get('nome')} (Role: {data.get('role')})",
+                    {
+                        "property_id": property_id,
+                        "owner_name": data.get("nome"),
+                        "owner_role": data.get("role"),
+                        "owner_id": data.get("id"),
+                        "security_check": "No sensitive data exposed"
+                    }
+                )
+                return True
+            else:
+                self.log_result(
+                    "Property Owner Information", 
+                    False, 
+                    f"Property owner information failed - Status {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result("Property Owner Information", False, f"Request error: {str(e)}")
+            return False
+
+    def test_password_change_system(self):
+        """Test PUT /api/auth/alterar-senha endpoint - new endpoint"""
+        try:
+            # Test with correct current password
+            password_data = {
+                "senhaAtual": MEMBER_PASSWORD,  # Current password: membro123
+                "novaSenha": "novaSenha123"     # New password
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/alterar-senha", json=password_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify success message
+                if "sucesso" in data.get("message", "").lower():
+                    self.log_result(
+                        "Password Change System (Valid)", 
+                        True, 
+                        f"✅ Password change successful: {data.get('message')}",
+                        {"response": data}
+                    )
+                    
+                    # Test login with new password to verify change worked
+                    login_test = self.test_login_with_new_password("novaSenha123")
+                    
+                    # Change password back for future tests
+                    self.change_password_back()
+                    
+                    return login_test
+                else:
+                    self.log_result(
+                        "Password Change System (Valid)", 
+                        False, 
+                        f"Password change response unclear: {data.get('message')}"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Password Change System (Valid)", 
+                    False, 
+                    f"Password change failed - Status {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result("Password Change System (Valid)", False, f"Request error: {str(e)}")
+            return False
+
+    def test_password_change_wrong_current(self):
+        """Test PUT /api/auth/alterar-senha with wrong current password"""
+        try:
+            # Test with wrong current password
+            password_data = {
+                "senhaAtual": "wrongPassword123",  # Wrong current password
+                "novaSenha": "novaSenha123"        # New password
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/alterar-senha", json=password_data)
+            
+            # This should fail with 400 status
+            if response.status_code == 400:
+                data = response.json()
+                error_message = data.get("detail", "").lower()
+                
+                if "incorreta" in error_message or "wrong" in error_message or "invalid" in error_message:
+                    self.log_result(
+                        "Password Change System (Wrong Current)", 
+                        True, 
+                        f"✅ Correctly rejected wrong current password: {data.get('detail')}",
+                        {"response": data}
+                    )
+                    return True
+                else:
+                    self.log_result(
+                        "Password Change System (Wrong Current)", 
+                        False, 
+                        f"Wrong password rejected but error message unclear: {data.get('detail')}"
+                    )
+                    return False
+            else:
+                self.log_result(
+                    "Password Change System (Wrong Current)", 
+                    False, 
+                    f"❌ SECURITY ISSUE: Wrong current password was accepted - Status {response.status_code}: {response.text}"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result("Password Change System (Wrong Current)", False, f"Request error: {str(e)}")
+            return False
+
+    def test_login_with_new_password(self, new_password):
+        """Helper method to test login with new password"""
+        try:
+            # Clear current session
+            old_token = self.auth_token
+            self.auth_token = None
+            self.session.headers.pop("Authorization", None)
+            
+            # Try login with new password
+            login_data = {
+                "email": MEMBER_EMAIL,
+                "password": new_password
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "access_token" in data:
+                    # Restore old token for other tests
+                    self.auth_token = old_token
+                    self.session.headers.update({
+                        "Authorization": f"Bearer {self.auth_token}"
+                    })
+                    
+                    self.log_result(
+                        "Login with New Password", 
+                        True, 
+                        "✅ Login successful with new password - password change verified"
+                    )
+                    return True
+            
+            # Restore old token
+            self.auth_token = old_token
+            self.session.headers.update({
+                "Authorization": f"Bearer {self.auth_token}"
+            })
+            
+            self.log_result(
+                "Login with New Password", 
+                False, 
+                f"Login failed with new password - Status {response.status_code}: {response.text}"
+            )
+            return False
+            
+        except Exception as e:
+            self.log_result("Login with New Password", False, f"Request error: {str(e)}")
+            return False
+
+    def change_password_back(self):
+        """Helper method to change password back to original"""
+        try:
+            password_data = {
+                "senhaAtual": "novaSenha123",  # Current new password
+                "novaSenha": MEMBER_PASSWORD   # Back to original
+            }
+            
+            response = self.session.put(f"{API_BASE}/auth/alterar-senha", json=password_data)
+            
+            if response.status_code == 200:
+                self.log_result(
+                    "Password Reset to Original", 
+                    True, 
+                    "Password successfully reset to original for future tests"
+                )
+            else:
+                self.log_result(
+                    "Password Reset to Original", 
+                    False, 
+                    f"Failed to reset password - Status {response.status_code}: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Password Reset to Original", False, f"Request error: {str(e)}")
+
     def test_get_pending_properties(self):
         """Test GET /admin/imoveis-pendentes to check for properties awaiting approval"""
         try:
