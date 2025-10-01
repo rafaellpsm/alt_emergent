@@ -596,18 +596,29 @@ async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(
     for field in url_fields:
         if imovel_dict.get(field) == '' or imovel_dict.get(field) is None:
             imovel_dict[field] = None
+        elif imovel_dict.get(field):
+            # Convert HttpUrl objects to strings for MongoDB
+            imovel_dict[field] = str(imovel_dict[field])
+    
+    # Convert fotos URLs to strings if present
+    if imovel_dict.get('fotos'):
+        imovel_dict['fotos'] = [str(url) for url in imovel_dict['fotos']]
     
     imovel_dict["proprietario_id"] = current_user.id
     imovel_dict["id"] = str(uuid.uuid4())
     imovel_dict["status_aprovacao"] = "pendente"  # All new properties need approval
-    imovel_dict["fotos"] = []  # Initialize empty photos array
+    imovel_dict["fotos"] = imovel_dict.get("fotos", [])  # Initialize empty photos array if not present
     imovel_dict["visualizacoes"] = 0
     imovel_dict["cliques_link"] = 0
     imovel_dict["created_at"] = datetime.now(timezone.utc)
     imovel_dict["updated_at"] = datetime.now(timezone.utc)
     
     result = await db.imoveis.insert_one(imovel_dict)
-    return await db.imoveis.find_one({"id": imovel_dict["id"]})
+    
+    # Return the created property
+    created_property = await db.imoveis.find_one({"id": imovel_dict["id"]})
+    created_property.pop("_id", None)
+    return Imovel(**created_property)
 
 @api_router.get("/imoveis/{imovel_id}", response_model=Imovel)
 async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
