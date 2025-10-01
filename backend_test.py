@@ -195,7 +195,7 @@ class APITester:
                     url_fields_handled = True
                     url_issues = []
                     
-                    for field in ["video_url", "link_booking", "link_airbnb"]:
+                    for field in ["link_booking", "link_airbnb"]:
                         if data.get(field) == "":
                             url_fields_handled = False
                             url_issues.append(f"{field} is empty string instead of null")
@@ -209,9 +209,9 @@ class APITester:
                                 "property_id": data.get("id"),
                                 "status_aprovacao": data.get("status_aprovacao"),
                                 "titulo": data.get("titulo"),
-                                "video_url": data.get("video_url"),
                                 "link_booking": data.get("link_booking"),
-                                "link_airbnb": data.get("link_airbnb")
+                                "link_airbnb": data.get("link_airbnb"),
+                                "fotos": data.get("fotos", [])
                             }
                         )
                         return True
