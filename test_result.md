@@ -213,6 +213,54 @@ backend:
           agent: "testing"
           comment: "✅ PASSWORD CHANGE SYSTEM FULLY FUNCTIONAL - New PUT /api/auth/alterar-senha endpoint working correctly. Validates current password properly, successfully changes password, rejects wrong current passwords with appropriate error messages. Fixed AttributeError issue with hashed_password access by fetching user from database. Password validation and security working as expected."
 
+  - task: "Property Creation 500 Error Fix (BSON/HttpUrl)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY CREATION 500 ERROR FIXED - BSON/HttpUrl serialization issue resolved. HttpUrl objects properly converted to strings before MongoDB insertion. Empty URL strings correctly converted to null values. Property creation with empty link_booking and link_airbnb fields now works without 500 errors. MongoDB ObjectId handling working correctly."
+
+  - task: "Photo Upload System Implementation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PHOTO UPLOAD SYSTEM FULLY FUNCTIONAL - POST /api/upload/foto endpoint working correctly. File type restrictions properly enforced (only .jpg, .jpeg, .png, .webp, .heic, .heif allowed). File size validation working (10MB limit). Uploaded files saved to /uploads directory with unique UUID filenames. Returns proper JSON response with url and filename fields."
+
+  - task: "Property Creation with Photos End-to-End"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY CREATION WITH PHOTOS WORKING - End-to-end photo system functional. Properties can be created with fotos array containing photo URLs. Photo URLs properly stored as strings in MongoDB. Property creation with photos returns correct status_aprovacao='pendente'. Photo gallery system integrated successfully with property creation workflow."
+
+  - task: "Photo System File Restrictions and Security"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PHOTO SYSTEM SECURITY WORKING - File type restrictions properly enforced. Invalid file types (e.g., .txt files) correctly rejected with 400 status and appropriate error message. File size validation working (10MB limit). Upload directory properly configured with unique UUID filenames to prevent conflicts."
+
 frontend:
   - task: "Member Routes Implementation"
     implemented: true
