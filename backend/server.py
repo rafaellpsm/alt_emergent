@@ -1068,6 +1068,11 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
 async def get_imoveis_pendentes(current_user: User = Depends(get_admin_user)):
     """Get all properties pending approval"""
     imoveis = await db.imoveis.find({"status_aprovacao": "pendente"}).to_list(length=None)
+    
+    # Remove MongoDB ObjectId from all properties
+    for imovel in imoveis:
+        imovel.pop("_id", None)
+    
     return [Imovel(**imovel) for imovel in imoveis]
 
 @api_router.post("/admin/imoveis/{imovel_id}/aprovar")
