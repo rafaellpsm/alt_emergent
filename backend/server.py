@@ -1182,8 +1182,8 @@ async def upload_foto(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Erro ao salvar arquivo")
     
-    # Return file URL
-    file_url = f"/uploads/{filename}"
+    # Return file URL with /api prefix for proper routing
+    file_url = f"/api/uploads/{filename}"
     return {"url": file_url, "filename": filename}
 
 @api_router.delete("/upload/foto/{filename}")
