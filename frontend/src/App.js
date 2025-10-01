@@ -1854,7 +1854,7 @@ function App() {
             <Route 
               path="/imoveis" 
               element={
-                <ProtectedRoute allowedRoles={['membro']}>
+                <ProtectedRoute allowedRoles={['membro', 'parceiro']}>
                   <TodosImoveisPage />
                 </ProtectedRoute>
               } 
