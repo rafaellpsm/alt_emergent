@@ -1014,7 +1014,7 @@ async def aprovar_imovel(imovel_id: str, current_user: User = Depends(get_admin_
     # Send notification email
     if owner and owner.get("email"):
         try:
-            send_email(
+            await send_email(
                 to_email=owner["email"],
                 subject="Imóvel Aprovado - ALT Ilhabela",
                 body=f"""
