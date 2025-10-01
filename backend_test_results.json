@@ -3,21 +3,21 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-10-01T16:24:30.908667",
+    "timestamp": "2025-10-01T16:25:26.731733",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T16:24:31.214038",
+    "timestamp": "2025-10-01T16:25:27.007164",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
     "success": true,
     "message": "Endpoint working, returned 3 properties",
-    "timestamp": "2025-10-01T16:24:31.225199",
+    "timestamp": "2025-10-01T16:25:27.019004",
     "response_data": {
       "count": 3,
       "sample": [
@@ -48,7 +48,7 @@
           "ativo": true,
           "destaque": false,
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 8,
+          "visualizacoes": 9,
           "cliques_link": 0,
           "created_at": "2025-09-26T17:33:32.999000",
           "updated_at": "2025-09-26T17:33:48.405000"
@@ -92,7 +92,7 @@
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-10-01T16:24:31.274553",
+    "timestamp": "2025-10-01T16:25:27.069881",
     "response_data": {
       "count": 1,
       "sample": [
@@ -129,185 +129,23 @@
   },
   {
     "test": "Member Login",
-    "success": true,
-    "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-10-01T16:24:31.548942",
-    "response_data": null
-  },
-  {
-    "test": "Meus Im\u00f3veis API (Member)",
-    "success": true,
-    "message": "Member endpoint working, returned 7 properties",
-    "timestamp": "2025-10-01T16:24:31.558363",
-    "response_data": {
-      "count": 7,
-      "sample": [
-        {
-          "id": "e1bbb225-540f-40eb-bca1-af9f4a0d3a64",
-          "titulo": "Casa de Teste Corrigida",
-          "descricao": "Teste do sistema corrigido de cadastro",
-          "tipo": "casa",
-          "regiao": "centro",
-          "endereco_completo": "Rua de Teste, 456",
-          "preco_diaria": 300.0,
-          "preco_semanal": null,
-          "preco_mensal": null,
-          "num_quartos": 2,
-          "num_banheiros": 2,
-          "capacidade": 4,
-          "area_m2": 100.0,
-          "possui_piscina": true,
-          "possui_churrasqueira": true,
-          "possui_wifi": true,
-          "permite_pets": true,
-          "tem_vista_mar": false,
-          "tem_ar_condicionado": true,
-          "fotos": [],
-          "link_booking": null,
-          "link_airbnb": null,
-          "status_aprovacao": "aprovado",
-          "ativo": true,
-          "destaque": false,
-          "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
-          "cliques_link": 0,
-          "created_at": "2025-10-01T16:07:55.066000",
-          "updated_at": "2025-10-01T16:07:56.838000"
-        }
-      ]
-    }
-  },
-  {
-    "test": "Property Creation with Empty URLs",
-    "success": true,
-    "message": "\u2705 Property created successfully with status 'pendente'. Empty URL fields converted to null as expected.",
-    "timestamp": "2025-10-01T16:24:31.606856",
-    "response_data": {
-      "property_id": "1a551bd5-89e5-4d5a-91ef-cdd0e37ae90c",
-      "status_aprovacao": "pendente",
-      "titulo": "Casa Teste Fotos",
-      "link_booking": null,
-      "link_airbnb": null,
-      "fotos": []
-    }
-  },
-  {
-    "test": "Photo Upload System",
-    "success": true,
-    "message": "\u2705 Photo upload system working. URL: /uploads/84037c54-586b-4be2-a8a5-0ec3b96d30a9.jpg",
-    "timestamp": "2025-10-01T16:24:31.658034",
-    "response_data": {
-      "photo_url": "/uploads/84037c54-586b-4be2-a8a5-0ec3b96d30a9.jpg",
-      "filename": "84037c54-586b-4be2-a8a5-0ec3b96d30a9.jpg",
-      "note": "Used text file for testing (PIL not available)"
-    }
-  },
-  {
-    "test": "Photo Upload File Type Restriction",
-    "success": true,
-    "message": "\u2705 Correctly rejected invalid file type: Tipo de arquivo n\u00e3o permitido. Use: .jpeg, .png, .jpg, .webp, .heic, .heif",
-    "timestamp": "2025-10-01T16:24:31.709418",
-    "response_data": {
-      "response": {
-        "detail": "Tipo de arquivo n\u00e3o permitido. Use: .jpeg, .png, .jpg, .webp, .heic, .heif"
-      }
-    }
-  },
-  {
-    "test": "Property Creation with Photos",
-    "success": true,
-    "message": "\u2705 Property with photos created successfully. 1 photos stored correctly.",
-    "timestamp": "2025-10-01T16:24:31.759569",
-    "response_data": {
-      "property_id": "6b8a5484-d8ed-4f07-ab3e-4ca80142d699",
-      "titulo": "Casa com Fotos Sistema Completo",
-      "fotos_count": 1,
-      "fotos": [
-        "/uploads/84037c54-586b-4be2-a8a5-0ec3b96d30a9.jpg"
-      ],
-      "status_aprovacao": "pendente"
-    }
-  },
-  {
-    "test": "Property Details with Photos",
     "success": false,
-    "message": "Property details loading failed - Status 404: {\"detail\":\"Im\u00f3vel n\u00e3o encontrado\"}",
-    "timestamp": "2025-10-01T16:24:31.808525",
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-01T16:25:27.348057",
     "response_data": null
-  },
-  {
-    "test": "Property Details Loading",
-    "success": true,
-    "message": "\u2705 Property details loaded successfully. ObjectId properly removed. Property: Cobertura Pendente de Aprova\u00e7\u00e3o",
-    "timestamp": "2025-10-01T16:24:31.865707",
-    "response_data": {
-      "property_id": "69b2eb91-08ca-4e44-ac32-2f1371f36132",
-      "titulo": "Cobertura Pendente de Aprova\u00e7\u00e3o",
-      "has_mongodb_id": false,
-      "visualizacoes": 8
-    }
-  },
-  {
-    "test": "Property Owner Information",
-    "success": true,
-    "message": "\u2705 Property owner information retrieved successfully. Owner: Jo\u00e3o Silva (Role: membro)",
-    "timestamp": "2025-10-01T16:24:31.924059",
-    "response_data": {
-      "property_id": "69b2eb91-08ca-4e44-ac32-2f1371f36132",
-      "owner_name": "Jo\u00e3o Silva",
-      "owner_role": "membro",
-      "owner_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-      "security_check": "No sensitive data exposed"
-    }
-  },
-  {
-    "test": "Password Change System (Valid)",
-    "success": true,
-    "message": "\u2705 Password change successful: Senha alterada com sucesso",
-    "timestamp": "2025-10-01T16:24:32.425077",
-    "response_data": {
-      "response": {
-        "message": "Senha alterada com sucesso"
-      }
-    }
-  },
-  {
-    "test": "Login with New Password",
-    "success": true,
-    "message": "\u2705 Login successful with new password - password change verified",
-    "timestamp": "2025-10-01T16:24:32.699726",
-    "response_data": null
-  },
-  {
-    "test": "Password Change System (Valid)",
-    "success": false,
-    "message": "Request error: 'APITester' object has no attribute 'change_password_back'",
-    "timestamp": "2025-10-01T16:24:32.699759",
-    "response_data": null
-  },
-  {
-    "test": "Password Change System (Wrong Current)",
-    "success": true,
-    "message": "\u2705 Correctly rejected wrong current password: Senha atual incorreta",
-    "timestamp": "2025-10-01T16:24:32.973818",
-    "response_data": {
-      "response": {
-        "detail": "Senha atual incorreta"
-      }
-    }
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T16:24:33.248926",
+    "timestamp": "2025-10-01T16:25:27.624173",
     "response_data": null
   },
   {
     "test": "Email Configuration Check",
     "success": true,
     "message": "\u2705 Backend is running properly. Email configuration should be loaded from environment variables: EMAIL_HOST=smtp.gmail.com, EMAIL_PORT=587, EMAIL_HOST_USER=ilhabelaalt@gmail.com",
-    "timestamp": "2025-10-01T16:24:33.296570",
+    "timestamp": "2025-10-01T16:25:27.672682",
     "response_data": {
       "email_host": "smtp.gmail.com",
       "email_port": "587",
@@ -318,18 +156,14 @@
   {
     "test": "Get Pending Properties",
     "success": true,
-    "message": "Found 3 pending properties for approval",
-    "timestamp": "2025-10-01T16:24:33.304879",
+    "message": "Found 2 pending properties for approval",
+    "timestamp": "2025-10-01T16:25:27.682348",
     "response_data": {
-      "count": 3,
+      "count": 2,
       "properties": [
         {
           "id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
           "titulo": "Teste Casa Nova"
-        },
-        {
-          "id": "1a551bd5-89e5-4d5a-91ef-cdd0e37ae90c",
-          "titulo": "Casa Teste Fotos"
         },
         {
           "id": "6b8a5484-d8ed-4f07-ab3e-4ca80142d699",
@@ -342,9 +176,9 @@
     "test": "Property Approval Email System",
     "success": true,
     "message": "\u2705 Property approval successful: Im\u00f3vel aprovado com sucesso. Email notification should have been sent to property owner.",
-    "timestamp": "2025-10-01T16:24:34.201813",
+    "timestamp": "2025-10-01T16:25:28.855712",
     "response_data": {
-      "property_id": "1a551bd5-89e5-4d5a-91ef-cdd0e37ae90c",
+      "property_id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
       "response": {
         "message": "Im\u00f3vel aprovado com sucesso"
       },
