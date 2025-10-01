@@ -192,13 +192,7 @@ const Navigation = () => {
                 Dashboard
               </a>
               <a 
-                href="/admin/candidaturas" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Candidaturas
-              </a>
-              <a 
-                href="/admin/imoveis" 
+                href="/imoveis" 
                 className="nav-link py-3 px-3 whitespace-nowrap"
               >
                 Imóveis
