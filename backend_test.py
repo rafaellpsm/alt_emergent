@@ -158,22 +158,22 @@ class APITester:
     def test_create_property_with_empty_urls(self):
         """Test POST /api/imoveis with empty URL strings - specific fix validation"""
         try:
-            # Test data with empty string URL fields as specified in review request
+            # Test data as specified in review request
             property_data = {
-                "titulo": "Teste Casa Nova",
-                "descricao": "Casa para teste do sistema de aprovação",
+                "titulo": "Casa de Teste Corrigida",
+                "descricao": "Teste do sistema corrigido de cadastro",
                 "tipo": "casa",
                 "regiao": "centro",
-                "endereco_completo": "Rua de Teste, 123",
-                "preco_diaria": 200.0,
+                "endereco_completo": "Rua de Teste, 456",
+                "preco_diaria": 300.0,
                 "num_quartos": 2,
-                "num_banheiros": 1,
+                "num_banheiros": 2,
                 "capacidade": 4,
-                "area_m2": 80,
-                "possui_piscina": False,
-                "possui_churrasqueira": False,
+                "area_m2": 100,
+                "possui_piscina": True,
+                "possui_churrasqueira": True,
                 "possui_wifi": True,
-                "permite_pets": False,
+                "permite_pets": True,
                 "tem_vista_mar": False,
                 "tem_ar_condicionado": True,
                 "video_url": "",  # Empty string - this should be converted to null
