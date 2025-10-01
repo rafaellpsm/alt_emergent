@@ -912,7 +912,6 @@ export const MeusImoveisPage = () => {
     permite_pets: false,
     tem_vista_mar: false,
     tem_ar_condicionado: false,
-    video_url: '',
     link_booking: '',
     link_airbnb: '',
     fotos: []
