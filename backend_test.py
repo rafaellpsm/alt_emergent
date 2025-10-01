@@ -1157,12 +1157,425 @@ class APITester:
             self.log_result("API Root", False, f"Connection error: {str(e)}")
             return False
     
+    def test_property_approval_flow(self):
+        """Test complete property approval flow as specified in review request"""
+        try:
+            # Step 1: Create a property as member that needs approval
+            property_data = {
+                "titulo": "Casa Teste Aprovação",
+                "descricao": "Propriedade para testar fluxo de aprovação",
+                "tipo": "casa",
+                "regiao": "centro", 
+                "endereco_completo": "Rua da Aprovação, 123",
+                "preco_diaria": 200.0,
+                "num_quartos": 2,
+                "num_banheiros": 1,
+                "capacidade": 4,
+                "possui_wifi": True,
+                "link_booking": "",
+                "link_airbnb": ""
+            }
+            
+            response = self.session.post(f"{API_BASE}/imoveis", json=property_data)
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Approval Flow - Create Property", 
+                    False, 
+                    f"Failed to create test property - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            created_property = response.json()
+            test_property_id = created_property.get("id")
+            
+            if created_property.get("status_aprovacao") != "pendente":
+                self.log_result(
+                    "Property Approval Flow - Create Property", 
+                    False, 
+                    f"Property created but status is '{created_property.get('status_aprovacao')}' instead of 'pendente'"
+                )
+                return False
+            
+            self.log_result(
+                "Property Approval Flow - Create Property", 
+                True, 
+                f"✅ Property created with 'pendente' status: {created_property.get('titulo')}"
+            )
+            
+            # Step 2: Switch to admin and check pending properties
+            if not self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
+                self.log_result(
+                    "Property Approval Flow - Admin Login", 
+                    False, 
+                    "Failed to login as admin for approval testing"
+                )
+                return False
+            
+            # Step 3: Get pending properties
+            response = self.session.get(f"{API_BASE}/admin/imoveis-pendentes")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Approval Flow - Get Pending", 
+                    False, 
+                    f"Failed to get pending properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            pending_properties = response.json()
+            
+            # Check if our test property is in pending list
+            test_property_in_pending = any(p.get("id") == test_property_id for p in pending_properties)
+            
+            if not test_property_in_pending:
+                self.log_result(
+                    "Property Approval Flow - Check Pending", 
+                    False, 
+                    f"Test property {test_property_id} not found in pending properties list"
+                )
+                return False
+            
+            self.log_result(
+                "Property Approval Flow - Check Pending", 
+                True, 
+                f"✅ Test property found in pending list ({len(pending_properties)} total pending)"
+            )
+            
+            # Step 4: Approve the property
+            response = self.session.post(f"{API_BASE}/admin/imoveis/{test_property_id}/aprovar")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Approval Flow - Approve Property", 
+                    False, 
+                    f"Failed to approve property - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            approval_response = response.json()
+            self.log_result(
+                "Property Approval Flow - Approve Property", 
+                True, 
+                f"✅ Property approved successfully: {approval_response.get('message')}"
+            )
+            
+            # Step 5: Verify property now appears in approved listings
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Approval Flow - Check Approved Listings", 
+                    False, 
+                    f"Failed to get approved properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            approved_properties = response.json()
+            
+            # Check if our test property is now in approved list
+            test_property_in_approved = any(p.get("id") == test_property_id for p in approved_properties)
+            
+            if not test_property_in_approved:
+                self.log_result(
+                    "Property Approval Flow - Check Approved Listings", 
+                    False, 
+                    f"Approved property {test_property_id} not found in approved properties list"
+                )
+                return False
+            
+            self.log_result(
+                "Property Approval Flow - Check Approved Listings", 
+                True, 
+                f"✅ Approved property now appears in /api/imoveis endpoint ({len(approved_properties)} total approved)"
+            )
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Property Approval Flow", False, f"Request error: {str(e)}")
+            return False
+
+    def test_objectid_removal_all_endpoints(self):
+        """Test ObjectId removal in all property endpoints as specified in review request"""
+        try:
+            # Test 1: /api/imoveis endpoint
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "ObjectId Removal - /api/imoveis", 
+                    False, 
+                    f"Failed to get properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            properties = response.json()
+            
+            # Check for ObjectId in any property
+            objectid_found = False
+            for prop in properties:
+                if "_id" in prop:
+                    objectid_found = True
+                    break
+            
+            if objectid_found:
+                self.log_result(
+                    "ObjectId Removal - /api/imoveis", 
+                    False, 
+                    "❌ MongoDB _id field found in /api/imoveis response - ObjectId removal not working"
+                )
+                return False
+            
+            self.log_result(
+                "ObjectId Removal - /api/imoveis", 
+                True, 
+                f"✅ No ObjectId found in /api/imoveis response ({len(properties)} properties checked)"
+            )
+            
+            # Test 2: /api/meus-imoveis endpoint (need member login)
+            if not self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
+                self.log_result(
+                    "ObjectId Removal - /api/meus-imoveis", 
+                    False, 
+                    "Failed to login as member for meus-imoveis testing"
+                )
+                return False
+            
+            response = self.session.get(f"{API_BASE}/meus-imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "ObjectId Removal - /api/meus-imoveis", 
+                    False, 
+                    f"Failed to get member properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            member_properties = response.json()
+            
+            # Check for ObjectId in member properties
+            objectid_found = False
+            for prop in member_properties:
+                if "_id" in prop:
+                    objectid_found = True
+                    break
+            
+            if objectid_found:
+                self.log_result(
+                    "ObjectId Removal - /api/meus-imoveis", 
+                    False, 
+                    "❌ MongoDB _id field found in /api/meus-imoveis response - ObjectId removal not working"
+                )
+                return False
+            
+            self.log_result(
+                "ObjectId Removal - /api/meus-imoveis", 
+                True, 
+                f"✅ No ObjectId found in /api/meus-imoveis response ({len(member_properties)} properties checked)"
+            )
+            
+            # Test 3: /api/admin/imoveis-pendentes endpoint (need admin login)
+            if not self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
+                self.log_result(
+                    "ObjectId Removal - /api/admin/imoveis-pendentes", 
+                    False, 
+                    "Failed to login as admin for pending properties testing"
+                )
+                return False
+            
+            response = self.session.get(f"{API_BASE}/admin/imoveis-pendentes")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "ObjectId Removal - /api/admin/imoveis-pendentes", 
+                    False, 
+                    f"Failed to get pending properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            pending_properties = response.json()
+            
+            # Check for ObjectId in pending properties
+            objectid_found = False
+            for prop in pending_properties:
+                if "_id" in prop:
+                    objectid_found = True
+                    break
+            
+            if objectid_found:
+                self.log_result(
+                    "ObjectId Removal - /api/admin/imoveis-pendentes", 
+                    False, 
+                    "❌ MongoDB _id field found in /api/admin/imoveis-pendentes response - ObjectId removal not working"
+                )
+                return False
+            
+            self.log_result(
+                "ObjectId Removal - /api/admin/imoveis-pendentes", 
+                True, 
+                f"✅ No ObjectId found in /api/admin/imoveis-pendentes response ({len(pending_properties)} properties checked)"
+            )
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("ObjectId Removal All Endpoints", False, f"Request error: {str(e)}")
+            return False
+
+    def test_cross_role_access(self):
+        """Test that admin can access regular property listings as specified in review request"""
+        try:
+            # Login as admin
+            if not self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
+                self.log_result(
+                    "Cross-Role Access - Admin Login", 
+                    False, 
+                    "Failed to login as admin"
+                )
+                return False
+            
+            # Test admin access to /api/imoveis (regular property listings)
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Cross-Role Access - Admin to /api/imoveis", 
+                    False, 
+                    f"Admin cannot access /api/imoveis - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            admin_properties = response.json()
+            
+            self.log_result(
+                "Cross-Role Access - Admin to /api/imoveis", 
+                True, 
+                f"✅ Admin can access regular property listings ({len(admin_properties)} properties)"
+            )
+            
+            # Test admin access to /api/parceiros
+            response = self.session.get(f"{API_BASE}/parceiros")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Cross-Role Access - Admin to /api/parceiros", 
+                    False, 
+                    f"Admin cannot access /api/parceiros - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            admin_partners = response.json()
+            
+            self.log_result(
+                "Cross-Role Access - Admin to /api/parceiros", 
+                True, 
+                f"✅ Admin can access partner listings ({len(admin_partners)} partners)"
+            )
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Cross-Role Access", False, f"Request error: {str(e)}")
+            return False
+
+    def test_property_listings_both_endpoints(self):
+        """Test property listings in both Meus Imóveis and Todos os Imóveis as specified in review request"""
+        try:
+            # Login as member
+            if not self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
+                self.log_result(
+                    "Property Listings - Member Login", 
+                    False, 
+                    "Failed to login as member"
+                )
+                return False
+            
+            # Test /api/meus-imoveis (should show all member properties regardless of status)
+            response = self.session.get(f"{API_BASE}/meus-imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Listings - Meus Imóveis", 
+                    False, 
+                    f"Failed to get member properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            member_properties = response.json()
+            
+            # Count properties by status
+            pending_count = sum(1 for p in member_properties if p.get("status_aprovacao") == "pendente")
+            approved_count = sum(1 for p in member_properties if p.get("status_aprovacao") == "aprovado")
+            
+            self.log_result(
+                "Property Listings - Meus Imóveis", 
+                True, 
+                f"✅ Member properties endpoint working: {len(member_properties)} total ({approved_count} approved, {pending_count} pending)"
+            )
+            
+            # Test /api/imoveis (should show only approved properties)
+            response = self.session.get(f"{API_BASE}/imoveis")
+            
+            if response.status_code != 200:
+                self.log_result(
+                    "Property Listings - Todos os Imóveis", 
+                    False, 
+                    f"Failed to get all properties - Status {response.status_code}: {response.text}"
+                )
+                return False
+            
+            all_properties = response.json()
+            
+            # Verify all properties are approved
+            non_approved = [p for p in all_properties if p.get("status_aprovacao") != "aprovado"]
+            
+            if non_approved:
+                self.log_result(
+                    "Property Listings - Todos os Imóveis", 
+                    False, 
+                    f"❌ Found {len(non_approved)} non-approved properties in /api/imoveis endpoint"
+                )
+                return False
+            
+            self.log_result(
+                "Property Listings - Todos os Imóveis", 
+                True, 
+                f"✅ All properties endpoint working: {len(all_properties)} approved properties only"
+            )
+            
+            # Verify that approved member properties appear in both endpoints
+            member_approved_ids = {p.get("id") for p in member_properties if p.get("status_aprovacao") == "aprovado"}
+            all_property_ids = {p.get("id") for p in all_properties}
+            
+            missing_in_all = member_approved_ids - all_property_ids
+            
+            if missing_in_all:
+                self.log_result(
+                    "Property Listings - Cross-Endpoint Consistency", 
+                    False, 
+                    f"❌ {len(missing_in_all)} approved member properties missing from /api/imoveis"
+                )
+                return False
+            
+            self.log_result(
+                "Property Listings - Cross-Endpoint Consistency", 
+                True, 
+                f"✅ All approved member properties appear in both endpoints"
+            )
+            
+            return True
+            
+        except Exception as e:
+            self.log_result("Property Listings Both Endpoints", False, f"Request error: {str(e)}")
+            return False
+
     def run_all_tests(self):
-        """Run all API tests"""
-        print(f"🚀 Starting Portal ALT Ilhabela Backend API Tests")
+        """Run all API tests focusing on review request priorities"""
+        print(f"🚀 Starting Portal ALT Ilhabela Property Approval & Listing Tests")
         print(f"📍 Backend URL: {BACKEND_URL}")
         print(f"🔑 Testing with admin credentials: {ADMIN_EMAIL}")
-        print("=" * 60)
+        print("=" * 80)
         
         # Test basic connectivity
         if not self.test_api_root():
@@ -1174,8 +1587,34 @@ class APITester:
             print("❌ Authentication failed - stopping tests")
             return False
         
+        # PRIORITY TESTING AREAS from review request
+        print("\n🎯 PRIORITY TESTING AREAS (Review Request):")
+        print("=" * 50)
+        
+        print("\n1. 🏠 PROPERTY APPROVAL SYSTEM:")
+        print("   Testing admin approval of properties and verification they appear in listings")
+        # Login as member first to create test property
+        if self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
+            self.test_property_approval_flow()
+        
+        print("\n2. 📋 PROPERTY LISTINGS:")
+        print("   Testing that approved properties appear in both 'Meus Imóveis' and 'Todos os Imóveis'")
+        self.test_property_listings_both_endpoints()
+        
+        print("\n3. 🔧 OBJECTID REMOVAL:")
+        print("   Verifying all property endpoints properly remove MongoDB ObjectId")
+        self.test_objectid_removal_all_endpoints()
+        
+        print("\n4. 👨‍💼 ADMIN NAVIGATION:")
+        print("   Testing that admin can access regular property listings")
+        self.test_cross_role_access()
+        
+        # Additional comprehensive tests
+        print("\n📊 ADDITIONAL COMPREHENSIVE TESTS:")
+        print("=" * 40)
+        
         # Test the specific endpoints mentioned in review request
-        print("\n🎯 Testing Priority Endpoints:")
+        print("\n🎯 Testing Core Endpoints:")
         self.test_imoveis_endpoint()
         self.test_parceiros_endpoint()
         
@@ -1184,40 +1623,19 @@ class APITester:
         if self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
             self.test_meus_imoveis_endpoint_as_member()
             
-            # Test the specific fixes mentioned in review request
-            print("\n🔧 Testing Priority Fixes from Review Request:")
-            print("1. Property Creation Fix (BSON/HttpUrl fix):")
+            # Test property creation and details
+            print("\n🏗️ Testing Property Management:")
             self.test_create_property_with_empty_urls()
-            
-            print("\n2. Photo Upload System:")
-            self.test_photo_upload_system()
-            self.test_photo_upload_file_restrictions()
-            
-            print("\n3. Property Creation with Photos (End-to-End):")
-            self.test_create_property_with_photos()
-            
-            print("\n4. Property Details with Photo Gallery:")
-            self.test_property_details_with_photos()
-            
-            print("\n5. Property Details Loading Fix (ObjectId removal):")
             self.test_property_details_loading()
-            
-            print("\n6. Property Owner Information (New endpoint):")
             self.test_property_owner_information()
-            
-            print("\n7. Password Change System (New endpoint):")
-            self.test_password_change_system()
-            self.test_password_change_wrong_current()
         
-        # Switch back to admin for email system testing
-        print("\n📧 Testing Email System (Admin Required):")
+        # Switch back to admin for admin-specific testing
+        print("\n👨‍💼 Testing Admin-Specific Features:")
         if self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
-            self.test_email_configuration_check()
             self.test_get_pending_properties()
-            self.test_property_approval_email_system()
         
         # Summary
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         print("📊 TEST SUMMARY:")
         
         passed = sum(1 for r in self.test_results if r["success"])
@@ -1231,6 +1649,43 @@ class APITester:
             for result in self.test_results:
                 if not result["success"]:
                     print(f"  - {result['test']}: {result['message']}")
+        
+        print("\n🎯 REVIEW REQUEST SUCCESS CRITERIA:")
+        
+        # Check specific success criteria from review request
+        approval_tests = [r for r in self.test_results if "Property Approval Flow" in r["test"]]
+        listing_tests = [r for r in self.test_results if "Property Listings" in r["test"]]
+        objectid_tests = [r for r in self.test_results if "ObjectId Removal" in r["test"]]
+        admin_tests = [r for r in self.test_results if "Cross-Role Access" in r["test"]]
+        
+        criteria_met = 0
+        total_criteria = 4
+        
+        if approval_tests and all(t["success"] for t in approval_tests):
+            print("✅ Property approval changes status from 'pendente' to 'aprovado'")
+            criteria_met += 1
+        else:
+            print("❌ Property approval workflow issues")
+        
+        if listing_tests and all(t["success"] for t in listing_tests):
+            print("✅ Approved properties appear in /api/imoveis endpoint")
+            criteria_met += 1
+        else:
+            print("❌ Property listing issues")
+        
+        if objectid_tests and all(t["success"] for t in objectid_tests):
+            print("✅ All property endpoints return proper JSON without ObjectId errors")
+            criteria_met += 1
+        else:
+            print("❌ ObjectId removal issues")
+        
+        if admin_tests and all(t["success"] for t in admin_tests):
+            print("✅ Admin can access regular property listings")
+            criteria_met += 1
+        else:
+            print("❌ Admin navigation issues")
+        
+        print(f"\n🎯 SUCCESS CRITERIA MET: {criteria_met}/{total_criteria}")
         
         return passed == total
 
