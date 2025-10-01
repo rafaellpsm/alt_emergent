@@ -588,6 +588,11 @@ async def get_imoveis(current_user: User = Depends(get_current_user)):
 @api_router.get("/meus-imoveis", response_model=List[Imovel])
 async def get_meus_imoveis(current_user: User = Depends(get_membro_user)):
     imoveis = await db.imoveis.find({"proprietario_id": current_user.id}).sort("created_at", -1).to_list(length=None)
+    
+    # Remove MongoDB ObjectId from all properties
+    for imovel in imoveis:
+        imovel.pop("_id", None)
+    
     return [Imovel(**imovel) for imovel in imoveis]
 
 @api_router.post("/imoveis", response_model=Imovel)
