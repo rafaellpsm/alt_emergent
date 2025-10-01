@@ -23,6 +23,8 @@ class APITester:
         self.session = requests.Session()
         self.auth_token = None
         self.test_results = []
+        self.pending_properties = []
+        self.test_property_id = None
         
     def log_result(self, test_name, success, message, response_data=None):
         """Log test result"""
