@@ -1,0 +1,9 @@
+[
+  {
+    "test": "Member Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-01T16:26:47.259984",
+    "response_data": null
+  }
+]
