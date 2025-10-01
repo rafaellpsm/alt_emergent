@@ -176,6 +176,7 @@ const Navigation = () => {
 
 // All Properties View Page (for members to see all properties)  
 export const TodosImoveisPage = () => {
+  const navigate = useNavigate();
   const [imoveis, setImoveis] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtros, setFiltros] = useState({
