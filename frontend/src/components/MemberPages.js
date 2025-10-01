@@ -797,7 +797,7 @@ export const ParceirosPage = () => {
               </Card>
             ) : (
               parceirsFiltrados.map((parceiro) => (
-                <Card key={parceiro.id} className="card-custom hover-lift">
+                <Card key={parceiro.id} className="card-custom hover-lift cursor-pointer" onClick={() => window.location.href = `/parceiro/${parceiro.id}`}>
                   {parceiro.fotos && parceiro.fotos.length > 0 && (
                     <div className="aspect-video bg-gray-200 rounded-t-lg mb-4 overflow-hidden">
                       <img 
