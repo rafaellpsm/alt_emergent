@@ -1,9 +1,63 @@
 [
   {
     "test": "Member Login",
-    "success": false,
-    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T16:26:47.259984",
+    "success": true,
+    "message": "Login successful for test-member@alt-ilhabela.com with role membro",
+    "timestamp": "2025-10-01T16:27:20.547267",
     "response_data": null
+  },
+  {
+    "test": "Property Creation 500 Error Fix",
+    "success": true,
+    "message": "\u2705 500 ERROR FIXED! Property created successfully with status 'pendente'. BSON/HttpUrl serialization working correctly.",
+    "timestamp": "2025-10-01T16:27:20.560251",
+    "response_data": {
+      "property_id": "b2ffa675-7726-4c9d-80a3-3c5cb8e4c5e3",
+      "status_aprovacao": "pendente",
+      "titulo": "Casa Teste Fotos",
+      "link_booking": null,
+      "link_airbnb": null,
+      "fotos": []
+    }
+  },
+  {
+    "test": "Photo Upload System",
+    "success": true,
+    "message": "\u2705 Photo uploaded successfully. URL: /uploads/e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg",
+    "timestamp": "2025-10-01T16:27:20.572193",
+    "response_data": {
+      "photo_url": "/uploads/e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg",
+      "filename": "e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg",
+      "response": {
+        "url": "/uploads/e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg",
+        "filename": "e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg"
+      }
+    }
+  },
+  {
+    "test": "Photo Upload File Type Restriction",
+    "success": true,
+    "message": "\u2705 Correctly rejected invalid file type: Tipo de arquivo n\u00e3o permitido. Use: .jpeg, .png, .jpg, .webp, .heic, .heif",
+    "timestamp": "2025-10-01T16:27:20.625460",
+    "response_data": {
+      "response": {
+        "detail": "Tipo de arquivo n\u00e3o permitido. Use: .jpeg, .png, .jpg, .webp, .heic, .heif"
+      }
+    }
+  },
+  {
+    "test": "Property Creation with Photos",
+    "success": true,
+    "message": "\u2705 Property with photos created successfully. 1 photos stored correctly.",
+    "timestamp": "2025-10-01T16:27:20.639450",
+    "response_data": {
+      "property_id": "a992d306-8858-4074-8362-795b29a532a0",
+      "titulo": "Casa com Sistema de Fotos Completo",
+      "fotos_count": 1,
+      "fotos": [
+        "/uploads/e124ad37-e2c7-4c31-8187-f473fdd97ee2.jpg"
+      ],
+      "status_aprovacao": "pendente"
+    }
   }
 ]
