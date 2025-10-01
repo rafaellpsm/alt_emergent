@@ -755,9 +755,20 @@ class APITester:
         if self.test_login(MEMBER_EMAIL, MEMBER_PASSWORD, "member"):
             self.test_meus_imoveis_endpoint_as_member()
             
-            # Test the specific property creation fix
-            print("\n🔧 Testing Property Creation Fix (Empty URL Validation):")
+            # Test the specific fixes mentioned in review request
+            print("\n🔧 Testing Priority Fixes from Review Request:")
+            print("1. Property Creation Fix (MongoDB ObjectId issue):")
             self.test_create_property_with_empty_urls()
+            
+            print("\n2. Property Details Loading Fix (ObjectId removal):")
+            self.test_property_details_loading()
+            
+            print("\n3. Property Owner Information (New endpoint):")
+            self.test_property_owner_information()
+            
+            print("\n4. Password Change System (New endpoint):")
+            self.test_password_change_system()
+            self.test_password_change_wrong_current()
         
         # Switch back to admin for email system testing
         print("\n📧 Testing Email System (Admin Required):")
