@@ -3,21 +3,84 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-10-01T16:25:26.731733",
+    "timestamp": "2025-10-01T18:42:10.689888",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T16:25:27.007164",
+    "timestamp": "2025-10-01T18:42:10.952358",
+    "response_data": null
+  },
+  {
+    "test": "Member Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-01T18:42:11.189070",
+    "response_data": null
+  },
+  {
+    "test": "Member Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-01T18:42:11.425019",
+    "response_data": null
+  },
+  {
+    "test": "Property Listings - Member Login",
+    "success": false,
+    "message": "Failed to login as member",
+    "timestamp": "2025-10-01T18:42:11.425050",
+    "response_data": null
+  },
+  {
+    "test": "ObjectId Removal - /api/imoveis",
+    "success": true,
+    "message": "\u2705 No ObjectId found in /api/imoveis response (3 properties checked)",
+    "timestamp": "2025-10-01T18:42:11.434333",
+    "response_data": null
+  },
+  {
+    "test": "Member Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-01T18:42:11.670255",
+    "response_data": null
+  },
+  {
+    "test": "ObjectId Removal - /api/meus-imoveis",
+    "success": false,
+    "message": "Failed to login as member for meus-imoveis testing",
+    "timestamp": "2025-10-01T18:42:11.670287",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-01T18:42:11.903338",
+    "response_data": null
+  },
+  {
+    "test": "Cross-Role Access - Admin to /api/imoveis",
+    "success": true,
+    "message": "\u2705 Admin can access regular property listings (3 properties)",
+    "timestamp": "2025-10-01T18:42:11.911709",
+    "response_data": null
+  },
+  {
+    "test": "Cross-Role Access - Admin to /api/parceiros",
+    "success": true,
+    "message": "\u2705 Admin can access partner listings (1 partners)",
+    "timestamp": "2025-10-01T18:42:11.917254",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
     "success": true,
     "message": "Endpoint working, returned 3 properties",
-    "timestamp": "2025-10-01T16:25:27.019004",
+    "timestamp": "2025-10-01T18:42:11.923939",
     "response_data": {
       "count": 3,
       "sample": [
@@ -92,7 +155,7 @@
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-10-01T16:25:27.069881",
+    "timestamp": "2025-10-01T18:42:11.930635",
     "response_data": {
       "count": 1,
       "sample": [
@@ -131,58 +194,37 @@
     "test": "Member Login",
     "success": false,
     "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
-    "timestamp": "2025-10-01T16:25:27.348057",
+    "timestamp": "2025-10-01T18:42:12.204106",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-01T16:25:27.624173",
+    "timestamp": "2025-10-01T18:42:12.447355",
     "response_data": null
-  },
-  {
-    "test": "Email Configuration Check",
-    "success": true,
-    "message": "\u2705 Backend is running properly. Email configuration should be loaded from environment variables: EMAIL_HOST=smtp.gmail.com, EMAIL_PORT=587, EMAIL_HOST_USER=ilhabelaalt@gmail.com",
-    "timestamp": "2025-10-01T16:25:27.672682",
-    "response_data": {
-      "email_host": "smtp.gmail.com",
-      "email_port": "587",
-      "email_user": "ilhabelaalt@gmail.com",
-      "note": "Actual email sending will be tested during property approval"
-    }
   },
   {
     "test": "Get Pending Properties",
     "success": true,
-    "message": "Found 2 pending properties for approval",
-    "timestamp": "2025-10-01T16:25:27.682348",
+    "message": "Found 3 pending properties for approval",
+    "timestamp": "2025-10-01T18:42:12.454368",
     "response_data": {
-      "count": 2,
+      "count": 3,
       "properties": [
-        {
-          "id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
-          "titulo": "Teste Casa Nova"
-        },
         {
           "id": "6b8a5484-d8ed-4f07-ab3e-4ca80142d699",
           "titulo": "Casa com Fotos Sistema Completo"
+        },
+        {
+          "id": "b2ffa675-7726-4c9d-80a3-3c5cb8e4c5e3",
+          "titulo": "Casa Teste Fotos"
+        },
+        {
+          "id": "a992d306-8858-4074-8362-795b29a532a0",
+          "titulo": "Casa com Sistema de Fotos Completo"
         }
       ]
-    }
-  },
-  {
-    "test": "Property Approval Email System",
-    "success": true,
-    "message": "\u2705 Property approval successful: Im\u00f3vel aprovado com sucesso. Email notification should have been sent to property owner.",
-    "timestamp": "2025-10-01T16:25:28.855712",
-    "response_data": {
-      "property_id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
-      "response": {
-        "message": "Im\u00f3vel aprovado com sucesso"
-      },
-      "email_note": "Check backend logs for email sending confirmation"
     }
   }
 ]
