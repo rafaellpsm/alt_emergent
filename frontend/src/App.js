@@ -264,6 +264,13 @@ const Navigation = () => {
           >
             Parceiros
           </a>
+          
+          <a 
+            href="/alterar-senha" 
+            className="nav-link py-3 px-3 whitespace-nowrap"
+          >
+            Alterar Senha
+          </a>
         </div>
       </div>
     </nav>
