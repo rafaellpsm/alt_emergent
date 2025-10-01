@@ -1058,7 +1058,7 @@ async def recusar_imovel(
     # Send notification email
     if owner and owner.get("email"):
         try:
-            send_email(
+            await send_email(
                 to_email=owner["email"],
                 subject="Imóvel Não Aprovado - ALT Ilhabela",
                 body=f"""
