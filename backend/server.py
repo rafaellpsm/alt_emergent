@@ -164,7 +164,7 @@ class Imovel(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
-    @field_validator('video_url', 'link_booking', 'link_airbnb', mode='before')
+    @field_validator('link_booking', 'link_airbnb', mode='before')
     @classmethod
     def empty_str_to_none(cls, v):
         if v == '' or v is None:
@@ -190,11 +190,11 @@ class ImovelCreate(BaseModel):
     permite_pets: bool = False
     tem_vista_mar: bool = False
     tem_ar_condicionado: bool = False
-    video_url: Optional[HttpUrl] = None
-    link_booking: Optional[HttpUrl] = None
-    link_airbnb: Optional[HttpUrl] = None
+    fotos: List[str] = Field(default_factory=list)
+    link_booking: Optional[str] = None
+    link_airbnb: Optional[str] = None
     
-    @field_validator('video_url', 'link_booking', 'link_airbnb', mode='before')
+    @field_validator('link_booking', 'link_airbnb', mode='before')
     @classmethod
     def empty_str_to_none(cls, v):
         if v == '' or v is None:
