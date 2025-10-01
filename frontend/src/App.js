@@ -247,6 +247,12 @@ const Navigation = () => {
               >
                 Meu Perfil
               </a>
+              <a 
+                href="/imoveis" 
+                className="nav-link py-3 px-3 whitespace-nowrap"
+              >
+                Imóveis
+              </a>
             </>
           )}
           
