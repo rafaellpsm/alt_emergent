@@ -592,7 +592,7 @@ async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(
     imovel_dict = imovel_data.dict()
     
     # Convert empty strings to None for optional URL fields
-    url_fields = ['video_url', 'link_booking', 'link_airbnb']
+    url_fields = ['link_booking', 'link_airbnb']
     for field in url_fields:
         if imovel_dict.get(field) == '' or imovel_dict.get(field) is None:
             imovel_dict[field] = None
