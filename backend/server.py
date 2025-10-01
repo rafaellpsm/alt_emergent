@@ -578,6 +578,11 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
 async def get_imoveis(current_user: User = Depends(get_current_user)):
     """Get all approved properties"""
     imoveis = await db.imoveis.find({"status_aprovacao": "aprovado", "ativo": True}).sort("created_at", -1).to_list(length=None)
+    
+    # Remove MongoDB ObjectId from all properties
+    for imovel in imoveis:
+        imovel.pop("_id", None)
+    
     return [Imovel(**imovel) for imovel in imoveis]
 
 @api_router.get("/meus-imoveis", response_model=List[Imovel])
