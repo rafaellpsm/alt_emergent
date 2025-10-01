@@ -3,21 +3,21 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-09-29T20:50:58.339583",
+    "timestamp": "2025-10-01T15:09:05.984281",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-09-29T20:50:58.605861",
+    "timestamp": "2025-10-01T15:09:06.307459",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
     "success": true,
     "message": "Endpoint working, returned 3 properties",
-    "timestamp": "2025-09-29T20:50:58.620951",
+    "timestamp": "2025-10-01T15:09:06.325281",
     "response_data": {
       "count": 3,
       "sample": [
@@ -49,7 +49,7 @@
           "ativo": true,
           "destaque": false,
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
+          "visualizacoes": 2,
           "cliques_link": 0,
           "created_at": "2025-09-26T17:33:32.999000",
           "updated_at": "2025-09-26T17:33:48.405000"
@@ -82,7 +82,7 @@
           "ativo": true,
           "destaque": true,
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 0,
+          "visualizacoes": 4,
           "cliques_link": 0,
           "created_at": "2025-09-26T15:42:30.952000",
           "updated_at": "2025-09-26T17:33:48.405000"
@@ -94,7 +94,7 @@
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-09-29T20:50:58.666512",
+    "timestamp": "2025-10-01T15:09:06.340769",
     "response_data": {
       "count": 1,
       "sample": [
@@ -133,49 +133,49 @@
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-09-29T20:50:58.905076",
+    "timestamp": "2025-10-01T15:09:06.578653",
     "response_data": null
   },
   {
     "test": "Meus Im\u00f3veis API (Member)",
     "success": true,
-    "message": "Member endpoint working, returned 3 properties",
-    "timestamp": "2025-09-29T20:50:58.913466",
+    "message": "Member endpoint working, returned 4 properties",
+    "timestamp": "2025-10-01T15:09:06.588504",
     "response_data": {
-      "count": 3,
+      "count": 4,
       "sample": [
         {
-          "id": "69b2eb91-08ca-4e44-ac32-2f1371f36132",
-          "titulo": "Cobertura Pendente de Aprova\u00e7\u00e3o",
-          "descricao": "Uma cobertura luxuosa que est\u00e1 aguardando aprova\u00e7\u00e3o do administrador. Esta propriedade servir\u00e1 para testar o fluxo de aprova\u00e7\u00e3o.",
-          "tipo": "cobertura",
-          "regiao": "vila",
-          "endereco_completo": "Rua do Teste, 999 - Vila, Ilhabela/SP - CEP: 11630-000",
-          "preco_diaria": 650.0,
-          "preco_semanal": 4200.0,
-          "preco_mensal": 15000.0,
-          "num_quartos": 3,
-          "num_banheiros": 2,
-          "capacidade": 6,
-          "area_m2": 150.0,
-          "possui_piscina": true,
-          "possui_churrasqueira": true,
+          "id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
+          "titulo": "Teste Casa Nova",
+          "descricao": "Casa para teste do sistema de aprova\u00e7\u00e3o",
+          "tipo": "casa",
+          "regiao": "centro",
+          "endereco_completo": "Rua de Teste, 123",
+          "preco_diaria": 200.0,
+          "preco_semanal": null,
+          "preco_mensal": null,
+          "num_quartos": 2,
+          "num_banheiros": 1,
+          "capacidade": 4,
+          "area_m2": 80.0,
+          "possui_piscina": false,
+          "possui_churrasqueira": false,
           "possui_wifi": true,
           "permite_pets": false,
-          "tem_vista_mar": true,
+          "tem_vista_mar": false,
           "tem_ar_condicionado": true,
           "fotos": [],
           "video_url": null,
           "link_booking": null,
           "link_airbnb": null,
-          "status_aprovacao": "aprovado",
+          "status_aprovacao": "pendente",
           "ativo": true,
           "destaque": false,
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
           "visualizacoes": 0,
           "cliques_link": 0,
-          "created_at": "2025-09-26T17:33:32.999000",
-          "updated_at": "2025-09-26T17:33:48.405000"
+          "created_at": "2025-09-29T20:50:58.918000",
+          "updated_at": "2025-09-29T20:50:58.918000"
         }
       ]
     }
@@ -184,14 +184,65 @@
     "test": "Property Creation with Empty URLs",
     "success": true,
     "message": "\u2705 Property created successfully with status 'pendente'. Empty URL fields converted to null as expected.",
-    "timestamp": "2025-09-29T20:50:58.924990",
+    "timestamp": "2025-10-01T15:09:06.639865",
     "response_data": {
-      "property_id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
+      "property_id": "2806ceda-cb5d-4638-a8bb-e242f7b41e6a",
       "status_aprovacao": "pendente",
       "titulo": "Teste Casa Nova",
       "video_url": null,
       "link_booking": null,
       "link_airbnb": null
+    }
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-01T15:09:06.874209",
+    "response_data": null
+  },
+  {
+    "test": "Email Configuration Check",
+    "success": true,
+    "message": "\u2705 Backend is running properly. Email configuration should be loaded from environment variables: EMAIL_HOST=smtp.gmail.com, EMAIL_PORT=587, EMAIL_HOST_USER=ilhabelaalt@gmail.com",
+    "timestamp": "2025-10-01T15:09:06.882262",
+    "response_data": {
+      "email_host": "smtp.gmail.com",
+      "email_port": "587",
+      "email_user": "ilhabelaalt@gmail.com",
+      "note": "Actual email sending will be tested during property approval"
+    }
+  },
+  {
+    "test": "Get Pending Properties",
+    "success": true,
+    "message": "Found 2 pending properties for approval",
+    "timestamp": "2025-10-01T15:09:06.895284",
+    "response_data": {
+      "count": 2,
+      "properties": [
+        {
+          "id": "eabc9937-92f8-49db-a5b6-09fec49ba51a",
+          "titulo": "Teste Casa Nova"
+        },
+        {
+          "id": "2806ceda-cb5d-4638-a8bb-e242f7b41e6a",
+          "titulo": "Teste Casa Nova"
+        }
+      ]
+    }
+  },
+  {
+    "test": "Property Approval Email System",
+    "success": true,
+    "message": "\u2705 Property approval successful: Im\u00f3vel aprovado com sucesso. Email notification should have been sent to property owner.",
+    "timestamp": "2025-10-01T15:09:07.683182",
+    "response_data": {
+      "property_id": "2806ceda-cb5d-4638-a8bb-e242f7b41e6a",
+      "response": {
+        "message": "Im\u00f3vel aprovado com sucesso"
+      },
+      "email_note": "Check backend logs for email sending confirmation"
     }
   }
 ]
