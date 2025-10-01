@@ -337,6 +337,11 @@ test_plan:
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+  completed_testing:
+    - "Property Creation 500 Error Fix (BSON/HttpUrl)"
+    - "Photo Upload System Implementation"
+    - "Property Creation with Photos End-to-End"
+    - "Photo System File Restrictions and Security"
 
 agent_communication:
     - agent: "main"
