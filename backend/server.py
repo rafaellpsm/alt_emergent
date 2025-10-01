@@ -382,8 +382,11 @@ async def get_parceiro_user(current_user: User = Depends(get_current_user)):
 # Email Service
 async def send_email(to_email: str, subject: str, body: str, is_html: bool = False):
     try:
+        print(f"Tentando enviar email para: {to_email}")
+        print(f"Assunto: {subject}")
+        
         msg = MIMEMultipart()
-        msg['From'] = os.getenv('EMAIL_HOST_USER')
+        msg['From'] = os.getenv('DEFAULT_FROM_EMAIL', os.getenv('EMAIL_HOST_USER'))
         msg['To'] = to_email
         msg['Subject'] = subject
 
@@ -392,15 +395,30 @@ async def send_email(to_email: str, subject: str, body: str, is_html: bool = Fal
         else:
             msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        server = smtplib.SMTP('smtp.gmail.com', 587)
+        # Use environment variables with fallbacks
+        smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+        smtp_port = int(os.getenv('EMAIL_PORT', '587'))
+        email_user = os.getenv('EMAIL_HOST_USER')
+        email_password = os.getenv('EMAIL_HOST_PASSWORD')
+        
+        if not email_user or not email_password:
+            print("Email credentials not found in environment variables")
+            return False
+        
+        print(f"Conectando ao servidor SMTP: {smtp_host}:{smtp_port}")
+        print(f"Usuario: {email_user}")
+        
+        server = smtplib.SMTP(smtp_host, smtp_port)
         server.starttls()
-        server.login(os.getenv('EMAIL_HOST_USER'), os.getenv('EMAIL_HOST_PASSWORD'))
+        server.login(email_user, email_password)
         text = msg.as_string()
-        server.sendmail(os.getenv('EMAIL_HOST_USER'), to_email, text)
+        server.sendmail(email_user, to_email, text)
         server.quit()
+        
+        print(f"Email enviado com sucesso para: {to_email}")
         return True
     except Exception as e:
-        logging.error(f"Error sending email: {str(e)}")
+        print(f"Erro ao enviar email: {str(e)}")
         return False
 
 # Routes
