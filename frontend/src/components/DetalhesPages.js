@@ -273,23 +273,28 @@ export const ImovelDetalhePage = () => {
                 <CardTitle className="text-primary-gray">Sobre o Imóvel</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {imovel.descricao}
-                </p>
-                
-                {imovel.video_url && (
-                  <div className="mt-6">
-                    <h3 className="font-semibold mb-3 text-primary-gray">Vídeo do Imóvel</h3>
-                    <div className="aspect-video">
-                      <iframe
-                        src={imovel.video_url}
-                        className="w-full h-full rounded-lg"
-                        allowFullScreen
-                        title="Vídeo do imóvel"
-                      />
-                    </div>
-                  </div>
-                )}
+                <div className="text-gray-700 leading-relaxed">
+                  {/* Render description with markdown support for images */}
+                  {imovel.descricao.split('\n').map((paragraph, index) => {
+                    // Check if paragraph contains image markdown
+                    const imageMatch = paragraph.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+                    if (imageMatch) {
+                      return (
+                        <div key={index} className="my-4">
+                          <img 
+                            src={imageMatch[2]} 
+                            alt={imageMatch[1] || 'Imagem do imóvel'}
+                            className="w-full max-w-md mx-auto rounded-lg shadow-md"
+                          />
+                          {imageMatch[1] && (
+                            <p className="text-center text-sm text-gray-500 mt-2">{imageMatch[1]}</p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return paragraph ? <p key={index} className="mb-3">{paragraph}</p> : <br key={index} />;
+                  })}
+                </div>
               </CardContent>
             </Card>
           </div>
