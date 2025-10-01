@@ -177,6 +177,42 @@ backend:
           agent: "main"
           comment: "Not yet implemented - partner profiles need approval workflow"
 
+  - task: "Property Details Loading ObjectId Fix"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY DETAILS LOADING FIX VERIFIED - GET /api/imoveis/{id} endpoint properly removes MongoDB _id field before returning response. No serialization errors. ObjectId removal working correctly. Property details load successfully with proper JSON response structure."
+
+  - task: "Property Owner Information Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PROPERTY OWNER INFORMATION ENDPOINT WORKING - New GET /api/imoveis/{id}/proprietario endpoint successfully implemented. Returns public owner information only (id, nome, role). Security verified - no sensitive data like hashed_password or email exposed. Endpoint working correctly for all authenticated users."
+
+  - task: "Password Change System Implementation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PASSWORD CHANGE SYSTEM FULLY FUNCTIONAL - New PUT /api/auth/alterar-senha endpoint working correctly. Validates current password properly, successfully changes password, rejects wrong current passwords with appropriate error messages. Fixed AttributeError issue with hashed_password access by fetching user from database. Password validation and security working as expected."
+
 frontend:
   - task: "Member Routes Implementation"
     implemented: true
