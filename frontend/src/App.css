@@ -110,6 +110,15 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
+.card-custom.cursor-pointer {
+  cursor: pointer;
+}
+
+.card-custom.cursor-pointer:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
 /* Hero Section */
 .hero-gradient {
   background: linear-gradient(135deg, var(--primary-gray) 0%, var(--primary-teal) 50%, var(--accent-beige) 100%);
