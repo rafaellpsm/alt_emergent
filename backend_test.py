@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://78140d09-2105-4861-9a65-40565254afd0.preview.emergentagent.com"
+BACKEND_URL = "https://temp-housing.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test credentials
