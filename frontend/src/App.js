@@ -426,7 +426,7 @@ const MainPage = () => {
             <h2 className="text-3xl font-bold mb-6 text-primary-gray">Parceiros em Destaque</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pageData.parceiros_destaque.map((parceiro) => (
-                <div key={parceiro.id} className="partner-card hover-lift">
+                <div key={parceiro.id} className="partner-card hover-lift cursor-pointer" onClick={() => window.location.href = `/parceiro/${parceiro.id}`}>
                   {parceiro.fotos.length > 0 && (
                     <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden">
                       <img 
