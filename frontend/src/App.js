@@ -600,13 +600,21 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Button 
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
             onClick={() => window.location.href = '/admin/candidaturas'}
           >
             <span className="text-lg font-semibold">Gerenciar</span>
             <span className="text-sm">Candidaturas</span>
+          </Button>
+          
+          <Button 
+            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
+            onClick={() => window.location.href = '/admin/imoveis'}
+          >
+            <span className="text-lg font-semibold">Aprovar</span>
+            <span className="text-sm">Imóveis</span>
           </Button>
           
           <Button 
