@@ -271,6 +271,7 @@ const Navigation = () => {
 
 // Main Page for Authenticated Users (Rich Content)
 const MainPage = () => {
+  const navigate = useNavigate();
   const [pageData, setPageData] = useState({
     noticias_destaque: [],
     imoveis_destaque: [],
