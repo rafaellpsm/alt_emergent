@@ -160,25 +160,25 @@ class APITester:
         try:
             # Test data as specified in review request
             property_data = {
-                "titulo": "Casa de Teste Corrigida",
-                "descricao": "Teste do sistema corrigido de cadastro",
+                "titulo": "Casa Teste Fotos",
+                "descricao": "Casa de teste com sistema de fotos implementado",
                 "tipo": "casa",
-                "regiao": "centro",
-                "endereco_completo": "Rua de Teste, 456",
-                "preco_diaria": 300.0,
-                "num_quartos": 2,
+                "regiao": "centro", 
+                "endereco_completo": "Rua das Fotos, 123",
+                "preco_diaria": 250.0,
+                "num_quartos": 3,
                 "num_banheiros": 2,
-                "capacidade": 4,
-                "area_m2": 100,
-                "possui_piscina": True,
+                "capacidade": 6,
+                "area_m2": 120,
+                "possui_piscina": False,
                 "possui_churrasqueira": True,
                 "possui_wifi": True,
-                "permite_pets": True,
-                "tem_vista_mar": False,
+                "permite_pets": False,
+                "tem_vista_mar": True,
                 "tem_ar_condicionado": True,
-                "video_url": "",  # Empty string - this should be converted to null
-                "link_booking": "",  # Empty string - this should be converted to null
-                "link_airbnb": ""  # Empty string - this should be converted to null
+                "fotos": [],
+                "link_booking": "",
+                "link_airbnb": ""
             }
             
             response = self.session.post(f"{API_BASE}/imoveis", json=property_data)
