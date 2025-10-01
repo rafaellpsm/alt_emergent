@@ -508,6 +508,36 @@ async def login(user_credentials: UserLogin):
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
+@api_router.put("/auth/alterar-senha")
+async def alterar_senha(
+    dados_senha: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Change user password"""
+    senha_atual = dados_senha.get("senhaAtual")
+    nova_senha = dados_senha.get("novaSenha")
+    
+    if not senha_atual or not nova_senha:
+        raise HTTPException(status_code=400, detail="Senha atual e nova senha são obrigatórias")
+    
+    # Verify current password
+    if not pwd_context.verify(senha_atual, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Senha atual incorreta")
+    
+    # Hash new password
+    nova_senha_hash = pwd_context.hash(nova_senha)
+    
+    # Update password in database
+    result = await db.users.update_one(
+        {"id": current_user.id},
+        {"$set": {"hashed_password": nova_senha_hash}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    return {"message": "Senha alterada com sucesso"}
+
 # Enhanced Application Routes
 @api_router.post("/candidaturas/membro", response_model=CandidaturaMembro)
 async def submit_candidatura_membro(candidatura: CandidaturaMembro):
