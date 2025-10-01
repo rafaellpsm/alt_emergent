@@ -411,6 +411,13 @@ class APITester:
             print("\n🔧 Testing Property Creation Fix (Empty URL Validation):")
             self.test_create_property_with_empty_urls()
         
+        # Switch back to admin for email system testing
+        print("\n📧 Testing Email System (Admin Required):")
+        if self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
+            self.test_email_configuration_check()
+            self.test_get_pending_properties()
+            self.test_property_approval_email_system()
+        
         # Summary
         print("\n" + "=" * 60)
         print("📊 TEST SUMMARY:")
