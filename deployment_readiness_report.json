@@ -1,0 +1,228 @@
+{
+  "timestamp": "2025-10-03T13:31:51.954035",
+  "backend_url": "https://temp-housing.preview.emergentagent.com",
+  "system_results": {
+    "Authentication System": true,
+    "Property Management": true,
+    "Photo Upload System": true,
+    "Email Notifications": true,
+    "Database Operations": true,
+    "API Security": false,
+    "Performance": true,
+    "Production Environment": true
+  },
+  "critical_failures": [
+    "Unauthorized Access Protection"
+  ],
+  "detailed_results": [
+    {
+      "test": "Admin Authentication",
+      "success": true,
+      "message": "Login successful for admin@alt-ilhabela.com with role admin",
+      "timestamp": "2025-10-03T13:31:48.640276",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Member Authentication",
+      "success": true,
+      "message": "Login successful for membro@alt-ilhabela.com with role membro",
+      "timestamp": "2025-10-03T13:31:48.880546",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Invalid Credentials Rejection",
+      "success": true,
+      "message": "Invalid credentials properly rejected with 401 status",
+      "timestamp": "2025-10-03T13:31:48.891724",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Member Authentication",
+      "success": true,
+      "message": "Login successful for membro@alt-ilhabela.com with role membro",
+      "timestamp": "2025-10-03T13:31:49.167547",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Property Creation",
+      "success": true,
+      "message": "Property created successfully with pending status: Casa Deployment Test",
+      "timestamp": "2025-10-03T13:31:49.183517",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Member Property Listing",
+      "success": true,
+      "message": "Member can view their properties: 16 properties",
+      "timestamp": "2025-10-03T13:31:49.193509",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Property Editing",
+      "success": true,
+      "message": "Property successfully updated by owner",
+      "timestamp": "2025-10-03T13:31:49.204382",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Admin Authentication",
+      "success": true,
+      "message": "Login successful for admin@alt-ilhabela.com with role admin",
+      "timestamp": "2025-10-03T13:31:49.444123",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Property Approval",
+      "success": true,
+      "message": "Property successfully approved by admin",
+      "timestamp": "2025-10-03T13:31:50.043739",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Approved Property in Listings",
+      "success": true,
+      "message": "Approved property appears in public listings",
+      "timestamp": "2025-10-03T13:31:50.054653",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Member Authentication",
+      "success": true,
+      "message": "Login successful for membro@alt-ilhabela.com with role membro",
+      "timestamp": "2025-10-03T13:31:50.294716",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Photo Upload",
+      "success": true,
+      "message": "Photo uploaded successfully: /api/uploads/abbec84e-fbb0-4add-a100-b3f640b13e4e.jpg",
+      "timestamp": "2025-10-03T13:31:50.306527",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Photo Upload File Restrictions",
+      "success": true,
+      "message": "Invalid file types properly rejected",
+      "timestamp": "2025-10-03T13:31:50.315183",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Admin Authentication",
+      "success": true,
+      "message": "Login successful for admin@alt-ilhabela.com with role admin",
+      "timestamp": "2025-10-03T13:31:50.591576",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Email Notification System",
+      "success": true,
+      "message": "Property approval successful - email notification should have been sent",
+      "timestamp": "2025-10-03T13:31:51.048105",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Database Read Operations",
+      "success": true,
+      "message": "Successfully retrieved 16 properties from database",
+      "timestamp": "2025-10-03T13:31:51.058193",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Database Partners Collection",
+      "success": true,
+      "message": "Successfully retrieved 1 partners from database",
+      "timestamp": "2025-10-03T13:31:51.067571",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Database_Test Authentication",
+      "success": true,
+      "message": "Login successful for admin@alt-ilhabela.com with role admin",
+      "timestamp": "2025-10-03T13:31:51.303196",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Database User Authentication",
+      "success": true,
+      "message": "User authentication and database lookup working",
+      "timestamp": "2025-10-03T13:31:51.303229",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Unauthorized Access Protection",
+      "success": false,
+      "message": "Protected endpoint accessible without authentication - Status: 403",
+      "timestamp": "2025-10-03T13:31:51.311672",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "API Response Time",
+      "success": true,
+      "message": "Properties endpoint responds in 0.01 seconds (< 5s threshold)",
+      "timestamp": "2025-10-03T13:31:51.322166",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Concurrent Request Handling",
+      "success": true,
+      "message": "Successfully handled 5/5 concurrent requests",
+      "timestamp": "2025-10-03T13:31:51.662431",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "CORS Configuration",
+      "success": false,
+      "message": "CORS preflight failed - Status: 405",
+      "timestamp": "2025-10-03T13:31:51.670581",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Static File Serving",
+      "success": true,
+      "message": "API endpoints accessible - static file serving should be working",
+      "timestamp": "2025-10-03T13:31:51.719276",
+      "response_data": null,
+      "critical": false
+    },
+    {
+      "test": "Env_Test Authentication",
+      "success": true,
+      "message": "Login successful for admin@alt-ilhabela.com with role admin",
+      "timestamp": "2025-10-03T13:31:51.953858",
+      "response_data": null,
+      "critical": true
+    },
+    {
+      "test": "Environment Variables",
+      "success": true,
+      "message": "Database and authentication working - environment variables properly configured",
+      "timestamp": "2025-10-03T13:31:51.953890",
+      "response_data": null,
+      "critical": true
+    }
+  ],
+  "deployment_ready": false
+}
