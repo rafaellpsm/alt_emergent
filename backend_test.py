@@ -2112,6 +2112,30 @@ class APITester:
         if self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
             self.test_get_pending_properties()
         
+        # NEW PASSWORD RECOVERY AND USER DELETION TESTS
+        print("\n🔐 PRIORITY TESTING: PASSWORD RECOVERY & USER DELETION:")
+        print("=" * 60)
+        
+        print("\n1. 🔑 PASSWORD RECOVERY SYSTEM:")
+        print("   Testing POST /api/auth/recuperar-senha endpoint")
+        self.test_password_recovery_system()
+        self.test_password_recovery_missing_email()
+        self.test_password_recovery_temporary_password_generation()
+        
+        print("\n2. 🗑️ USER DELETION (ADMIN):")
+        print("   Testing DELETE /api/admin/users/{id} endpoint with proper restrictions")
+        if self.test_login(ADMIN_EMAIL, ADMIN_PASSWORD, "admin"):
+            self.test_user_deletion_admin_authorization()
+            self.test_user_deletion_invalid_user_id()
+        
+        print("\n3. 🚫 SECURITY VALIDATIONS:")
+        print("   Testing protection against admin self-deletion and unauthorized access")
+        self.test_user_deletion_non_admin_access()
+        
+        print("\n4. 📧 EMAIL FUNCTIONALITY:")
+        print("   Verifying recovery emails are sent correctly")
+        self.test_email_system_integration()
+        
         # Summary
         print("\n" + "=" * 80)
         print("📊 TEST SUMMARY:")
