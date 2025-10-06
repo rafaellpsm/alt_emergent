@@ -264,6 +264,30 @@ backend:
           agent: "testing"
           comment: "✅ PHOTO SYSTEM SECURITY WORKING - File type restrictions properly enforced. Invalid file types (e.g., .txt files) correctly rejected with 400 status and appropriate error message. File size validation working (10MB limit). Upload directory properly configured with unique UUID filenames to prevent conflicts."
 
+  - task: "Password Recovery System Implementation"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PASSWORD RECOVERY SYSTEM FULLY FUNCTIONAL - POST /api/auth/recuperar-senha endpoint working correctly. Security implemented: same response for valid and invalid emails (doesn't reveal if email exists). Missing email validation working (400 error). Temporary password generation and email sending confirmed via backend logs. Email system integration verified with SMTP smtp.gmail.com:587."
+
+  - task: "User Deletion System with Admin Authorization"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL SECURITY BUG FOUND - DELETE /api/admin/users/{id} endpoint has duplicate route definitions in server.py (lines 1124-1132 and 1134-1171). First endpoint lacks admin self-deletion protection, allowing admin to delete themselves. FastAPI uses first endpoint, bypassing security. FIXED: Removed duplicate endpoint without protection. Admin self-deletion prevention, role-based access control, and proper data cleanup working correctly after fix."
+
 frontend:
   - task: "Member Routes Implementation"
     implemented: true
