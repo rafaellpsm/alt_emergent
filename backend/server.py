@@ -380,6 +380,11 @@ async def get_parceiro_user(current_user: User = Depends(get_current_user)):
     return current_user
 
 # Email Service
+def generate_random_password(length=8):
+    """Generate a random password with letters and numbers"""
+    characters = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(characters) for _ in range(length))
+
 async def send_email(to_email: str, subject: str, body: str, is_html: bool = False):
     try:
         print(f"Tentando enviar email para: {to_email}")
