@@ -1123,16 +1123,6 @@ async def update_user(
 
 @api_router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)):
-    result = await db.users.update_one(
-        {"id": user_id},
-        {"$set": {"ativo": False}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return {"message": "Usuário desativado com sucesso"}
-
-@api_router.delete("/admin/users/{user_id}")
-async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)):
     """Delete user (admin only) - removes user and all associated data"""
     
     # Prevent admin from deleting themselves
