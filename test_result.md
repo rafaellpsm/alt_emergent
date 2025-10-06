@@ -369,6 +369,8 @@ test_plan:
     - "Photo Upload System Implementation"
     - "Property Creation with Photos End-to-End"
     - "Photo System File Restrictions and Security"
+    - "Password Recovery System Implementation"
+    - "User Deletion System with Admin Authorization"
 
 agent_communication:
     - agent: "main"
