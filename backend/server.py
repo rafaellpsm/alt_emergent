@@ -548,6 +548,67 @@ async def alterar_senha(
     
     return {"message": "Senha alterada com sucesso"}
 
+@api_router.post("/auth/recuperar-senha")
+async def recuperar_senha(dados_email: dict):
+    """Recover password by email - generates new random password"""
+    email = dados_email.get("email")
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="Email é obrigatório")
+    
+    # Find user by email
+    user = await db.users.find_one({"email": email.lower()})
+    
+    if not user:
+        # Don't reveal if email exists for security
+        return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
+    
+    # Generate new random password
+    nova_senha = generate_random_password(10)
+    nova_senha_hash = pwd_context.hash(nova_senha)
+    
+    # Update password in database
+    result = await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"hashed_password": nova_senha_hash}}
+    )
+    
+    if result.matched_count == 0:
+        return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
+    
+    # Send email with new password
+    try:
+        await send_email(
+            to_email=email,
+            subject="Recuperação de Senha - ALT Ilhabela",
+            body=f"""
+Olá {user.get('nome', 'Usuário')},
+
+Você solicitou a recuperação de senha para sua conta no Portal ALT Ilhabela.
+
+Sua nova senha temporária é: {nova_senha}
+
+Por motivos de segurança, recomendamos que você:
+1. Faça login com esta nova senha
+2. Acesse "Alterar Senha" no menu do sistema
+3. Defina uma nova senha de sua preferência
+
+Esta senha temporária é válida imediatamente e pode ser usada para acessar sua conta.
+
+Se você não solicitou esta recuperação, entre em contato conosco imediatamente.
+
+Acesse o portal: https://temporada-portal.preview.emergentagent.com/login
+
+Atenciosamente,
+Equipe ALT Ilhabela
+            """
+        )
+    except Exception as e:
+        print(f"Erro ao enviar email de recuperação: {e}")
+        # Even if email fails, don't reveal the error for security
+    
+    return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
+
 # Enhanced Application Routes
 @api_router.post("/candidaturas/membro", response_model=CandidaturaMembro)
 async def submit_candidatura_membro(candidatura: CandidaturaMembro):
