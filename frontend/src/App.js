@@ -6,6 +6,7 @@ import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPag
 import { MeusImoveisPage, TodosImoveisPage, ParceirosPage, MeuPerfilPage } from './components/MemberPages';
 import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPages';
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
+import RecuperarSenhaModal from './components/RecuperarSenhaModal';
 
 // Import shadcn components
 import { Button } from './components/ui/button';
