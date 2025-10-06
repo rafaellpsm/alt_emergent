@@ -1429,6 +1429,15 @@ const AdminUsuarios = () => {
                     >
                       {user.ativo ? 'Desativar' : 'Ativar'}
                     </Button>
+                    
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteUser(user.id, user.nome, user.email)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Deletar
+                    </Button>
                   </div>
                 </div>
               ))}
