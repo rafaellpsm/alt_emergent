@@ -1346,6 +1346,36 @@ const AdminUsuarios = () => {
     }
   };
 
+  const deleteUser = async (userId, userName, userEmail) => {
+    // Confirmação dupla para deletar
+    const confirmMessage = `⚠️ ATENÇÃO: Esta ação não pode ser desfeita!\n\nVocê tem certeza que deseja DELETAR permanentemente o usuário:\n\n👤 ${userName} (${userEmail})\n\nTodos os dados associados (imóveis, perfis, etc.) também serão removidos.\n\nDigite "DELETAR" para confirmar:`;
+    
+    const confirmText = window.prompt(confirmMessage);
+    
+    if (confirmText !== "DELETAR") {
+      toast({
+        title: "Operação cancelada",
+        description: "Usuário não foi removido.",
+      });
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/admin/users/${userId}`);
+      toast({
+        title: "Usuário deletado!",
+        description: response.data.message,
+      });
+      fetchUsers();
+    } catch (error) {
+      toast({
+        title: "Erro ao deletar usuário",
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
