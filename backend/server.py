@@ -1131,6 +1131,45 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     return {"message": "Usuário desativado com sucesso"}
 
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)):
+    """Delete user (admin only) - removes user and all associated data"""
+    
+    # Prevent admin from deleting themselves
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Você não pode deletar sua própria conta")
+    
+    # Find user to delete
+    user_to_delete = await db.users.find_one({"id": user_id})
+    if not user_to_delete:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    # Delete associated data based on user role
+    user_role = user_to_delete.get("role")
+    
+    if user_role == "membro":
+        # Delete all properties owned by this member
+        await db.imoveis.delete_many({"proprietario_id": user_id})
+    elif user_role == "parceiro":
+        # Delete partner profile
+        await db.perfis_parceiros.delete_many({"user_id": user_id})
+    
+    # Delete the user
+    result = await db.users.delete_one({"id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    return {
+        "message": f"Usuário {user_to_delete.get('nome', 'desconhecido')} e todos os dados associados foram removidos com sucesso",
+        "deleted_user": {
+            "id": user_id,
+            "nome": user_to_delete.get('nome'),
+            "email": user_to_delete.get('email'),
+            "role": user_role
+        }
+    }
+
 # Property Approval Routes (Admin)
 @api_router.get("/admin/imoveis-pendentes", response_model=List[Imovel])
 async def get_imoveis_pendentes(current_user: User = Depends(get_admin_user)):
