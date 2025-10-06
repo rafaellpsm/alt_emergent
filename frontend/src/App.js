@@ -1628,6 +1628,17 @@ const LoginPage = () => {
                   'Entrar'
                 )}
               </Button>
+              
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => setShowRecuperarSenha(true)}
+                  className="text-sm text-primary-teal hover:underline"
+                >
+                  Esqueci minha senha
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -1641,6 +1652,12 @@ const LoginPage = () => {
             Voltar para a página inicial
           </Button>
         </div>
+        
+        {/* Modal de Recuperar Senha */}
+        <RecuperarSenhaModal 
+          isOpen={showRecuperarSenha}
+          onClose={() => setShowRecuperarSenha(false)}
+        />
       </div>
     </div>
   );
