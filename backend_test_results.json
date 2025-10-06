@@ -3,152 +3,152 @@
     "test": "API Root",
     "success": true,
     "message": "API is accessible: ALT Ilhabela Portal API",
-    "timestamp": "2025-10-03T13:30:05.280464",
+    "timestamp": "2025-10-06T16:40:02.065440",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-03T13:30:05.590740",
+    "timestamp": "2025-10-06T16:40:02.334049",
     "response_data": null
   },
   {
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-10-03T13:30:05.830734",
+    "timestamp": "2025-10-06T16:40:02.574518",
     "response_data": null
   },
   {
     "test": "Property Approval Flow - Create Property",
     "success": true,
     "message": "\u2705 Property created with 'pendente' status: Casa Teste Aprova\u00e7\u00e3o",
-    "timestamp": "2025-10-03T13:30:05.848698",
+    "timestamp": "2025-10-06T16:40:02.586738",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-03T13:30:06.083364",
+    "timestamp": "2025-10-06T16:40:02.820675",
     "response_data": null
   },
   {
     "test": "Property Approval Flow - Check Pending",
     "success": true,
     "message": "\u2705 Test property found in pending list (5 total pending)",
-    "timestamp": "2025-10-03T13:30:06.093919",
+    "timestamp": "2025-10-06T16:40:02.834537",
     "response_data": null
   },
   {
     "test": "Property Approval Flow - Approve Property",
     "success": true,
     "message": "\u2705 Property approved successfully: Im\u00f3vel aprovado com sucesso",
-    "timestamp": "2025-10-03T13:30:07.214372",
+    "timestamp": "2025-10-06T16:40:03.394878",
     "response_data": null
   },
   {
     "test": "Property Approval Flow - Check Approved Listings",
     "success": true,
-    "message": "\u2705 Approved property now appears in /api/imoveis endpoint (14 total approved)",
-    "timestamp": "2025-10-03T13:30:07.224362",
+    "message": "\u2705 Approved property now appears in /api/imoveis endpoint (17 total approved)",
+    "timestamp": "2025-10-06T16:40:03.405382",
     "response_data": null
   },
   {
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-10-03T13:30:07.499289",
+    "timestamp": "2025-10-06T16:40:03.643982",
     "response_data": null
   },
   {
     "test": "Property Listings - Meus Im\u00f3veis",
     "success": true,
-    "message": "\u2705 Member properties endpoint working: 14 total (12 approved, 2 pending)",
-    "timestamp": "2025-10-03T13:30:07.509043",
+    "message": "\u2705 Member properties endpoint working: 17 total (14 approved, 3 pending)",
+    "timestamp": "2025-10-06T16:40:03.654967",
     "response_data": null
   },
   {
     "test": "Property Listings - Todos os Im\u00f3veis",
     "success": true,
-    "message": "\u2705 All properties endpoint working: 14 approved properties only",
-    "timestamp": "2025-10-03T13:30:07.517143",
+    "message": "\u2705 All properties endpoint working: 17 approved properties only",
+    "timestamp": "2025-10-06T16:40:03.665755",
     "response_data": null
   },
   {
     "test": "Property Listings - Cross-Endpoint Consistency",
     "success": true,
     "message": "\u2705 All approved member properties appear in both endpoints",
-    "timestamp": "2025-10-03T13:30:07.517175",
+    "timestamp": "2025-10-06T16:40:03.665786",
     "response_data": null
   },
   {
     "test": "ObjectId Removal - /api/imoveis",
     "success": true,
-    "message": "\u2705 No ObjectId found in /api/imoveis response (14 properties checked)",
-    "timestamp": "2025-10-03T13:30:07.532736",
+    "message": "\u2705 No ObjectId found in /api/imoveis response (17 properties checked)",
+    "timestamp": "2025-10-06T16:40:03.675052",
     "response_data": null
   },
   {
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-10-03T13:30:07.808041",
+    "timestamp": "2025-10-06T16:40:03.950758",
     "response_data": null
   },
   {
     "test": "ObjectId Removal - /api/meus-imoveis",
     "success": true,
-    "message": "\u2705 No ObjectId found in /api/meus-imoveis response (14 properties checked)",
-    "timestamp": "2025-10-03T13:30:07.817067",
+    "message": "\u2705 No ObjectId found in /api/meus-imoveis response (17 properties checked)",
+    "timestamp": "2025-10-06T16:40:03.960513",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-03T13:30:08.093335",
+    "timestamp": "2025-10-06T16:40:04.238003",
     "response_data": null
   },
   {
     "test": "ObjectId Removal - /api/admin/imoveis-pendentes",
     "success": true,
     "message": "\u2705 No ObjectId found in /api/admin/imoveis-pendentes response (4 properties checked)",
-    "timestamp": "2025-10-03T13:30:08.102230",
+    "timestamp": "2025-10-06T16:40:04.249507",
     "response_data": null
   },
   {
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-03T13:30:08.336213",
+    "timestamp": "2025-10-06T16:40:04.484871",
     "response_data": null
   },
   {
     "test": "Cross-Role Access - Admin to /api/imoveis",
     "success": true,
-    "message": "\u2705 Admin can access regular property listings (14 properties)",
-    "timestamp": "2025-10-03T13:30:08.344532",
+    "message": "\u2705 Admin can access regular property listings (17 properties)",
+    "timestamp": "2025-10-06T16:40:04.495223",
     "response_data": null
   },
   {
     "test": "Cross-Role Access - Admin to /api/parceiros",
     "success": true,
     "message": "\u2705 Admin can access partner listings (1 partners)",
-    "timestamp": "2025-10-03T13:30:08.398766",
+    "timestamp": "2025-10-06T16:40:04.505981",
     "response_data": null
   },
   {
     "test": "Im\u00f3veis API",
     "success": true,
-    "message": "Endpoint working, returned 14 properties",
-    "timestamp": "2025-10-03T13:30:08.407076",
+    "message": "Endpoint working, returned 17 properties",
+    "timestamp": "2025-10-06T16:40:04.519849",
     "response_data": {
-      "count": 14,
+      "count": 17,
       "sample": [
         {
-          "id": "29f80f6e-62bc-443a-a481-2392c27ba472",
+          "id": "bc607a61-a4c9-4b88-8a87-77aa6f1b0449",
           "titulo": "Casa Teste Aprova\u00e7\u00e3o",
           "descricao": "Propriedade para testar fluxo de aprova\u00e7\u00e3o",
           "tipo": "casa",
@@ -176,22 +176,22 @@
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
           "visualizacoes": 0,
           "cliques_link": 0,
-          "created_at": "2025-10-03T13:30:05.840000",
-          "updated_at": "2025-10-03T13:30:06.099000"
+          "created_at": "2025-10-06T16:40:02.581000",
+          "updated_at": "2025-10-06T16:40:02.840000"
         },
         {
-          "id": "6fa49b7c-c7df-4ea3-b9ef-3659d6f7db13",
-          "titulo": "Casa Teste Aprova\u00e7\u00e3o",
-          "descricao": "Propriedade para testar fluxo de aprova\u00e7\u00e3o",
+          "id": "d0c23481-7e06-4b22-b151-10dbd9c27ead",
+          "titulo": "Casa Deployment Test",
+          "descricao": "Updated description for deployment test",
           "tipo": "casa",
           "regiao": "centro",
-          "endereco_completo": "Rua da Aprova\u00e7\u00e3o, 123",
-          "preco_diaria": 200.0,
+          "endereco_completo": "Rua do Deploy, 123",
+          "preco_diaria": 300.0,
           "preco_semanal": null,
           "preco_mensal": null,
-          "num_quartos": 2,
-          "num_banheiros": 1,
-          "capacidade": 4,
+          "num_quartos": 3,
+          "num_banheiros": 2,
+          "capacidade": 6,
           "area_m2": null,
           "possui_piscina": false,
           "possui_churrasqueira": false,
@@ -206,10 +206,10 @@
           "ativo": true,
           "destaque": false,
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
-          "visualizacoes": 1,
+          "visualizacoes": 0,
           "cliques_link": 0,
-          "created_at": "2025-10-01T18:43:50.481000",
-          "updated_at": "2025-10-01T18:43:50.773000"
+          "created_at": "2025-10-03T13:31:49.179000",
+          "updated_at": "2025-10-03T13:31:49.450000"
         }
       ]
     }
@@ -218,7 +218,7 @@
     "test": "Parceiros API",
     "success": true,
     "message": "Endpoint working, returned 1 partners",
-    "timestamp": "2025-10-03T13:30:08.414942",
+    "timestamp": "2025-10-06T16:40:04.571026",
     "response_data": {
       "count": 1,
       "sample": [
@@ -257,19 +257,19 @@
     "test": "Member Login",
     "success": true,
     "message": "Login successful for membro@alt-ilhabela.com with role membro",
-    "timestamp": "2025-10-03T13:30:08.689431",
+    "timestamp": "2025-10-06T16:40:04.806593",
     "response_data": null
   },
   {
     "test": "Meus Im\u00f3veis API (Member)",
     "success": true,
-    "message": "Member endpoint working, returned 14 properties",
-    "timestamp": "2025-10-03T13:30:08.698163",
+    "message": "Member endpoint working, returned 17 properties",
+    "timestamp": "2025-10-06T16:40:04.816664",
     "response_data": {
-      "count": 14,
+      "count": 17,
       "sample": [
         {
-          "id": "29f80f6e-62bc-443a-a481-2392c27ba472",
+          "id": "bc607a61-a4c9-4b88-8a87-77aa6f1b0449",
           "titulo": "Casa Teste Aprova\u00e7\u00e3o",
           "descricao": "Propriedade para testar fluxo de aprova\u00e7\u00e3o",
           "tipo": "casa",
@@ -297,8 +297,8 @@
           "proprietario_id": "51e79d47-4193-494c-98c0-a15c1b208266",
           "visualizacoes": 0,
           "cliques_link": 0,
-          "created_at": "2025-10-03T13:30:05.840000",
-          "updated_at": "2025-10-03T13:30:06.099000"
+          "created_at": "2025-10-06T16:40:02.581000",
+          "updated_at": "2025-10-06T16:40:02.840000"
         }
       ]
     }
@@ -307,9 +307,9 @@
     "test": "Property Creation with Empty URLs",
     "success": true,
     "message": "\u2705 Property created successfully with status 'pendente'. Empty URL fields converted to null as expected.",
-    "timestamp": "2025-10-03T13:30:08.707601",
+    "timestamp": "2025-10-06T16:40:04.827653",
     "response_data": {
-      "property_id": "ebcbb7ae-44f0-4b9e-9aed-41ad1123e14d",
+      "property_id": "aa1bc2ce-fb05-4c86-b87d-013556cf256a",
       "status_aprovacao": "pendente",
       "titulo": "Casa Teste Fotos",
       "link_booking": null,
@@ -321,9 +321,9 @@
     "test": "Property Details Loading",
     "success": true,
     "message": "\u2705 Property details loaded successfully. ObjectId properly removed. Property: Casa Teste Aprova\u00e7\u00e3o",
-    "timestamp": "2025-10-03T13:30:08.764625",
+    "timestamp": "2025-10-06T16:40:04.889558",
     "response_data": {
-      "property_id": "29f80f6e-62bc-443a-a481-2392c27ba472",
+      "property_id": "bc607a61-a4c9-4b88-8a87-77aa6f1b0449",
       "titulo": "Casa Teste Aprova\u00e7\u00e3o",
       "has_mongodb_id": false,
       "visualizacoes": 0
@@ -333,9 +333,9 @@
     "test": "Property Owner Information",
     "success": true,
     "message": "\u2705 Property owner information retrieved successfully. Owner: Jo\u00e3o Silva (Role: membro)",
-    "timestamp": "2025-10-03T13:30:08.781315",
+    "timestamp": "2025-10-06T16:40:04.962850",
     "response_data": {
-      "property_id": "29f80f6e-62bc-443a-a481-2392c27ba472",
+      "property_id": "bc607a61-a4c9-4b88-8a87-77aa6f1b0449",
       "owner_name": "Jo\u00e3o Silva",
       "owner_role": "membro",
       "owner_id": "51e79d47-4193-494c-98c0-a15c1b208266",
@@ -346,21 +346,17 @@
     "test": "Admin Login",
     "success": true,
     "message": "Login successful for admin@alt-ilhabela.com with role admin",
-    "timestamp": "2025-10-03T13:30:09.058212",
+    "timestamp": "2025-10-06T16:40:05.198157",
     "response_data": null
   },
   {
     "test": "Get Pending Properties",
     "success": true,
     "message": "Found 5 pending properties for approval",
-    "timestamp": "2025-10-03T13:30:09.066966",
+    "timestamp": "2025-10-06T16:40:05.211707",
     "response_data": {
       "count": 5,
       "properties": [
-        {
-          "id": "b2ffa675-7726-4c9d-80a3-3c5cb8e4c5e3",
-          "titulo": "Casa Teste Fotos"
-        },
         {
           "id": "a992d306-8858-4074-8362-795b29a532a0",
           "titulo": "Casa com Sistema de Fotos Completo"
@@ -368,8 +364,117 @@
         {
           "id": "5632d21a-d31b-4deb-b359-d27f57ffc201",
           "titulo": "Casa Teste Fotos"
+        },
+        {
+          "id": "cde1b87c-1b65-44fc-8b10-38b3a4962b2e",
+          "titulo": "Casa Teste Fotos"
         }
       ]
+    }
+  },
+  {
+    "test": "Password Recovery - Valid Email",
+    "success": true,
+    "message": "\u2705 Password recovery request processed correctly: Se o email estiver cadastrado, voc\u00ea receber\u00e1 instru\u00e7\u00f5es de recupera\u00e7\u00e3o",
+    "timestamp": "2025-10-06T16:40:06.479015",
+    "response_data": {
+      "response": {
+        "message": "Se o email estiver cadastrado, voc\u00ea receber\u00e1 instru\u00e7\u00f5es de recupera\u00e7\u00e3o"
+      },
+      "email_tested": "membro@alt-ilhabela.com"
+    }
+  },
+  {
+    "test": "Password Recovery - Invalid Email Security",
+    "success": true,
+    "message": "\u2705 Security check passed: Same response for invalid email (doesn't reveal if email exists)",
+    "timestamp": "2025-10-06T16:40:06.489424",
+    "response_data": {
+      "response": {
+        "message": "Se o email estiver cadastrado, voc\u00ea receber\u00e1 instru\u00e7\u00f5es de recupera\u00e7\u00e3o"
+      },
+      "email_tested": "nonexistent@alt-ilhabela.com"
+    }
+  },
+  {
+    "test": "Password Recovery - Missing Email",
+    "success": true,
+    "message": "\u2705 Correctly rejected request with missing email: Email \u00e9 obrigat\u00f3rio",
+    "timestamp": "2025-10-06T16:40:06.496814",
+    "response_data": {
+      "response": {
+        "detail": "Email \u00e9 obrigat\u00f3rio"
+      }
+    }
+  },
+  {
+    "test": "Password Recovery - Baseline Login",
+    "success": false,
+    "message": "Cannot establish baseline - member login failed: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-06T16:40:06.773975",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-06T16:40:07.009185",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": true,
+    "message": "Login successful for admin@alt-ilhabela.com with role admin",
+    "timestamp": "2025-10-06T16:40:07.244534",
+    "response_data": null
+  },
+  {
+    "test": "User Deletion - Admin Self-Deletion Prevention",
+    "success": false,
+    "message": "\u274c SECURITY ISSUE: Admin self-deletion was allowed - Status 200: {\"message\":\"Usu\u00e1rio desativado com sucesso\"}",
+    "timestamp": "2025-10-06T16:40:07.306398",
+    "response_data": null
+  },
+  {
+    "test": "Admin Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Conta desativada\"}",
+    "timestamp": "2025-10-06T16:40:07.544032",
+    "response_data": null
+  },
+  {
+    "test": "User Deletion - Admin Login for Invalid ID Test",
+    "success": false,
+    "message": "Failed to login as admin",
+    "timestamp": "2025-10-06T16:40:07.544064",
+    "response_data": null
+  },
+  {
+    "test": "Member Login",
+    "success": false,
+    "message": "Login failed with status 401: {\"detail\":\"Email ou senha incorretos\"}",
+    "timestamp": "2025-10-06T16:40:07.780046",
+    "response_data": null
+  },
+  {
+    "test": "User Deletion - Member Login",
+    "success": false,
+    "message": "Failed to login as member for unauthorized access testing",
+    "timestamp": "2025-10-06T16:40:07.780080",
+    "response_data": null
+  },
+  {
+    "test": "Email System Integration",
+    "success": true,
+    "message": "\u2705 Email system integration working - Password recovery processed successfully. Check backend logs for SMTP connection and email sending confirmation.",
+    "timestamp": "2025-10-06T16:40:08.481926",
+    "response_data": {
+      "response": {
+        "message": "Se o email estiver cadastrado, voc\u00ea receber\u00e1 instru\u00e7\u00f5es de recupera\u00e7\u00e3o"
+      },
+      "email_config_note": "SMTP configured: smtp.gmail.com:587 with TLS",
+      "email_user": "ilhabelaalt@gmail.com",
+      "test_email": "membro@alt-ilhabela.com"
     }
   }
 ]
