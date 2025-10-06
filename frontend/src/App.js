@@ -1542,6 +1542,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRecuperarSenha, setShowRecuperarSenha] = useState(false);
   const { login, user } = useAuth();
 
   // Redirect if already logged in
