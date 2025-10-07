@@ -51,13 +51,25 @@ export const CandidaturaMembroPage = () => {
         mensagem: ''
       });
     } catch (error) {
+      let errorMessage = "Tente novamente mais tarde.";
+      if (error.response?.data?.detail) {
+        const errorDetail = error.response.data.detail;
+        if (Array.isArray(errorDetail)) {
+          // Se for uma lista de erros de validação (comum em APIs FastAPI)
+          errorMessage = errorDetail.map(err => `${err.loc[1]}: ${err.msg}`).join('; ');
+        } else if (typeof errorDetail === 'string') {
+          // Se for uma única mensagem de erro
+          errorMessage = errorDetail;
+        }
+      }
+
       toast({
         title: "Erro ao enviar candidatura",
-        description: error.response?.data?.detail || "Tente novamente mais tarde.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
-    
+
     setLoading(false);
   };
 
@@ -68,7 +80,7 @@ export const CandidaturaMembroPage = () => {
           <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
             Candidatura para Membro
           </h1>
-          
+
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas do Candidato</CardTitle>
@@ -76,7 +88,7 @@ export const CandidaturaMembroPage = () => {
                 Preencha todas as informações para se candidatar como membro da ALT Ilhabela
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -86,12 +98,12 @@ export const CandidaturaMembroPage = () => {
                       id="nome"
                       className="form-input"
                       value={formData.nome}
-                      onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                       required
                       data-testid="membro-nome-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email" className="form-label">Email *</Label>
                     <Input
@@ -99,13 +111,13 @@ export const CandidaturaMembroPage = () => {
                       type="email"
                       className="form-input"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
                       data-testid="membro-email-input"
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="telefone" className="form-label">Telefone *</Label>
@@ -113,13 +125,13 @@ export const CandidaturaMembroPage = () => {
                       id="telefone"
                       className="form-input"
                       value={formData.telefone}
-                      onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                       required
                       placeholder="(11) 99999-9999"
                       data-testid="membro-telefone-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="num_imoveis" className="form-label">Número de Imóveis *</Label>
                     <Input
@@ -128,26 +140,26 @@ export const CandidaturaMembroPage = () => {
                       min="1"
                       className="form-input"
                       value={formData.num_imoveis}
-                      onChange={(e) => setFormData({...formData, num_imoveis: parseInt(e.target.value)})}
+                      onChange={(e) => setFormData({ ...formData, num_imoveis: parseInt(e.target.value) })}
                       required
                       data-testid="membro-num-imoveis-input"
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="endereco" className="form-label">Endereço dos Imóveis *</Label>
                   <Textarea
                     id="endereco"
                     className="form-input"
                     value={formData.endereco}
-                    onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                     required
                     placeholder="Endereço completo dos imóveis em Ilhabela"
                     data-testid="membro-endereco-input"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="link_imovel" className="form-label">Link do Imóvel (Airbnb/Booking/Site)</Label>
                   <Input
@@ -155,18 +167,18 @@ export const CandidaturaMembroPage = () => {
                     type="url"
                     className="form-input"
                     value={formData.link_imovel}
-                    onChange={(e) => setFormData({...formData, link_imovel: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, link_imovel: e.target.value })}
                     placeholder="https://www.airbnb.com/rooms/..."
                     data-testid="membro-link-input"
                   />
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="experiencia_locacao" className="form-label">Tempo de Experiência com Locação</Label>
-                    <Select 
-                      value={formData.experiencia_locacao} 
-                      onValueChange={(value) => setFormData({...formData, experiencia_locacao: value})}
+                    <Select
+                      value={formData.experiencia_locacao}
+                      onValueChange={(value) => setFormData({ ...formData, experiencia_locacao: value })}
                     >
                       <SelectTrigger className="form-input">
                         <SelectValue placeholder="Selecione" />
@@ -179,7 +191,7 @@ export const CandidaturaMembroPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="renda_mensal_estimada" className="form-label">Renda Mensal Estimada (R$)</Label>
                     <Input
@@ -187,41 +199,41 @@ export const CandidaturaMembroPage = () => {
                       type="number"
                       className="form-input"
                       value={formData.renda_mensal_estimada}
-                      onChange={(e) => setFormData({...formData, renda_mensal_estimada: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, renda_mensal_estimada: e.target.value })}
                       placeholder="5000"
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="possui_alvara"
                     checked={formData.possui_alvara}
-                    onChange={(e) => setFormData({...formData, possui_alvara: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, possui_alvara: e.target.checked })}
                     className="rounded focus-teal"
                   />
                   <Label htmlFor="possui_alvara" className="form-label mb-0">
                     Possuo alvará de funcionamento para locação por temporada
                   </Label>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="mensagem" className="form-label">Mensagem Adicional</Label>
                   <Textarea
                     id="mensagem"
                     className="form-input"
                     value={formData.mensagem}
-                    onChange={(e) => setFormData({...formData, mensagem: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
                     placeholder="Conte-nos um pouco sobre você, seus imóveis e por que deseja se juntar à ALT..."
                     rows={4}
                     data-testid="membro-mensagem-input"
                   />
                 </div>
-                
+
                 <div className="flex space-x-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={loading}
                     className="flex-1 btn-primary"
                     data-testid="membro-submit-btn"
@@ -235,7 +247,7 @@ export const CandidaturaMembroPage = () => {
                       'Enviar Candidatura'
                     )}
                   </Button>
-                  
+
                   <Button
                     type="button"
                     variant="outline"
@@ -298,13 +310,25 @@ export const CandidaturaParceiroPage = () => {
         mensagem: ''
       });
     } catch (error) {
+      let errorMessage = "Tente novamente mais tarde.";
+      if (error.response?.data?.detail) {
+        const errorDetail = error.response.data.detail;
+        if (Array.isArray(errorDetail)) {
+          // Se for uma lista de erros de validação (comum em APIs FastAPI)
+          errorMessage = errorDetail.map(err => `${err.loc[1]}: ${err.msg}`).join('; ');
+        } else if (typeof errorDetail === 'string') {
+          // Se for uma única mensagem de erro
+          errorMessage = errorDetail;
+        }
+      }
+
       toast({
         title: "Erro ao enviar candidatura",
-        description: error.response?.data?.detail || "Tente novamente mais tarde.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
-    
+
     setLoading(false);
   };
 
@@ -315,7 +339,7 @@ export const CandidaturaParceiroPage = () => {
           <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
             Candidatura para Parceiro
           </h1>
-          
+
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas da Empresa</CardTitle>
@@ -323,7 +347,7 @@ export const CandidaturaParceiroPage = () => {
                 Preencha todas as informações para se candidatar como parceiro da ALT Ilhabela
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -333,12 +357,12 @@ export const CandidaturaParceiroPage = () => {
                       id="nome"
                       className="form-input"
                       value={formData.nome}
-                      onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                       required
                       data-testid="parceiro-nome-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email" className="form-label">Email *</Label>
                     <Input
@@ -346,13 +370,13 @@ export const CandidaturaParceiroPage = () => {
                       type="email"
                       className="form-input"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
                       data-testid="parceiro-email-input"
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="telefone" className="form-label">Telefone *</Label>
@@ -360,42 +384,42 @@ export const CandidaturaParceiroPage = () => {
                       id="telefone"
                       className="form-input"
                       value={formData.telefone}
-                      onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                       required
                       data-testid="parceiro-telefone-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="cnpj" className="form-label">CNPJ</Label>
                     <Input
                       id="cnpj"
                       className="form-input"
                       value={formData.cnpj}
-                      onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
                       placeholder="00.000.000/0000-00"
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="nome_empresa" className="form-label">Nome da Empresa *</Label>
                   <Input
                     id="nome_empresa"
                     className="form-input"
                     value={formData.nome_empresa}
-                    onChange={(e) => setFormData({...formData, nome_empresa: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })}
                     required
                     data-testid="parceiro-empresa-input"
                   />
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="categoria" className="form-label">Categoria *</Label>
-                    <Select 
-                      value={formData.categoria} 
-                      onValueChange={(value) => setFormData({...formData, categoria: value})}
+                    <Select
+                      value={formData.categoria}
+                      onValueChange={(value) => setFormData({ ...formData, categoria: value })}
                     >
                       <SelectTrigger className="form-input" data-testid="parceiro-categoria-select">
                         <SelectValue placeholder="Selecione a categoria" />
@@ -412,12 +436,12 @@ export const CandidaturaParceiroPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="tempo_operacao" className="form-label">Tempo de Operação</Label>
-                    <Select 
-                      value={formData.tempo_operacao} 
-                      onValueChange={(value) => setFormData({...formData, tempo_operacao: value})}
+                    <Select
+                      value={formData.tempo_operacao}
+                      onValueChange={(value) => setFormData({ ...formData, tempo_operacao: value })}
                     >
                       <SelectTrigger className="form-input">
                         <SelectValue placeholder="Selecione" />
@@ -431,7 +455,7 @@ export const CandidaturaParceiroPage = () => {
                     </Select>
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="website" className="form-label">Website da Empresa</Label>
@@ -440,12 +464,12 @@ export const CandidaturaParceiroPage = () => {
                       type="url"
                       className="form-input"
                       value={formData.website}
-                      onChange={(e) => setFormData({...formData, website: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                       placeholder="https://www.exemplo.com"
                       data-testid="parceiro-website-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="link_empresa" className="form-label">Link Adicional (Instagram/Facebook)</Label>
                     <Input
@@ -453,51 +477,51 @@ export const CandidaturaParceiroPage = () => {
                       type="url"
                       className="form-input"
                       value={formData.link_empresa}
-                      onChange={(e) => setFormData({...formData, link_empresa: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, link_empresa: e.target.value })}
                       placeholder="https://www.instagram.com/..."
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="servicos_oferecidos" className="form-label">Serviços Oferecidos</Label>
                   <Textarea
                     id="servicos_oferecidos"
                     className="form-input"
                     value={formData.servicos_oferecidos}
-                    onChange={(e) => setFormData({...formData, servicos_oferecidos: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })}
                     placeholder="Descreva os principais serviços que sua empresa oferece..."
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="capacidade_atendimento" className="form-label">Capacidade de Atendimento</Label>
                   <Input
                     id="capacidade_atendimento"
                     className="form-input"
                     value={formData.capacidade_atendimento}
-                    onChange={(e) => setFormData({...formData, capacidade_atendimento: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, capacidade_atendimento: e.target.value })}
                     placeholder="Ex: 50 pessoas por dia, 20 mesas, etc."
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="mensagem" className="form-label">Por que deseja ser parceiro?</Label>
                   <Textarea
                     id="mensagem"
                     className="form-input"
                     value={formData.mensagem}
-                    onChange={(e) => setFormData({...formData, mensagem: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
                     placeholder="Conte-nos sobre sua empresa e como pode contribuir com o turismo em Ilhabela..."
                     rows={4}
                     data-testid="parceiro-mensagem-input"
                   />
                 </div>
-                
+
                 <div className="flex space-x-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={loading || !formData.categoria}
                     className="flex-1 btn-primary"
                     data-testid="parceiro-submit-btn"
@@ -511,7 +535,7 @@ export const CandidaturaParceiroPage = () => {
                       'Enviar Candidatura'
                     )}
                   </Button>
-                  
+
                   <Button
                     type="button"
                     variant="outline"
@@ -570,13 +594,25 @@ export const CandidaturaAssociadoPage = () => {
         mensagem: ''
       });
     } catch (error) {
+      let errorMessage = "Tente novamente mais tarde.";
+      if (error.response?.data?.detail) {
+        const errorDetail = error.response.data.detail;
+        if (Array.isArray(errorDetail)) {
+          // Se for uma lista de erros de validação (comum em APIs FastAPI)
+          errorMessage = errorDetail.map(err => `${err.loc[1]}: ${err.msg}`).join('; ');
+        } else if (typeof errorDetail === 'string') {
+          // Se for uma única mensagem de erro
+          errorMessage = errorDetail;
+        }
+      }
+
       toast({
         title: "Erro ao enviar candidatura",
-        description: error.response?.data?.detail || "Tente novamente mais tarde.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
-    
+
     setLoading(false);
   };
 
@@ -587,7 +623,7 @@ export const CandidaturaAssociadoPage = () => {
           <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
             Candidatura para Associado
           </h1>
-          
+
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas do Candidato</CardTitle>
@@ -595,7 +631,7 @@ export const CandidaturaAssociadoPage = () => {
                 Preencha todas as informações para se candidatar como associado da ALT Ilhabela
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -605,12 +641,12 @@ export const CandidaturaAssociadoPage = () => {
                       id="nome"
                       className="form-input"
                       value={formData.nome}
-                      onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                       required
                       data-testid="associado-nome-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email" className="form-label">Email *</Label>
                     <Input
@@ -618,13 +654,13 @@ export const CandidaturaAssociadoPage = () => {
                       type="email"
                       className="form-input"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
                       data-testid="associado-email-input"
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="telefone" className="form-label">Telefone *</Label>
@@ -632,26 +668,26 @@ export const CandidaturaAssociadoPage = () => {
                       id="telefone"
                       className="form-input"
                       value={formData.telefone}
-                      onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                       required
                       data-testid="associado-telefone-input"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="ocupacao" className="form-label">Ocupação *</Label>
                     <Input
                       id="ocupacao"
                       className="form-input"
                       value={formData.ocupacao}
-                      onChange={(e) => setFormData({...formData, ocupacao: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, ocupacao: e.target.value })}
                       required
                       placeholder="Ex: Advogado, Empresário, Aposentado..."
                       data-testid="associado-ocupacao-input"
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="empresa_trabalho" className="form-label">Empresa onde Trabalha</Label>
@@ -659,11 +695,11 @@ export const CandidaturaAssociadoPage = () => {
                       id="empresa_trabalho"
                       className="form-input"
                       value={formData.empresa_trabalho}
-                      onChange={(e) => setFormData({...formData, empresa_trabalho: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, empresa_trabalho: e.target.value })}
                       placeholder="Nome da empresa"
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="linkedin" className="form-label">LinkedIn</Label>
                     <Input
@@ -671,43 +707,43 @@ export const CandidaturaAssociadoPage = () => {
                       type="url"
                       className="form-input"
                       value={formData.linkedin}
-                      onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                       placeholder="https://linkedin.com/in/..."
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="motivo_interesse" className="form-label">Por que deseja ser associado? *</Label>
                   <Textarea
                     id="motivo_interesse"
                     className="form-input"
                     value={formData.motivo_interesse}
-                    onChange={(e) => setFormData({...formData, motivo_interesse: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, motivo_interesse: e.target.value })}
                     required
                     placeholder="Explique sua motivação para apoiar a ALT Ilhabela..."
                     rows={4}
                     data-testid="associado-motivo-input"
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="contribuicao_pretendida" className="form-label">Como pretende contribuir?</Label>
                   <Textarea
                     id="contribuicao_pretendida"
                     className="form-input"
                     value={formData.contribuicao_pretendida}
-                    onChange={(e) => setFormData({...formData, contribuicao_pretendida: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, contribuicao_pretendida: e.target.value })}
                     placeholder="Descreva como pode contribuir com a associação..."
                     rows={3}
                   />
                 </div>
-                
+
                 <div>
                   <Label htmlFor="disponibilidade" className="form-label">Disponibilidade para Atividades</Label>
-                  <Select 
-                    value={formData.disponibilidade} 
-                    onValueChange={(value) => setFormData({...formData, disponibilidade: value})}
+                  <Select
+                    value={formData.disponibilidade}
+                    onValueChange={(value) => setFormData({ ...formData, disponibilidade: value })}
                   >
                     <SelectTrigger className="form-input">
                       <SelectValue placeholder="Selecione sua disponibilidade" />
@@ -720,23 +756,23 @@ export const CandidaturaAssociadoPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="mensagem" className="form-label">Mensagem Adicional</Label>
                   <Textarea
                     id="mensagem"
                     className="form-input"
                     value={formData.mensagem}
-                    onChange={(e) => setFormData({...formData, mensagem: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
                     placeholder="Informações adicionais que gostaria de compartilhar..."
                     rows={3}
                     data-testid="associado-mensagem-input"
                   />
                 </div>
-                
+
                 <div className="flex space-x-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={loading}
                     className="flex-1 btn-primary"
                     data-testid="associado-submit-btn"
@@ -750,7 +786,7 @@ export const CandidaturaAssociadoPage = () => {
                       'Enviar Candidatura'
                     )}
                   </Button>
-                  
+
                   <Button
                     type="button"
                     variant="outline"

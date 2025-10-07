@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPage } from './components/Forms';
@@ -7,8 +7,7 @@ import { MeusImoveisPage, TodosImoveisPage, ParceirosPage, MeuPerfilPage } from 
 import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPages';
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
-
-// Import shadcn components
+import PhotoUpload from './components/PhotoUpload';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
@@ -19,14 +18,35 @@ import { toast } from './hooks/use-toast';
 import { Toaster } from './components/ui/toaster';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Badge } from './components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, Settings, Star, Mail, ArrowUp } from 'lucide-react';
+
+axios.interceptors.response.use(
+  response => response,
+
+  error => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+      toast({
+        title: "Sessão Expirada",
+        description: "Por favor, faça o login novamente para continuar.",
+        variant: "destructive",
+      });
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Auth Context
 const AuthContext = React.createContext();
 
-// Auth Provider
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,16 +77,16 @@ const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(`${API}/auth/login`, { email, password });
       const { access_token, user: userData } = response.data;
-      
+
       localStorage.setItem('token', access_token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       setUser(userData);
-      
+
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Erro ao fazer login' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Erro ao fazer login'
       };
     }
   };
@@ -91,7 +111,6 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook to use auth
 const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (!context) {
@@ -100,7 +119,6 @@ const useAuth = () => {
   return context;
 };
 
-// Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
 
@@ -123,7 +141,55 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   return children;
 };
 
-// Header Component
+const UserProfileMenu = ({ user, logout }) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-white hover:bg-white/10"
+        >
+          <User className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">{user.nome}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel>
+          {user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <a href="/alterar-senha" className="flex items-center">
+            <Key className="mr-2 h-4 w-4" />
+            Alterar Senha
+          </a>
+        </DropdownMenuItem>
+
+        {user.role === 'parceiro' && (
+          <DropdownMenuItem asChild>
+            <a href="/meu-perfil" className="flex items-center">
+              <Briefcase className="mr-2 h-4 w-4" />
+              Meu Perfil
+            </a>
+          </DropdownMenuItem>
+        )}
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onClick={logout}
+          className="text-destructive cursor-pointer"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 const Header = () => {
   const { user, logout } = useAuth();
 
@@ -131,29 +197,19 @@ const Header = () => {
     <header className="header-gradient text-white shadow-lg">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
+          <Home className="h-6 w-6" />
           <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
           <span className="text-sm opacity-90 hidden md:block">Associação de Locação por Temporada</span>
         </div>
-        
+
         {user ? (
-          <div className="flex items-center space-x-4">
-            <span className="text-sm hidden sm:block">
-              Olá, {user.nome} 
-              <Badge className="ml-2 bg-white/20">{user.role}</Badge>
-            </span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={logout}
-              className="text-white border-white/50 hover:bg-white hover:text-gray-800 transition-all"
-            >
-              Sair
-            </Button>
+          <div className="hidden sm:flex items-center space-x-4">
+            <UserProfileMenu user={user} logout={logout} />
           </div>
         ) : (
           <div className="space-x-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => window.location.href = '/login'}
               className="text-white border-white/50 hover:bg-white hover:text-gray-800"
@@ -162,117 +218,146 @@ const Header = () => {
             </Button>
           </div>
         )}
+
+        {user && (
+          <div className="sm:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right">
+                <nav className="flex flex-col space-y-4 pt-8">
+                  <h3 className="font-bold text-lg text-primary-teal border-b pb-2">
+                    Olá, {user.nome}
+                  </h3>
+                  <Navigation isMobile={true} />
+                </nav>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={logout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        )}
       </div>
     </header>
   );
 };
 
-// Navigation for logged-in users
-const Navigation = () => {
+const Navigation = ({ isMobile = false }) => {
   const { user } = useAuth();
-  
+  const location = useLocation();
+
   if (!user) return null;
-  
+
+  const isLinkActive = (path) => location.pathname === path;
+
+  const navLinkClass = (path) =>
+    isMobile
+      ? `flex items-center space-x-2 py-2 px-3 rounded-md ${isLinkActive(path) ? 'bg-primary-teal text-white' : 'text-gray-700 hover:bg-gray-100'}`
+      : `nav-link py-3 px-3 whitespace-nowrap ${isLinkActive(path) ? 'active' : ''}`;
+
+  const LinkComponent = ({ href, children, icon: Icon }) => (
+    <a
+      href={href}
+      className={navLinkClass(href)}
+      onClick={isMobile ? () => window.location.href = href : undefined}
+    >
+      {Icon && <Icon className="h-5 w-5" />}
+      {children}
+    </a>
+  );
+
+  const desktopNavContent = (
+    <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
+      <LinkComponent href="/main">Início</LinkComponent>
+
+      {user.role === 'admin' && (
+        <>
+          <LinkComponent href="/admin/dashboard">Dashboard</LinkComponent>
+          <LinkComponent href="/admin/candidaturas">Candidaturas</LinkComponent>
+          <LinkComponent href="/admin/destaques">Destaques (Início)</LinkComponent>
+          <LinkComponent href="/admin/imoveis">Imóveis (Admin)</LinkComponent>
+          <LinkComponent href="/admin/usuarios">Usuários</LinkComponent>
+          <LinkComponent href="/admin/conteudo">Conteúdo</LinkComponent>
+          <LinkComponent href="/admin/comunicacao">Comunicação</LinkComponent>
+        </>
+      )}
+
+      {user.role === 'membro' && (
+        <>
+          <LinkComponent href="/meus-imoveis">Meus Imóveis</LinkComponent>
+          <LinkComponent href="/imoveis">Todos os Imóveis</LinkComponent>
+        </>
+      )}
+
+      {user.role === 'parceiro' && (
+        <>
+          <LinkComponent href="/imoveis">Imóveis</LinkComponent>
+        </>
+      )}
+
+      <LinkComponent href="/parceiros">Parceiros</LinkComponent>
+    </div>
+  );
+
+  const mobileNavContent = (
+    <>
+      <LinkComponent href="/main" icon={Home}>Início</LinkComponent>
+
+      {user.role === 'admin' && (
+        <>
+          <LinkComponent href="/admin/dashboard" icon={Settings}>Dashboard</LinkComponent>
+          <LinkComponent href="/admin/destaques" icon={Star}>Destaques (Início)</LinkComponent>
+          <LinkComponent href="/admin/candidaturas" icon={Briefcase}>Candidaturas</LinkComponent>
+          <LinkComponent href="/admin/imoveis" icon={FileText}>Imóveis (Admin)</LinkComponent>
+          <LinkComponent href="/admin/usuarios" icon={Users}>Usuários</LinkComponent>
+          <LinkComponent href="/admin/conteudo" icon={FileText}>Conteúdo</LinkComponent>
+          <LinkComponent href="/admin/comunicacao" icon={Mail}>Comunicação</LinkComponent>
+        </>
+      )}
+
+      {user.role === 'membro' && (
+        <>
+          <LinkComponent href="/meus-imoveis" icon={Home}>Meus Imóveis</LinkComponent>
+          <LinkComponent href="/imoveis" icon={Home}>Todos os Imóveis</LinkComponent>
+        </>
+      )}
+
+      {user.role === 'parceiro' && (
+        <>
+          <LinkComponent href="/meu-perfil" icon={Briefcase}>Meu Perfil</LinkComponent>
+          <LinkComponent href="/imoveis" icon={Home}>Imóveis</LinkComponent>
+        </>
+      )}
+
+      <LinkComponent href="/parceiros" icon={Users}>Parceiros</LinkComponent>
+      <LinkComponent href="/alterar-senha" icon={Key}>Alterar Senha</LinkComponent>
+    </>
+  );
+
+  if (isMobile) {
+    return mobileNavContent;
+  }
+
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white shadow-sm border-b hidden sm:block">
       <div className="container mx-auto px-4">
-        <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
-          <a 
-            href="/main" 
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Início
-          </a>
-          
-          {user.role === 'admin' && (
-            <>
-              <a 
-                href="/admin/dashboard" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Dashboard
-              </a>
-              <a 
-                href="/imoveis" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Imóveis
-              </a>
-              <a 
-                href="/admin/usuarios" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Usuários
-              </a>
-              <a 
-                href="/admin/conteudo" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Conteúdo
-              </a>
-              <a 
-                href="/admin/comunicacao" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Comunicação
-              </a>
-            </>
-          )}
-          
-          {user.role === 'membro' && (
-            <>
-              <a 
-                href="/meus-imoveis" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Meus Imóveis
-              </a>
-              <a 
-                href="/imoveis" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Todos os Imóveis
-              </a>
-            </>
-          )}
-          
-          {user.role === 'parceiro' && (
-            <>
-              <a 
-                href="/meu-perfil" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Meu Perfil
-              </a>
-              <a 
-                href="/imoveis" 
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Imóveis
-              </a>
-            </>
-          )}
-          
-          <a 
-            href="/parceiros" 
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Parceiros
-          </a>
-          
-          <a 
-            href="/alterar-senha" 
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Alterar Senha
-          </a>
-        </div>
+        {desktopNavContent}
       </div>
     </nav>
   );
 };
 
-// Main Page for Authenticated Users (Rich Content)
 const MainPage = () => {
   const navigate = useNavigate();
   const [pageData, setPageData] = useState({
@@ -317,62 +402,39 @@ const MainPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <Navigation />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Hero Section with Featured News */}
-        {pageData.noticias_destaque.length > 0 && (
-          <section className="mb-12 fade-in">
-            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Notícias em Destaque</h2>
-            <div className="grid lg:grid-cols-3 gap-6">
-              {pageData.noticias_destaque.map((noticia, index) => (
-                <div key={noticia.id} className={`${index === 0 ? "lg:col-span-2" : ""} news-card`}>
-                  {noticia.video_url && (
-                    <div className="aspect-video mb-4">
-                      <iframe
-                        src={noticia.video_url}
-                        className="w-full h-full rounded-t-lg"
-                        allowFullScreen
-                        title={noticia.titulo}
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <Badge className="badge-teal mb-3">{noticia.categoria}</Badge>
-                    <h3 className={`font-bold mb-3 text-primary-gray ${index === 0 ? "text-2xl" : "text-lg"}`}>
-                      {noticia.titulo}
-                    </h3>
-                    {noticia.subtitulo && (
-                      <p className="text-gray-600 mb-4">{noticia.subtitulo}</p>
-                    )}
-                    <p className="text-gray-600 mb-4">
-                      {noticia.resumo || noticia.conteudo.substring(0, 150) + '...'}
-                    </p>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>Por {noticia.autor_nome}</span>
-                      <span>{new Date(noticia.created_at).toLocaleDateString('pt-BR')}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Featured Properties */}
+      <div className="container mx-auto px-4 py-8">
+        <section className="hero-gradient rounded-xl text-white p-10 mb-12 shadow-xl">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 fade-in">
+              Bem-vindo ao Portal ALT Ilhabela
+            </h1>
+            <p className="text-lg md:text-xl mb-6 opacity-90 fade-in">
+              Qualidade e Exclusividade em Locação por Temporada.
+            </p>
+            <Button
+              className="btn-secondary hover-lift text-lg px-8 py-3"
+              onClick={() => navigate('/imoveis')}
+            >
+              Ver Imóveis Certificados
+            </Button>
+          </div>
+        </section>
+
         {pageData.imoveis_destaque.length > 0 && (
           <section className="mb-12 fade-in">
             <h2 className="text-3xl font-bold mb-6 text-primary-gray">Imóveis em Destaque</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pageData.imoveis_destaque.map((imovel) => (
-                <div 
-                  key={imovel.id} 
-                  className="property-card hover-lift cursor-pointer" 
+                <div
+                  key={imovel.id}
+                  className="property-card hover-lift cursor-pointer"
                   onClick={() => navigate(`/imovel/${imovel.id}`)}
                 >
                   {imovel.fotos.length > 0 ? (
                     <div className="property-image">
-                      <img 
-                        src={imovel.fotos[0]} 
+                      <img
+                        src={imovel.fotos[0]}
                         alt={imovel.titulo}
                         className="w-full h-full object-cover"
                       />
@@ -382,18 +444,18 @@ const MainPage = () => {
                       <span className="text-gray-500">Sem foto</span>
                     </div>
                   )}
-                  
+
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-bold text-primary-gray line-clamp-1">{imovel.titulo}</h3>
                       <Badge className="badge-beige flex-shrink-0 ml-2">{imovel.tipo}</Badge>
                     </div>
                     <p className="text-gray-600 text-sm mb-3">{imovel.regiao}</p>
-                    
+
                     <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                       {imovel.descricao}
                     </p>
-                    
+
                     <div className="flex justify-between items-center mb-4">
                       <div className="text-xs text-gray-500">
                         <span>{imovel.num_quartos}q • {imovel.num_banheiros}b • {imovel.capacidade}p</span>
@@ -402,25 +464,6 @@ const MainPage = () => {
                         R$ {imovel.preco_diaria}/dia
                       </div>
                     </div>
-                    
-                    {(imovel.link_booking || imovel.link_airbnb) && (
-                      <div className="flex space-x-2">
-                        {imovel.link_booking && (
-                          <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
-                            <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">
-                              Booking
-                            </a>
-                          </Button>
-                        )}
-                        {imovel.link_airbnb && (
-                          <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
-                            <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">
-                              Airbnb
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -428,70 +471,70 @@ const MainPage = () => {
           </section>
         )}
 
-        {/* Featured Partners */}
         {pageData.parceiros_destaque.length > 0 && (
           <section className="mb-12 fade-in">
             <h2 className="text-3xl font-bold mb-6 text-primary-gray">Parceiros em Destaque</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pageData.parceiros_destaque.map((parceiro) => (
-                <div 
-                  key={parceiro.id} 
-                  className="partner-card hover-lift cursor-pointer" 
+                <div
+                  key={parceiro.id}
+                  className="partner-card hover-lift cursor-pointer"
                   onClick={() => navigate(`/parceiro/${parceiro.id}`)}
                 >
                   {parceiro.fotos.length > 0 && (
                     <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden">
-                      <img 
-                        src={parceiro.fotos[0]} 
+                      <img
+                        src={parceiro.fotos[0]}
                         alt={parceiro.nome_empresa}
                         className="w-full h-full object-cover"
                       />
                     </div>
                   )}
-                  
+
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="text-lg font-bold text-primary-gray">{parceiro.nome_empresa}</h3>
                     <Badge className="badge-beige">{parceiro.categoria}</Badge>
                   </div>
-                  
+
                   <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
                     {parceiro.descricao}
                   </p>
-                  
-                  {parceiro.website && (
-                    <Button size="sm" variant="outline" className="w-full" asChild>
-                      <a href={parceiro.website} target="_blank" rel="noopener noreferrer">
-                        Visitar Site
-                      </a>
-                    </Button>
-                  )}
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Latest News */}
-        {pageData.ultimas_noticias.length > 0 && (
-          <section className="fade-in">
-            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Últimas Notícias</h2>
-            <div className="grid lg:grid-cols-2 gap-6">
-              {pageData.ultimas_noticias.slice(0, 6).map((noticia) => (
-                <div key={noticia.id} className="news-card">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <Badge className="badge-teal">{noticia.categoria}</Badge>
-                      <span className="text-xs text-gray-500">
-                        {new Date(noticia.created_at).toLocaleDateString('pt-BR')}
-                      </span>
+        {pageData.noticias_destaque.length > 0 && (
+          <section className="mb-12 fade-in">
+            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Notícias e Avisos</h2>
+            <div className="grid lg:grid-cols-3 gap-6">
+              {pageData.noticias_destaque.slice(0, 3).map((noticia) => (
+                <div key={noticia.id} className={`news-card hover-lift`}>
+                  {noticia.fotos && noticia.fotos.length > 0 && (
+                    <div className="aspect-video mb-4 bg-gray-200 rounded-t-lg overflow-hidden">
+                      {/* Renderiza a primeira foto */}
+                      <img
+                        src={noticia.fotos[0]}
+                        alt={noticia.titulo}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <h3 className="text-lg font-bold mb-2 text-primary-gray">{noticia.titulo}</h3>
+                  )}
+                  <div className="p-6">
+                    <Badge className="badge-teal mb-3">{noticia.categoria}</Badge>
+                    <h3 className={`font-bold mb-3 text-primary-gray text-lg`}>
+                      {noticia.titulo}
+                    </h3>
                     {noticia.subtitulo && (
-                      <p className="text-gray-600 text-sm mb-3">{noticia.subtitulo}</p>
+                      <p className="text-gray-600 mb-4">{noticia.subtitulo}</p>
                     )}
-                    <p className="text-gray-600 text-sm">
-                      {noticia.resumo || noticia.conteudo.substring(0, 100) + '...'}
+                    <p className="text-gray-600 mb-4">
+                      {noticia.resumo || noticia.conteudo.substring(0, 150) + '...'}
                     </p>
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>{new Date(noticia.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -503,7 +546,6 @@ const MainPage = () => {
   );
 };
 
-// Admin Dashboard with Statistics
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
     total_users: 0,
@@ -552,47 +594,45 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8 text-primary-gray">Dashboard Administrativo</h1>
-        
-        {/* Main Stats */}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           <div className="stat-card">
             <div className="stat-number">{stats.total_users}</div>
             <div className="stat-label">Total de Usuários</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-number text-orange-500">{stats.candidaturas_pendentes}</div>
             <div className="stat-label">Candidaturas Pendentes</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-number text-green-600">{stats.total_imoveis}</div>
             <div className="stat-label">Imóveis Cadastrados</div>
           </div>
-          
+
           <div className="stat-card">
             <div className="stat-number text-purple-600">{stats.total_noticias}</div>
             <div className="stat-label">Notícias Publicadas</div>
           </div>
         </div>
 
-        {/* Detailed Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="card-custom p-6">
             <h3 className="text-lg font-semibold mb-4 text-primary-gray">Membros</h3>
             <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_membros}</div>
             <p className="text-gray-600 text-sm">Proprietários de imóveis</p>
           </Card>
-          
+
           <Card className="card-custom p-6">
             <h3 className="text-lg font-semibold mb-4 text-primary-gray">Parceiros</h3>
             <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_parceiros}</div>
             <p className="text-gray-600 text-sm">Empresas parceiras</p>
           </Card>
-          
+
           <Card className="card-custom p-6">
             <h3 className="text-lg font-semibold mb-4 text-primary-gray">Associados</h3>
             <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_associados}</div>
@@ -600,41 +640,40 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Button 
+          <Button
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
             onClick={() => window.location.href = '/admin/candidaturas'}
           >
             <span className="text-lg font-semibold">Gerenciar</span>
             <span className="text-sm">Candidaturas</span>
           </Button>
-          
-          <Button 
+
+          <Button
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/imoveis'}
+            onClick={() => window.location.href = '/admin/destaques'}
           >
-            <span className="text-lg font-semibold">Aprovar</span>
-            <span className="text-sm">Imóveis</span>
+            <span className="text-lg font-semibold">Configurar</span>
+            <span className="text-sm">Destaques</span>
           </Button>
-          
-          <Button 
+
+          <Button
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
             onClick={() => window.location.href = '/admin/conteudo'}
           >
             <span className="text-lg font-semibold">Criar</span>
             <span className="text-sm">Notícia</span>
           </Button>
-          
-          <Button 
+
+          <Button
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
             onClick={() => window.location.href = '/admin/comunicacao'}
           >
             <span className="text-lg font-semibold">Enviar</span>
             <span className="text-sm">Email</span>
           </Button>
-          
-          <Button 
+
+          <Button
             className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
             onClick={() => window.location.href = '/admin/usuarios'}
           >
@@ -647,7 +686,134 @@ const AdminDashboard = () => {
   );
 };
 
-// Admin Panel for Applications (Restored)
+const AdminDestaques = () => {
+  const [imoveis, setImoveis] = useState([]);
+  const [parceiros, setParceiros] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDestaquesData();
+  }, []);
+
+  const fetchDestaquesData = async () => {
+    setLoading(true);
+    try {
+      const [imovelRes, parceiroRes] = await Promise.all([
+        axios.get(`${API}/imoveis?status=aprovado`),
+        axios.get(`${API}/parceiros`)
+      ]);
+      setImoveis(imovelRes.data);
+      setParceiros(parceiroRes.data);
+    } catch (error) {
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível buscar imóveis e parceiros.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
+
+  const toggleDestaque = async (type, id, currentStatus) => {
+    try {
+      const endpoint = `/admin/${type}/${id}/destaque`;
+      await axios.put(`${API}${endpoint}`, null, { params: { destaque: !currentStatus } });
+      toast({
+        title: `${type} atualizado!`,
+        description: `Item ${!currentStatus ? 'adicionado ao' : 'removido do'} destaque.`,
+      });
+      fetchDestaquesData();
+    } catch (error) {
+      toast({
+        title: `Erro ao atualizar ${type}`,
+        description: error.response?.data?.detail || "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Navigation />
+        <div className="flex justify-center items-center py-12">
+          <div className="spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Controle de Destaques (Página Inicial)</h1>
+
+        <Tabs defaultValue="imoveis" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="imoveis">Imóveis ({imoveis.filter(i => i.destaque).length} em Destaque)</TabsTrigger>
+            <TabsTrigger value="parceiros">Parceiros ({parceiros.filter(p => p.destaque).length} em Destaque)</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="imoveis" className="space-y-4">
+            <h2 className="text-xl font-semibold text-primary-gray mb-4">Gerenciar Imóveis em Destaque</h2>
+            {imoveis.map(imovel => (
+              <Card key={imovel.id} className={`card-custom ${imovel.destaque ? 'border-primary-teal' : 'border-gray-200'}`}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
+                      <CardDescription>{imovel.regiao} • R$ {imovel.preco_diaria}/dia</CardDescription>
+                      <Badge className={`mt-2 ${imovel.destaque ? 'badge-teal' : 'badge-beige'}`}>
+                        {imovel.destaque ? 'Em Destaque' : 'Normal'}
+                      </Badge>
+                    </div>
+                    <Button
+                      onClick={() => toggleDestaque('imoveis', imovel.id, imovel.destaque)}
+                      className={imovel.destaque ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'}
+                      size="sm"
+                    >
+                      {imovel.destaque ? 'Remover' : 'Destacar'}
+                    </Button>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="parceiros" className="space-y-4">
+            <h2 className="text-xl font-semibold text-primary-gray mb-4">Gerenciar Parceiros em Destaque</h2>
+            {parceiros.map(parceiro => (
+              <Card key={parceiro.id} className={`card-custom ${parceiro.destaque ? 'border-primary-teal' : 'border-gray-200'}`}>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg text-primary-gray">{parceiro.nome_empresa}</CardTitle>
+                      <CardDescription>{parceiro.categoria}</CardDescription>
+                      <Badge className={`mt-2 ${parceiro.destaque ? 'badge-teal' : 'badge-beige'}`}>
+                        {parceiro.destaque ? 'Em Destaque' : 'Normal'}
+                      </Badge>
+                    </div>
+                    <Button
+                      onClick={() => toggleDestaque('parceiros', parceiro.id, parceiro.destaque)}
+                      className={parceiro.destaque ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'}
+                      size="sm"
+                    >
+                      {parceiro.destaque ? 'Remover' : 'Destacar'}
+                    </Button>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
 const AdminCandidaturas = () => {
   const [candidaturasMembros, setCandidaturasMembros] = useState([]);
   const [candidaturasParceiros, setCandidaturasParceiros] = useState([]);
@@ -663,7 +829,7 @@ const AdminCandidaturas = () => {
         axios.get(`${API}/admin/candidaturas/parceiros`),
         axios.get(`${API}/admin/candidaturas/associados`)
       ]);
-      
+
       setCandidaturasMembros(membros.data);
       setCandidaturasParceiros(parceiros.data);
       setCandidaturasAssociados(associados.data);
@@ -700,8 +866,8 @@ const AdminCandidaturas = () => {
 
   const handleRecusar = async (tipo, id, motivo = '') => {
     try {
-      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/recusar`, 
-        {}, 
+      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/recusar`,
+        {},
         { params: { motivo } }
       );
       toast({
@@ -738,7 +904,7 @@ const AdminCandidaturas = () => {
             {candidatura.endereco && <p><strong>Endereço:</strong> {candidatura.endereco}</p>}
             {candidatura.num_imoveis && <p><strong>Nº Imóveis:</strong> {candidatura.num_imoveis}</p>}
             {candidatura.link_imovel && (
-              <p><strong>Link Imóvel:</strong> 
+              <p><strong>Link Imóvel:</strong>
                 <a href={candidatura.link_imovel} target="_blank" rel="noopener noreferrer" className="text-primary-teal ml-1">
                   Ver imóvel
                 </a>
@@ -771,7 +937,7 @@ const AdminCandidaturas = () => {
             )}
           </div>
         </div>
-        
+
         <div className="flex space-x-3">
           <Button
             onClick={() => handleAprovar(tipo, candidatura.id)}
@@ -800,7 +966,7 @@ const AdminCandidaturas = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Candidaturas</h1>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="membros" className="text-center">
@@ -813,7 +979,7 @@ const AdminCandidaturas = () => {
               Associados ({candidaturasAssociados.length})
             </TabsTrigger>
           </TabsList>
-          
+
           {loading ? (
             <div className="flex justify-center items-center py-12">
               <div className="spinner"></div>
@@ -834,7 +1000,7 @@ const AdminCandidaturas = () => {
                   ))
                 )}
               </TabsContent>
-              
+
               <TabsContent value="parceiros" className="space-y-4">
                 <h2 className="text-xl font-semibold text-primary-gray">Candidaturas para Parceiro</h2>
                 {candidaturasParceiros.length === 0 ? (
@@ -849,7 +1015,7 @@ const AdminCandidaturas = () => {
                   ))
                 )}
               </TabsContent>
-              
+
               <TabsContent value="associados" className="space-y-4">
                 <h2 className="text-xl font-semibold text-primary-gray">Candidaturas para Associado</h2>
                 {candidaturasAssociados.length === 0 ? (
@@ -872,7 +1038,6 @@ const AdminCandidaturas = () => {
   );
 };
 
-// Content Management (Restored)
 const AdminConteudo = () => {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -883,9 +1048,9 @@ const AdminConteudo = () => {
     conteudo: '',
     resumo: '',
     categoria: 'geral',
+    // Campos de URL removidos
+    fotos: [],
     video_url: '',
-    link_externo: '',
-    tags: [],
     destaque: false
   });
 
@@ -911,20 +1076,30 @@ const AdminConteudo = () => {
   const handleCreateNoticia = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/admin/noticias`, novaNoticia);
+      // O backend deve aceitar a lista de URLs de fotos, mesmo que algumas sejam vídeos.
+      // Modificamos a estrutura do payload:
+      const payload = {
+        ...novaNoticia,
+        // O campo 'fotos' contém URLs de imagens e vídeos
+        fotos: novaNoticia.fotos,
+        // Remover campos de URL antigos do payload, se existirem
+        video_url: novaNoticia.video_url,
+        link_externo: null
+      };
+
+      await axios.post(`${API}/admin/noticias`, payload);
       toast({
         title: "Notícia criada com sucesso!",
         description: "A notícia foi publicada na área dos membros.",
       });
+      // Reset
       setNovaNoticia({
         titulo: '',
         subtitulo: '',
         conteudo: '',
         resumo: '',
         categoria: 'geral',
-        video_url: '',
-        link_externo: '',
-        tags: [],
+        fotos: [],
         destaque: false
       });
       setShowForm(false);
@@ -932,7 +1107,7 @@ const AdminConteudo = () => {
     } catch (error) {
       toast({
         title: "Erro ao criar notícia",
-        description: "Tente novamente mais tarde.",
+        description: error.response?.data?.detail || "Tente novamente mais tarde.",
         variant: "destructive",
       });
     }
@@ -963,7 +1138,7 @@ const AdminConteudo = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-primary-gray">Gerenciar Conteúdo</h1>
-          <Button 
+          <Button
             className="btn-primary"
             onClick={() => setShowForm(true)}
           >
@@ -988,15 +1163,15 @@ const AdminConteudo = () => {
                       id="titulo"
                       className="form-input"
                       value={novaNoticia.titulo}
-                      onChange={(e) => setNovaNoticia({...novaNoticia, titulo: e.target.value})}
+                      onChange={(e) => setNovaNoticia({ ...novaNoticia, titulo: e.target.value })}
                       required
                     />
                   </div>
                   <div>
                     <Label htmlFor="categoria" className="form-label">Categoria</Label>
-                    <Select 
-                      value={novaNoticia.categoria} 
-                      onValueChange={(value) => setNovaNoticia({...novaNoticia, categoria: value})}
+                    <Select
+                      value={novaNoticia.categoria}
+                      onValueChange={(value) => setNovaNoticia({ ...novaNoticia, categoria: value })}
                     >
                       <SelectTrigger className="form-input">
                         <SelectValue />
@@ -1017,7 +1192,7 @@ const AdminConteudo = () => {
                     id="subtitulo"
                     className="form-input"
                     value={novaNoticia.subtitulo}
-                    onChange={(e) => setNovaNoticia({...novaNoticia, subtitulo: e.target.value})}
+                    onChange={(e) => setNovaNoticia({ ...novaNoticia, subtitulo: e.target.value })}
                   />
                 </div>
 
@@ -1028,9 +1203,21 @@ const AdminConteudo = () => {
                     className="form-input"
                     rows={3}
                     value={novaNoticia.resumo}
-                    onChange={(e) => setNovaNoticia({...novaNoticia, resumo: e.target.value})}
+                    onChange={(e) => setNovaNoticia({ ...novaNoticia, resumo: e.target.value })}
                     placeholder="Breve resumo da notícia..."
                   />
+                </div>
+
+                <div className="space-y-4">
+                  <PhotoUpload
+                    photos={novaNoticia.fotos}
+                    onPhotosChange={(newPhotos) => setNovaNoticia({ ...novaNoticia, fotos: newPhotos })}
+                    maxPhotos={5}
+                    label="Fotos e Vídeos da Notícia"
+                  />
+                  <div className="text-xs text-gray-600">
+                    Os vídeos e fotos devem ser carregados aqui. O primeiro item será usado como capa.
+                  </div>
                 </div>
 
                 <div>
@@ -1040,34 +1227,9 @@ const AdminConteudo = () => {
                     className="form-input"
                     rows={8}
                     value={novaNoticia.conteudo}
-                    onChange={(e) => setNovaNoticia({...novaNoticia, conteudo: e.target.value})}
+                    onChange={(e) => setNovaNoticia({ ...novaNoticia, conteudo: e.target.value })}
                     required
                   />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="video_url" className="form-label">URL do Vídeo</Label>
-                    <Input
-                      id="video_url"
-                      type="url"
-                      className="form-input"
-                      value={novaNoticia.video_url}
-                      onChange={(e) => setNovaNoticia({...novaNoticia, video_url: e.target.value})}
-                      placeholder="https://youtube.com/..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="link_externo" className="form-label">Link Externo</Label>
-                    <Input
-                      id="link_externo"
-                      type="url"
-                      className="form-input"
-                      value={novaNoticia.link_externo}
-                      onChange={(e) => setNovaNoticia({...novaNoticia, link_externo: e.target.value})}
-                      placeholder="https://exemplo.com/..."
-                    />
-                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -1075,7 +1237,7 @@ const AdminConteudo = () => {
                     type="checkbox"
                     id="destaque"
                     checked={novaNoticia.destaque}
-                    onChange={(e) => setNovaNoticia({...novaNoticia, destaque: e.target.checked})}
+                    onChange={(e) => setNovaNoticia({ ...novaNoticia, destaque: e.target.checked })}
                     className="rounded focus-teal"
                   />
                   <Label htmlFor="destaque" className="form-label mb-0">
@@ -1085,9 +1247,9 @@ const AdminConteudo = () => {
 
                 <div className="flex space-x-3">
                   <Button type="submit" className="btn-primary">Publicar</Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setShowForm(false)}
                   >
                     Cancelar
@@ -1171,7 +1333,6 @@ const AdminConteudo = () => {
   );
 };
 
-// Communication (Mass Email) - Restored
 const AdminComunicacao = () => {
   const [emailData, setEmailData] = useState({
     destinatarios: [],
@@ -1229,7 +1390,7 @@ const AdminComunicacao = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8 text-primary-gray">Comunicação</h1>
-        
+
         <Card className="card-custom max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle className="text-primary-gray">Enviar Email em Massa</CardTitle>
@@ -1261,18 +1422,18 @@ const AdminComunicacao = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="assunto" className="form-label">Assunto *</Label>
                 <Input
                   id="assunto"
                   className="form-input"
                   value={emailData.assunto}
-                  onChange={(e) => setEmailData({...emailData, assunto: e.target.value})}
+                  onChange={(e) => setEmailData({ ...emailData, assunto: e.target.value })}
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="mensagem" className="form-label">Mensagem *</Label>
                 <Textarea
@@ -1280,14 +1441,14 @@ const AdminComunicacao = () => {
                   className="form-input"
                   rows={8}
                   value={emailData.mensagem}
-                  onChange={(e) => setEmailData({...emailData, mensagem: e.target.value})}
+                  onChange={(e) => setEmailData({ ...emailData, mensagem: e.target.value })}
                   required
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                disabled={loading} 
+
+              <Button
+                type="submit"
+                disabled={loading}
                 className="w-full btn-primary"
               >
                 {loading ? (
@@ -1307,7 +1468,6 @@ const AdminComunicacao = () => {
   );
 };
 
-// User Management - Restored
 const AdminUsuarios = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1347,11 +1507,10 @@ const AdminUsuarios = () => {
   };
 
   const deleteUser = async (userId, userName, userEmail) => {
-    // Confirmação dupla para deletar
     const confirmMessage = `⚠️ ATENÇÃO: Esta ação não pode ser desfeita!\n\nVocê tem certeza que deseja DELETAR permanentemente o usuário:\n\n👤 ${userName} (${userEmail})\n\nTodos os dados associados (imóveis, perfis, etc.) também serão removidos.\n\nDigite "DELETAR" para confirmar:`;
-    
+
     const confirmText = window.prompt(confirmMessage);
-    
+
     if (confirmText !== "DELETAR") {
       toast({
         title: "Operação cancelada",
@@ -1394,7 +1553,7 @@ const AdminUsuarios = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Usuários</h1>
-        
+
         <Card className="card-custom">
           <CardHeader>
             <CardTitle className="text-primary-gray">Lista de Usuários</CardTitle>
@@ -1429,7 +1588,7 @@ const AdminUsuarios = () => {
                     >
                       {user.ativo ? 'Desativar' : 'Ativar'}
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="destructive"
@@ -1449,21 +1608,19 @@ const AdminUsuarios = () => {
   );
 };
 
-// Home Page (Public - for non-authenticated users)
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      {/* Hero Section */}
+
       <section className="hero-gradient text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 fade-in">
             Bem-vindo à ALT Ilhabela
           </h1>
           <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed fade-in">
-            A Associação de Locação por Temporada de Ilhabela é uma entidade dedicada 
-            a promover o turismo responsável e a qualidade dos serviços de hospedagem 
+            A Associação de Locação por Temporada de Ilhabela é uma entidade dedicada
+            a promover o turismo responsável e a qualidade dos serviços de hospedagem
             em nossa bela ilha.
           </p>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -1472,7 +1629,7 @@ const HomePage = () => {
               <p className="text-white/90 mb-4 text-sm">
                 Cadastre seus imóveis e faça parte da nossa rede qualificada
               </p>
-              <Button 
+              <Button
                 className="btn-secondary w-full hover-lift"
                 onClick={() => window.location.href = '/candidatura/membro'}
                 data-testid="seja-membro-btn"
@@ -1486,7 +1643,7 @@ const HomePage = () => {
               <p className="text-white/90 mb-4 text-sm">
                 Ofereça seus serviços para nossa comunidade de turistas
               </p>
-              <Button 
+              <Button
                 className="btn-secondary w-full hover-lift"
                 onClick={() => window.location.href = '/candidatura/parceiro'}
                 data-testid="seja-parceiro-btn"
@@ -1500,7 +1657,7 @@ const HomePage = () => {
               <p className="text-white/90 mb-4 text-sm">
                 Apoie nossa missão de promover o turismo em Ilhabela
               </p>
-              <Button 
+              <Button
                 className="btn-secondary w-full hover-lift"
                 onClick={() => window.location.href = '/candidatura/associado'}
                 data-testid="seja-associado-btn"
@@ -1512,7 +1669,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* About Section */}
       <section className="py-20 bg-white" id="sobre">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -1521,10 +1677,10 @@ const HomePage = () => {
               <div className="text-left">
                 <h3 className="text-2xl font-semibold mb-4 text-primary-teal">Nossa Missão</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
-                  Promover o desenvolvimento sustentável do turismo em Ilhabela através 
+                  Promover o desenvolvimento sustentável do turismo em Ilhabela através
                   da qualificação e certificação de imóveis e serviços de locação por temporada.
                 </p>
-                
+
                 <h3 className="text-2xl font-semibold mb-4 text-primary-teal">Nossos Valores</h3>
                 <ul className="text-gray-700 space-y-2">
                   <li>• Qualidade e excelência no atendimento</li>
@@ -1533,7 +1689,7 @@ const HomePage = () => {
                   <li>• Desenvolvimento local</li>
                 </ul>
               </div>
-              
+
               <div className="space-y-6">
                 <Card className="card-custom hover-lift">
                   <CardHeader>
@@ -1545,7 +1701,7 @@ const HomePage = () => {
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="card-custom hover-lift">
                   <CardHeader>
                     <CardTitle className="text-primary-teal">Parceiros</CardTitle>
@@ -1556,7 +1712,7 @@ const HomePage = () => {
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="card-custom hover-lift">
                   <CardHeader>
                     <CardTitle className="text-primary-teal">Associados</CardTitle>
@@ -1576,7 +1732,6 @@ const HomePage = () => {
   );
 };
 
-// Login Page
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -1584,7 +1739,6 @@ const LoginPage = () => {
   const [showRecuperarSenha, setShowRecuperarSenha] = useState(false);
   const { login, user } = useAuth();
 
-  // Redirect if already logged in
   if (user) {
     return <Navigate to="/main" replace />;
   }
@@ -1594,7 +1748,7 @@ const LoginPage = () => {
     setLoading(true);
 
     const result = await login(email, password);
-    
+
     if (result.success) {
       toast({
         title: "Login realizado com sucesso!",
@@ -1607,7 +1761,7 @@ const LoginPage = () => {
         variant: "destructive",
       });
     }
-    
+
     setLoading(false);
   };
 
@@ -1622,7 +1776,7 @@ const LoginPage = () => {
             Acesse sua conta para gerenciar seu perfil
           </p>
         </div>
-        
+
         <Card className="card-custom">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -1638,7 +1792,7 @@ const LoginPage = () => {
                   data-testid="login-email-input"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="password" className="form-label">Senha</Label>
                 <Input
@@ -1651,9 +1805,9 @@ const LoginPage = () => {
                   data-testid="login-password-input"
                 />
               </div>
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full btn-primary"
                 disabled={loading}
                 data-testid="login-submit-btn"
@@ -1667,7 +1821,7 @@ const LoginPage = () => {
                   'Entrar'
                 )}
               </Button>
-              
+
               <div className="text-center">
                 <Button
                   type="button"
@@ -1681,7 +1835,7 @@ const LoginPage = () => {
             </form>
           </CardContent>
         </Card>
-        
+
         <div className="text-center">
           <Button
             variant="link"
@@ -1691,9 +1845,8 @@ const LoginPage = () => {
             Voltar para a página inicial
           </Button>
         </div>
-        
-        {/* Modal de Recuperar Senha */}
-        <RecuperarSenhaModal 
+
+        <RecuperarSenhaModal
           isOpen={showRecuperarSenha}
           onClose={() => setShowRecuperarSenha(false)}
         />
@@ -1702,10 +1855,6 @@ const LoginPage = () => {
   );
 };
 
-// Enhanced Application Forms remain the same but with improved styling...
-// [Previous form components with updated CSS classes applied]
-
-// Admin Property Management
 const AdminImoveis = () => {
   const [imoveisPendentes, setImoveisPendentes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1768,7 +1917,7 @@ const AdminImoveis = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Imóveis</h1>
-        
+
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="spinner"></div>
@@ -1901,8 +2050,7 @@ const AdminImoveis = () => {
   );
 };
 
-// Main App Component
-function App() {
+const MainApp = () => {
   return (
     <div className="App">
       <AuthProvider>
@@ -1910,152 +2058,153 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-            
+
             <Route path="/candidatura/membro" element={<CandidaturaMembroPage />} />
             <Route path="/candidatura/parceiro" element={<CandidaturaParceiroPage />} />
             <Route path="/candidatura/associado" element={<CandidaturaAssociadoPage />} />
-            
-            {/* Main page for authenticated users */}
-            <Route 
-              path="/main" 
+
+            <Route
+              path="/main"
               element={
                 <ProtectedRoute>
                   <MainPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Member Routes */}
-            <Route 
-              path="/meus-imoveis" 
+
+            <Route
+              path="/meus-imoveis"
               element={
                 <ProtectedRoute allowedRoles={['membro']}>
                   <MeusImoveisPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/imoveis" 
+
+            <Route
+              path="/imoveis"
               element={
                 <ProtectedRoute allowedRoles={['membro', 'parceiro', 'admin']}>
                   <TodosImoveisPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Partner Routes */}
-            <Route 
-              path="/meu-perfil" 
+
+            <Route
+              path="/meu-perfil"
               element={
                 <ProtectedRoute allowedRoles={['parceiro']}>
                   <MeuPerfilPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* General Routes - Accessible by all authenticated users */}
-            <Route 
-              path="/parceiros" 
+
+            <Route
+              path="/parceiros"
               element={
                 <ProtectedRoute>
                   <ParceirosPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Detail Pages */}
-            <Route 
-              path="/imovel/:id" 
+
+            <Route
+              path="/imovel/:id"
               element={
                 <ProtectedRoute>
                   <ImovelDetalhePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/parceiro/:id" 
+
+            <Route
+              path="/parceiro/:id"
               element={
                 <ProtectedRoute>
                   <ParceiroDetalhePage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Change Password */}
-            <Route 
-              path="/alterar-senha" 
+
+            <Route
+              path="/alterar-senha"
               element={
                 <ProtectedRoute>
                   <AlterarSenhaPage />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Admin Routes - All Restored */}
-            <Route 
-              path="/admin/dashboard" 
+
+            <Route
+              path="/admin/dashboard"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin/candidaturas" 
+
+            <Route
+              path="/admin/candidaturas"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminCandidaturas />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin/imoveis" 
+
+            <Route
+              path="/admin/imoveis"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminImoveis />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin/conteudo" 
+
+            <Route
+              path="/admin/conteudo"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminConteudo />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin/comunicacao" 
+
+            <Route
+              path="/admin/comunicacao"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminComunicacao />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            <Route 
-              path="/admin/usuarios" 
+
+            <Route
+              path="/admin/usuarios"
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminUsuarios />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
-            {/* Redirect dashboard to main for authenticated users */}
-            <Route 
-              path="/dashboard" 
+
+            <Route
+              path="/admin/destaques"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDestaques />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Navigate to="/main" replace />
                 </ProtectedRoute>
-              } 
+              }
             />
           </Routes>
         </BrowserRouter>
@@ -2065,4 +2214,4 @@ function App() {
   );
 }
 
-export default App;
+export default MainApp;

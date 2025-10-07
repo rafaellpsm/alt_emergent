@@ -44,15 +44,15 @@ const Header = () => {
           <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
           <span className="text-sm opacity-90 hidden md:block">Associação de Locação por Temporada</span>
         </div>
-        
+
         {user && (
           <div className="flex items-center space-x-4">
             <span className="text-sm hidden sm:block">
-              Olá, {user.nome} 
+              Olá, {user.nome}
               <Badge className="ml-2 bg-white/20">{user.role}</Badge>
             </span>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={logout}
               className="text-white border-white/50 hover:bg-white hover:text-gray-800 transition-all"
@@ -81,20 +81,20 @@ const Navigation = () => {
     };
     fetchUser();
   }, []);
-  
+
   if (!user) return null;
-  
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
-          <a 
-            href="/main" 
+          <a
+            href="/main"
             className="nav-link py-3 px-3 whitespace-nowrap"
           >
             Início
           </a>
-          
+
           {user.role === 'admin' && (
             <>
               <a href="/admin/dashboard" className="nav-link py-3 px-3 whitespace-nowrap">Dashboard</a>
@@ -105,21 +105,21 @@ const Navigation = () => {
               <a href="/admin/comunicacao" className="nav-link py-3 px-3 whitespace-nowrap">Comunicação</a>
             </>
           )}
-          
+
           {user.role === 'membro' && (
             <>
               <a href="/meus-imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Meus Imóveis</a>
               <a href="/imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Todos os Imóveis</a>
             </>
           )}
-          
+
           {user.role === 'parceiro' && (
             <>
               <a href="/meu-perfil" className="nav-link py-3 px-3 whitespace-nowrap">Meu Perfil</a>
               <a href="/imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Imóveis</a>
             </>
           )}
-          
+
           <a href="/parceiros" className="nav-link py-3 px-3 whitespace-nowrap">Parceiros</a>
           <a href="/alterar-senha" className="nav-link py-3 px-3 whitespace-nowrap">Alterar Senha</a>
         </div>
@@ -153,7 +153,7 @@ export const AlterarSenhaPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validações
     if (formData.novaSenha !== formData.confirmarSenha) {
       toast({
@@ -214,7 +214,7 @@ export const AlterarSenhaPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
           <Card className="card-custom">
@@ -235,7 +235,7 @@ export const AlterarSenhaPage = () => {
                     type="password"
                     className="form-input"
                     value={formData.senhaAtual}
-                    onChange={(e) => setFormData({...formData, senhaAtual: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, senhaAtual: e.target.value })}
                     required
                     placeholder="Digite sua senha atual"
                   />
@@ -248,7 +248,7 @@ export const AlterarSenhaPage = () => {
                     type="password"
                     className="form-input"
                     value={formData.novaSenha}
-                    onChange={(e) => setFormData({...formData, novaSenha: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, novaSenha: e.target.value })}
                     required
                     placeholder="Digite sua nova senha"
                     minLength={6}
@@ -262,15 +262,15 @@ export const AlterarSenhaPage = () => {
                     type="password"
                     className="form-input"
                     value={formData.confirmarSenha}
-                    onChange={(e) => setFormData({...formData, confirmarSenha: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, confirmarSenha: e.target.value })}
                     required
                     placeholder="Digite novamente a nova senha"
                     minLength={6}
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full btn-primary"
                   disabled={loading}
                 >
