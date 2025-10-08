@@ -174,8 +174,7 @@ const Navigation = () => {
     </nav>
   );
 };
-
-// All Properties View Page (for members to see all properties)  
+// All Properties View Page (for members to see all properties)
 export const TodosImoveisPage = () => {
   const navigate = useNavigate();
   const [imoveis, setImoveis] = useState([]);
@@ -479,7 +478,21 @@ export const MeuPerfilPage = () => {
 
         {loading ? (
           <div className="flex justify-center items-center py-12"><div className="spinner"></div></div>
-        ) : (!perfil || editing) ? (
+        ) : (!perfil && !editing) ? (
+          <Card className="card-custom max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-primary-gray">Criar Perfil de Parceiro</CardTitle>
+              <CardDescription>
+                Você ainda não tem um perfil de parceiro. Crie um para começar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => setEditing(true)} className="btn-primary">
+                Criar Perfil
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (editing) ? (
           // FORMULÁRIO DE EDIÇÃO/CRIAÇÃO
           <Card className="card-custom max-w-4xl mx-auto">
             <CardHeader>
@@ -487,8 +500,60 @@ export const MeuPerfilPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* ... (todos os outros campos do formulário continuam aqui) ... */}
-
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nome_empresa" className="form-label">Nome da Empresa *</Label>
+                    <Input id="nome_empresa" className="form-input" value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="categoria" className="form-label">Categoria *</Label>
+                    <Input id="categoria" className="form-input" value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="descricao" className="form-label">Descrição *</Label>
+                  <Textarea id="descricao" className="form-input" value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="telefone" className="form-label">Telefone *</Label>
+                    <Input id="telefone" className="form-input" value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="endereco" className="form-label">Endereço</Label>
+                    <Input id="endereco" className="form-input" value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="website" className="form-label">Website</Label>
+                    <Input id="website" type="url" className="form-input" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="instagram" className="form-label">Instagram</Label>
+                    <Input id="instagram" type="url" className="form-input" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="facebook" className="form-label">Facebook</Label>
+                    <Input id="facebook" type="url" className="form-input" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="whatsapp" className="form-label">WhatsApp</Label>
+                    <Input id="whatsapp" className="form-input" value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="horario_funcionamento" className="form-label">Horário de Funcionamento</Label>
+                    <Input id="horario_funcionamento" className="form-input" value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="servicos_oferecidos" className="form-label">Serviços Oferecidos</Label>
+                    <Input id="servicos_oferecidos" className="form-input" value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} />
+                  </div>
+                </div>
                 <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t">
                   <div>
                     <PhotoUpload
@@ -521,7 +586,51 @@ export const MeuPerfilPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <p>Modo de visualização do perfil aqui...</p>
+          <Card className="card-custom max-w-4xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl text-primary-gray">{perfil.nome_empresa}</CardTitle>
+              <CardDescription>
+                <Badge className="badge-teal">{perfil.categoria}</Badge>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  {perfil.fotos && perfil.fotos.length > 0 && (
+                    <div className="mb-6">
+                      <img src={perfil.fotos[0]} alt={perfil.nome_empresa} className="rounded-lg shadow-md" />
+                    </div>
+                  )}
+                  <h3 className="font-semibold mb-2 text-primary-gray">Sobre</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{perfil.descricao}</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-primary-gray">Contato</h3>
+                    <p className="text-gray-700">{perfil.telefone}</p>
+                    {perfil.whatsapp && <p className="text-gray-700">WhatsApp: {perfil.whatsapp}</p>}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-gray">Endereço</h3>
+                    <p className="text-gray-700">{perfil.endereco}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-gray">Horário de Funcionamento</h3>
+                    <p className="text-gray-700">{perfil.horario_funcionamento}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-gray">Serviços</h3>
+                    <p className="text-gray-700">{perfil.servicos_oferecidos}</p>
+                  </div>
+                  <div className="flex space-x-2 pt-4 border-t">
+                    {perfil.website && <Button asChild variant="outline"><a href={perfil.website} target="_blank" rel="noopener noreferrer">Website</a></Button>}
+                    {perfil.instagram && <Button asChild variant="outline"><a href={perfil.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
+                    {perfil.facebook && <Button asChild variant="outline"><a href={perfil.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

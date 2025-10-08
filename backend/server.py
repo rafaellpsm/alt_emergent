@@ -263,8 +263,8 @@ class PerfilParceiro(BaseModel):
     telefone: str
     endereco: Optional[str] = None
     website: Optional[HttpUrl] = None
-    instagram: Optional[HttpUrl] = None
-    facebook: Optional[HttpUrl] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
     fotos: List[str] = []
     video_url: Optional[str] = None
     horario_funcionamento: Optional[str] = None
@@ -286,9 +286,9 @@ class PerfilParceiroCreate(BaseModel):
     categoria: str
     telefone: str
     endereco: Optional[str] = None
-    website: Optional[HttpUrl] = None
-    instagram: Optional[HttpUrl] = None
-    facebook: Optional[HttpUrl] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
     horario_funcionamento: Optional[str] = None
     servicos_oferecidos: Optional[str] = None
     fotos: List[str] = []
