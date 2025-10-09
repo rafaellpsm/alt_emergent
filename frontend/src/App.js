@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPage } from './components/Forms';
@@ -7,24 +7,21 @@ import { MeusImoveisPage, TodosImoveisPage, ParceirosPage, MeuPerfilPage } from 
 import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPages';
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
-import PhotoUpload from './components/PhotoUpload';
 import { Button } from './components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
-import { Textarea } from './components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from './hooks/use-toast';
 import { Toaster } from './components/ui/toaster';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, Settings, Star, Mail, ArrowUp } from 'lucide-react';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils } from 'lucide-react';
 
+
+// Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
 axios.interceptors.response.use(
   response => response,
-
   error => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
@@ -42,9 +39,11 @@ axios.interceptors.response.use(
   }
 );
 
+// Configuração da URL da API
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Contexto de Autenticação para gerenciar o estado do usuário
 const AuthContext = React.createContext();
 
 const AuthProvider = ({ children }) => {
@@ -77,17 +76,12 @@ const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(`${API}/auth/login`, { email, password });
       const { access_token, user: userData } = response.data;
-
       localStorage.setItem('token', access_token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       setUser(userData);
-
       return { success: true };
     } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.detail || 'Erro ao fazer login'
-      };
+      return { success: false, error: error.response?.data?.detail || 'Erro ao fazer login' };
     }
   };
 
@@ -95,1639 +89,380 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
-  };
-
-  const value = {
-    user,
-    login,
-    logout,
-    loading
+    window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+const useAuth = () => React.useContext(AuthContext);
 
+// --- Componentes de Layout ---
+
+const DefaultLayout = () => (
+  <>
+    <DefaultHeader />
+    <main className="pt-20 bg-gray-50 min-h-screen">
+      <Outlet />
+    </main>
+  </>
+);
+
+const HomeLayout = () => <Outlet />;
+
+// --- Rota Protegida ---
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="spinner"></div>
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-screen"><div className="spinner"></div></div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/main" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
-const UserProfileMenu = ({ user, logout }) => {
+// --- Menu de Perfil ---
+const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
+  const triggerClass = isHomePage
+    ? 'text-white hover:bg-white/10'
+    : 'text-gray-700 hover:bg-gray-100';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white hover:bg-white/10"
-        >
+        <Button variant="ghost" size="sm" className={triggerClass}>
           <User className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">{user.nome}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel>
-          {user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge>
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>{user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge></DropdownMenuLabel>
         <DropdownMenuSeparator />
-
-        <DropdownMenuItem asChild>
-          <a href="/alterar-senha" className="flex items-center">
-            <Key className="mr-2 h-4 w-4" />
-            Alterar Senha
-          </a>
-        </DropdownMenuItem>
-
-        {user.role === 'parceiro' && (
-          <DropdownMenuItem asChild>
-            <a href="/meu-perfil" className="flex items-center">
-              <Briefcase className="mr-2 h-4 w-4" />
-              Meu Perfil
-            </a>
-          </DropdownMenuItem>
-        )}
-
+        <DropdownMenuItem asChild><a href="/alterar-senha"><Key className="mr-2 h-4 w-4" />Alterar Senha</a></DropdownMenuItem>
+        {user.role === 'parceiro' && <DropdownMenuItem asChild><a href="/meu-perfil"><Briefcase className="mr-2 h-4 w-4" />Meu Perfil</a></DropdownMenuItem>}
         <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          onClick={logout}
-          className="text-destructive cursor-pointer"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Sair
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-const Header = () => {
-  const { user, logout } = useAuth();
+// --- Componente de Link de Navegação (Refatorado) ---
+const NavLink = ({ href, children, className, icon: Icon, isMobile = false }) => (
+  <a href={href} className={className}>
+    {Icon && isMobile && <Icon className="h-5 w-5 mr-2" />}
+    <span>{children}</span>
+  </a>
+);
+
+
+// --- Navegação ---
+const Navigation = ({ isMobile = false, isHomePage = false }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const getNavLinkClass = (path) =>
+    isMobile
+      ? `flex items-center space-x-2 py-2 px-3 rounded-md ${location.pathname === path ? 'bg-primary-teal text-white' : 'text-gray-700 hover:bg-gray-100'}`
+      : `nav-link-desktop ${isHomePage ? 'text-white hover:text-white/80' : 'text-primary-gray hover:text-primary-teal'}`;
+
+  const publicNavLinks = [{ href: "/imoveis", text: "Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
+  const memberNavLinks = [{ href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase }, { href: "/imoveis", text: "Todos os Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
+  const partnerNavLinks = [{ href: "/imoveis", text: "Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
+  const adminNavLinks = [{ href: "/admin/dashboard", text: "Dashboard", icon: Home }];
+
+  let linksToRender = publicNavLinks;
+  if (user) {
+    if (user.role === 'admin') linksToRender = adminNavLinks;
+    else if (user.role === 'membro') linksToRender = memberNavLinks;
+    else if (user.role === 'parceiro') linksToRender = partnerNavLinks;
+  }
 
   return (
-    <header className="header-gradient text-white shadow-lg">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Home className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
-          <span className="text-sm opacity-90 hidden md:block">Associação de Locação por Temporada</span>
-        </div>
+    <nav className={isMobile ? "flex flex-col space-y-2 pt-4" : "flex items-center space-x-6"}>
+      {linksToRender.map(link => (
+        <NavLink
+          key={link.href}
+          href={link.href}
+          className={getNavLinkClass(link.href)}
+          icon={link.icon}
+          isMobile={isMobile}
+        >
+          {link.text}
+        </NavLink>
+      ))}
+    </nav>
+  );
+};
 
-        {user ? (
-          <div className="hidden sm:flex items-center space-x-4">
+
+// --- Headers ---
+
+const DefaultHeader = () => {
+  const { user, logout } = useAuth();
+  return (
+    <header className='bg-white shadow-md fixed top-0 left-0 right-0 z-50'>
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center text-primary-gray">
+        <a href="/" className="flex items-center space-x-3">
+          <img src="https://img.icons8.com/ios-filled/50/459894/beach.png" alt="ALT Ilhabela Logo" className="h-8 w-8" />
+          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
+        </a>
+
+        {/* Navegação Desktop */}
+        <div className="hidden sm:flex items-center space-x-4">
+          <Navigation />
+          {user ? (
             <UserProfileMenu user={user} logout={logout} />
-          </div>
-        ) : (
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.href = '/login'}
-              className="text-white border-white/50 hover:bg-white hover:text-gray-800"
-            >
+          ) : (
+            <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary">
               Entrar
             </Button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {user && (
-          <div className="sm:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <nav className="flex flex-col space-y-4 pt-8">
-                  <h3 className="font-bold text-lg text-primary-teal border-b pb-2">
-                    Olá, {user.nome}
-                  </h3>
+        {/* Menu Mobile */}
+        <div className="sm:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-primary-gray">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <nav className="flex flex-col space-y-4 pt-8">
+                {user ? (
+                  <>
+                    <h3 className="font-bold text-lg text-primary-teal border-b pb-2">Olá, {user.nome}</h3>
+                    <Navigation isMobile={true} />
+                  </>
+                ) : (
                   <Navigation isMobile={true} />
-                </nav>
+                )}
+              </nav>
+              {user ? (
                 <div className="absolute bottom-4 left-4 right-4">
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={logout}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sair
-                  </Button>
+                  <Button variant="destructive" className="w-full" onClick={logout}><LogOut className="h-4 w-4 mr-2" />Sair</Button>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        )}
+              ) : (
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Button className="w-full btn-primary" onClick={() => window.location.href = '/login'}>Entrar</Button>
+                </div>
+              )}
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
 };
 
-const Navigation = ({ isMobile = false }) => {
-  const { user } = useAuth();
-  const location = useLocation();
+const HomeHeader = () => {
+  const { user, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const isLinkActive = (path) => location.pathname === path;
-
-  const navLinkClass = (path) =>
-    isMobile
-      ? `flex items-center space-x-2 py-2 px-3 rounded-md ${isLinkActive(path) ? 'bg-primary-teal text-white' : 'text-gray-700 hover:bg-gray-100'}`
-      : `nav-link py-3 px-3 whitespace-nowrap ${isLinkActive(path) ? 'active' : ''}`;
-
-  const LinkComponent = ({ href, children, icon: Icon }) => (
-    <a
-      href={href}
-      className={navLinkClass(href)}
-      onClick={isMobile ? () => window.location.href = href : undefined}
-    >
-      {Icon && <Icon className="h-5 w-5" />}
-      {children}
-    </a>
-  );
-
-  const desktopNavContent = (
-    <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
-      <LinkComponent href="/main">Início</LinkComponent>
-
-      {user.role === 'admin' && (
-        <>
-          <LinkComponent href="/admin/dashboard">Dashboard</LinkComponent>
-          <LinkComponent href="/admin/candidaturas">Candidaturas</LinkComponent>
-          <LinkComponent href="/admin/destaques">Destaques (Início)</LinkComponent>
-          <LinkComponent href="/admin/imoveis">Imóveis (Admin)</LinkComponent>
-          <LinkComponent href="/admin/usuarios">Usuários</LinkComponent>
-          <LinkComponent href="/admin/conteudo">Conteúdo</LinkComponent>
-          <LinkComponent href="/admin/comunicacao">Comunicação</LinkComponent>
-        </>
-      )}
-
-      {user.role === 'membro' && (
-        <>
-          <LinkComponent href="/meus-imoveis">Meus Imóveis</LinkComponent>
-          <LinkComponent href="/imoveis">Todos os Imóveis</LinkComponent>
-        </>
-      )}
-
-      {user.role === 'parceiro' && (
-        <>
-          <LinkComponent href="/imoveis">Imóveis</LinkComponent>
-        </>
-      )}
-
-      <LinkComponent href="/parceiros">Parceiros</LinkComponent>
-    </div>
-  );
-
-  const mobileNavContent = (
-    <>
-      <LinkComponent href="/main" icon={Home}>Início</LinkComponent>
-
-      {user.role === 'admin' && (
-        <>
-          <LinkComponent href="/admin/dashboard" icon={Settings}>Dashboard</LinkComponent>
-          <LinkComponent href="/admin/destaques" icon={Star}>Destaques (Início)</LinkComponent>
-          <LinkComponent href="/admin/candidaturas" icon={Briefcase}>Candidaturas</LinkComponent>
-          <LinkComponent href="/admin/imoveis" icon={FileText}>Imóveis (Admin)</LinkComponent>
-          <LinkComponent href="/admin/usuarios" icon={Users}>Usuários</LinkComponent>
-          <LinkComponent href="/admin/conteudo" icon={FileText}>Conteúdo</LinkComponent>
-          <LinkComponent href="/admin/comunicacao" icon={Mail}>Comunicação</LinkComponent>
-        </>
-      )}
-
-      {user.role === 'membro' && (
-        <>
-          <LinkComponent href="/meus-imoveis" icon={Home}>Meus Imóveis</LinkComponent>
-          <LinkComponent href="/imoveis" icon={Home}>Todos os Imóveis</LinkComponent>
-        </>
-      )}
-
-      {user.role === 'parceiro' && (
-        <>
-          <LinkComponent href="/meu-perfil" icon={Briefcase}>Meu Perfil</LinkComponent>
-          <LinkComponent href="/imoveis" icon={Home}>Imóveis</LinkComponent>
-        </>
-      )}
-
-      <LinkComponent href="/parceiros" icon={Users}>Parceiros</LinkComponent>
-      <LinkComponent href="/alterar-senha" icon={Key}>Alterar Senha</LinkComponent>
-    </>
-  );
-
-  if (isMobile) {
-    return mobileNavContent;
-  }
+  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+    ? 'bg-white/90 backdrop-blur-sm shadow-md text-primary-gray'
+    : 'bg-transparent text-white'
+    }`;
 
   return (
-    <nav className="bg-white shadow-sm border-b hidden sm:block">
-      <div className="container mx-auto px-4">
-        {desktopNavContent}
+    <header className={headerClasses}>
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" className="flex items-center space-x-3">
+          <img
+            src={isScrolled ? "https://img.icons8.com/ios-filled/50/459894/beach.png" : "https://img.icons8.com/ios-filled/50/ffffff/beach.png"}
+            alt="ALT Ilhabela Logo"
+            className="h-8 w-8 transition-all"
+          />
+          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
+        </a>
+
+        {/* Navegação Desktop */}
+        <div className="hidden sm:flex items-center space-x-4">
+          <Navigation isHomePage={!isScrolled} />
+          {user ? (
+            <UserProfileMenu user={user} logout={logout} isHomePage={!isScrolled} />
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/login'}
+              className={isScrolled ? 'text-primary-teal border-primary-teal hover:bg-primary-teal hover:text-white' : 'text-white border-white/50 hover:bg-white hover:text-primary-gray'}
+            >
+              Entrar
+            </Button>
+          )}
+        </div>
+
+        {/* Menu Mobile */}
+        <div className="sm:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <nav className="flex flex-col space-y-4 pt-8">
+                {user ? (
+                  <>
+                    <h3 className="font-bold text-lg text-primary-teal border-b pb-2">Olá, {user.nome}</h3>
+                    <Navigation isMobile={true} />
+                  </>
+                ) : (
+                  <Navigation isMobile={true} />
+                )}
+              </nav>
+              {user ? (
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Button variant="destructive" className="w-full" onClick={logout}><LogOut className="h-4 w-4 mr-2" />Sair</Button>
+                </div>
+              ) : (
+                <div className="absolute bottom-4 left-4 right-4">
+                  <Button className="w-full btn-primary" onClick={() => window.location.href = '/login'}>Entrar</Button>
+                </div>
+              )}
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
-const MainPage = () => {
+// --- Componentes de Página ---
+
+const AdminDashboard = () => <div>Admin Dashboard</div>;
+const AdminDestaques = () => <div>Admin Destaques</div>;
+const AdminCandidaturas = () => <div>Admin Candidaturas</div>;
+const AdminConteudo = () => <div>Admin Conteudo</div>;
+const AdminComunicacao = () => <div>Admin Comunicacao</div>;
+const AdminUsuarios = () => <div>Admin Usuarios</div>;
+const AdminImoveis = () => <div>Admin Imoveis</div>;
+
+const HomePage = () => {
   const navigate = useNavigate();
-  const [pageData, setPageData] = useState({
-    noticias_destaque: [],
-    imoveis_destaque: [],
-    parceiros_destaque: [],
-    ultimas_noticias: []
-  });
-  const [loading, setLoading] = useState(true);
+  const [pageData, setPageData] = useState({ imoveis_destaque: [] });
+
+  // PASSO 2: A NOVA FUNÇÃO DE ROLAGEM
+  const handleScrollToDestaques = () => {
+    const section = document.getElementById('section-2');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   useEffect(() => {
+    const fetchMainPageData = async () => {
+      try {
+        const response = await axios.get(`${API}/main-page`);
+        setPageData(response.data);
+      } catch (error) {
+        toast({ title: "Erro ao carregar conteúdo da página", variant: "destructive" });
+      }
+    };
     fetchMainPageData();
   }, []);
 
-  const fetchMainPageData = async () => {
-    try {
-      const response = await axios.get(`${API}/main-page`);
-      setPageData(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar conteúdo",
-        description: "Tente recarregar a página.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Navigation />
-        <div className="flex justify-center items-center py-12">
-          <div className="spinner"></div>
-        </div>
+  const CategoryCard = ({ icon, title, description, link }) => (
+    <a href={link} className="category-card">
+      <div className="category-card-icon">{icon}</div>
+      <h3 className="text-xl font-bold mb-2 text-primary-gray">{title}</h3>
+      <p className="text-gray-600 text-sm mb-4">{description}</p>
+      <div className="flex items-center text-primary-teal font-semibold">
+        Ver mais <ArrowRight className="ml-2 h-4 w-4" />
       </div>
-    );
-  }
+    </a>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
+    <div className="bg-gray-50">
+      <HomeHeader />
+      <section className="relative h-screen flex items-center justify-center text-center text-white overflow-hidden pt-20">
+        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://images.pexels.com/photos/1684293/pexels-photo-1684293.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+          <source src="https://videos.pexels.com/video-files/4433435/4433435-hd_1920_1080_25fps.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
+        <div className="relative z-10 p-4">
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 animate-fade-in-up">Seu refúgio em Ilhabela</h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-300">Descubra acomodações e experiências únicas, com a qualidade e segurança que você merece.</p>
 
-      <div className="container mx-auto px-4 py-8">
-        <section className="hero-gradient rounded-xl text-white p-10 mb-12 shadow-xl">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 fade-in">
-              Bem-vindo ao Portal ALT Ilhabela
-            </h1>
-            <p className="text-lg md:text-xl mb-6 opacity-90 fade-in">
-              Qualidade e Exclusividade em Locação por Temporada.
-            </p>
-            <Button
-              className="btn-secondary hover-lift text-lg px-8 py-3"
-              onClick={() => navigate('/imoveis')}
-            >
-              Ver Imóveis Certificados
-            </Button>
+          {/* PASSO 3: BOTÃO ATUALIZADO */}
+          <Button size="lg" className="btn-primary-inverse text-lg px-8 py-6 animate-fade-in-up animation-delay-600" onClick={handleScrollToDestaques}>
+            Saiba Mais!
+          </Button>
+
+        </div>
+      </section>
+      <main>
+        <section id="section-2" className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-8">
+              <CategoryCard icon={<Home className="h-8 w-8" />} title="Explore Nossos Imóveis" description="Casas, apartamentos e chalés selecionados para uma estadia inesquecível." link="/imoveis" />
+              <CategoryCard icon={<Utensils className="h-8 w-8" />} title="Conheça Nossos Parceiros" description="Os melhores restaurantes, passeios e serviços para completar sua viagem." link="/parceiros" />
+              <CategoryCard icon={<FileText className="h-8 w-8" />} title="Fique por Dentro" description="Acompanhe as últimas notícias, eventos e dicas sobre Ilhabela." link="#noticias" />
+            </div>
           </div>
         </section>
-
-        {pageData.imoveis_destaque.length > 0 && (
-          <section className="mb-12 fade-in">
-            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Imóveis em Destaque</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pageData.imoveis_destaque.map((imovel) => (
-                <div
-                  key={imovel.id}
-                  className="property-card hover-lift cursor-pointer"
-                  onClick={() => navigate(`/imovel/${imovel.id}`)}
-                >
-                  {imovel.fotos.length > 0 ? (
-                    <div className="property-image">
-                      <img
-                        src={imovel.fotos[0]}
-                        alt={imovel.titulo}
-                        className="w-full h-full object-cover"
-                      />
+        {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
+          // PASSO 1: ID ADICIONADO À SECÇÃO
+          <section className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {pageData.imoveis_destaque.map((imovel) => (
+                  <div key={imovel.id} className="property-card-v2" onClick={() => navigate(`/imovel/${imovel.id}`)}>
+                    <div className="relative">
+                      <img src={imovel.fotos[0] || 'https://via.placeholder.com/400x300'} alt={imovel.titulo} className="w-full h-64 object-cover" />
+                      <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{imovel.regiao}</Badge>
                     </div>
-                  ) : (
-                    <div className="property-image bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                      <span className="text-gray-500">Sem foto</span>
-                    </div>
-                  )}
-
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold text-primary-gray line-clamp-1">{imovel.titulo}</h3>
-                      <Badge className="badge-beige flex-shrink-0 ml-2">{imovel.tipo}</Badge>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-3">{imovel.regiao}</p>
-
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
-                      {imovel.descricao}
-                    </p>
-
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="text-xs text-gray-500">
-                        <span>{imovel.num_quartos}q • {imovel.num_banheiros}b • {imovel.capacidade}p</span>
-                      </div>
-                      <div className="text-lg font-bold text-primary-teal">
-                        R$ {imovel.preco_diaria}/dia
-                      </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
+                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria} <span className="text-sm font-normal text-gray-600">/ noite</span></div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
         )}
-
-        {pageData.parceiros_destaque.length > 0 && (
-          <section className="mb-12 fade-in">
-            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Parceiros em Destaque</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pageData.parceiros_destaque.map((parceiro) => (
-                <div
-                  key={parceiro.id}
-                  className="partner-card hover-lift cursor-pointer"
-                  onClick={() => navigate(`/parceiro/${parceiro.id}`)}
-                >
-                  {parceiro.fotos.length > 0 && (
-                    <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden">
-                      <img
-                        src={parceiro.fotos[0]}
-                        alt={parceiro.nome_empresa}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-lg font-bold text-primary-gray">{parceiro.nome_empresa}</h3>
-                    <Badge className="badge-beige">{parceiro.categoria}</Badge>
-                  </div>
-
-                  <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
-                    {parceiro.descricao}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {pageData.noticias_destaque.length > 0 && (
-          <section className="mb-12 fade-in">
-            <h2 className="text-3xl font-bold mb-6 text-primary-gray">Notícias e Avisos</h2>
-            <div className="grid lg:grid-cols-3 gap-6">
-              {pageData.noticias_destaque.slice(0, 3).map((noticia) => (
-                <div key={noticia.id} className={`news-card hover-lift`}>
-                  {noticia.fotos && noticia.fotos.length > 0 && (
-                    <div className="aspect-video mb-4 bg-gray-200 rounded-t-lg overflow-hidden">
-                      {/* Renderiza a primeira foto */}
-                      <img
-                        src={noticia.fotos[0]}
-                        alt={noticia.titulo}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <Badge className="badge-teal mb-3">{noticia.categoria}</Badge>
-                    <h3 className={`font-bold mb-3 text-primary-gray text-lg`}>
-                      {noticia.titulo}
-                    </h3>
-                    {noticia.subtitulo && (
-                      <p className="text-gray-600 mb-4">{noticia.subtitulo}</p>
-                    )}
-                    <p className="text-gray-600 mb-4">
-                      {noticia.resumo || noticia.conteudo.substring(0, 150) + '...'}
-                    </p>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>{new Date(noticia.created_at).toLocaleDateString('pt-BR')}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    total_users: 0,
-    total_membros: 0,
-    total_parceiros: 0,
-    total_associados: 0,
-    candidaturas_pendentes: 0,
-    total_imoveis: 0,
-    total_noticias: 0,
-    imoveis_destaque: 0,
-    parceiros_destaque: 0
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const response = await axios.get(`${API}/admin/dashboard`);
-      setStats(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar estatísticas",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Navigation />
-        <div className="flex justify-center items-center py-12">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Dashboard Administrativo</h1>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          <div className="stat-card">
-            <div className="stat-number">{stats.total_users}</div>
-            <div className="stat-label">Total de Usuários</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-number text-orange-500">{stats.candidaturas_pendentes}</div>
-            <div className="stat-label">Candidaturas Pendentes</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-number text-green-600">{stats.total_imoveis}</div>
-            <div className="stat-label">Imóveis Cadastrados</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-number text-purple-600">{stats.total_noticias}</div>
-            <div className="stat-label">Notícias Publicadas</div>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="card-custom p-6">
-            <h3 className="text-lg font-semibold mb-4 text-primary-gray">Membros</h3>
-            <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_membros}</div>
-            <p className="text-gray-600 text-sm">Proprietários de imóveis</p>
-          </Card>
-
-          <Card className="card-custom p-6">
-            <h3 className="text-lg font-semibold mb-4 text-primary-gray">Parceiros</h3>
-            <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_parceiros}</div>
-            <p className="text-gray-600 text-sm">Empresas parceiras</p>
-          </Card>
-
-          <Card className="card-custom p-6">
-            <h3 className="text-lg font-semibold mb-4 text-primary-gray">Associados</h3>
-            <div className="text-3xl font-bold text-primary-teal mb-2">{stats.total_associados}</div>
-            <p className="text-gray-600 text-sm">Apoiadores da ALT</p>
-          </Card>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Button
-            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/candidaturas'}
-          >
-            <span className="text-lg font-semibold">Gerenciar</span>
-            <span className="text-sm">Candidaturas</span>
-          </Button>
-
-          <Button
-            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/destaques'}
-          >
-            <span className="text-lg font-semibold">Configurar</span>
-            <span className="text-sm">Destaques</span>
-          </Button>
-
-          <Button
-            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/conteudo'}
-          >
-            <span className="text-lg font-semibold">Criar</span>
-            <span className="text-sm">Notícia</span>
-          </Button>
-
-          <Button
-            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/comunicacao'}
-          >
-            <span className="text-lg font-semibold">Enviar</span>
-            <span className="text-sm">Email</span>
-          </Button>
-
-          <Button
-            className="btn-primary h-auto p-6 flex flex-col items-center space-y-2"
-            onClick={() => window.location.href = '/admin/usuarios'}
-          >
-            <span className="text-lg font-semibold">Gerenciar</span>
-            <span className="text-sm">Usuários</span>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AdminDestaques = () => {
-  const [imoveis, setImoveis] = useState([]);
-  const [parceiros, setParceiros] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDestaquesData();
-  }, []);
-
-  const fetchDestaquesData = async () => {
-    setLoading(true);
-    try {
-      const [imovelRes, parceiroRes] = await Promise.all([
-        axios.get(`${API}/imoveis?status=aprovado`),
-        axios.get(`${API}/parceiros`)
-      ]);
-      setImoveis(imovelRes.data);
-      setParceiros(parceiroRes.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível buscar imóveis e parceiros.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const toggleDestaque = async (type, id, currentStatus) => {
-    try {
-      const endpoint = `/admin/${type}/${id}/destaque`;
-      await axios.put(`${API}${endpoint}`, null, { params: { destaque: !currentStatus } });
-      toast({
-        title: `${type} atualizado!`,
-        description: `Item ${!currentStatus ? 'adicionado ao' : 'removido do'} destaque.`,
-      });
-      fetchDestaquesData();
-    } catch (error) {
-      toast({
-        title: `Erro ao atualizar ${type}`,
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Navigation />
-        <div className="flex justify-center items-center py-12">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Controle de Destaques (Página Inicial)</h1>
-
-        <Tabs defaultValue="imoveis" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="imoveis">Imóveis ({imoveis.filter(i => i.destaque).length} em Destaque)</TabsTrigger>
-            <TabsTrigger value="parceiros">Parceiros ({parceiros.filter(p => p.destaque).length} em Destaque)</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="imoveis" className="space-y-4">
-            <h2 className="text-xl font-semibold text-primary-gray mb-4">Gerenciar Imóveis em Destaque</h2>
-            {imoveis.map(imovel => (
-              <Card key={imovel.id} className={`card-custom ${imovel.destaque ? 'border-primary-teal' : 'border-gray-200'}`}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
-                      <CardDescription>{imovel.regiao} • R$ {imovel.preco_diaria}/dia</CardDescription>
-                      <Badge className={`mt-2 ${imovel.destaque ? 'badge-teal' : 'badge-beige'}`}>
-                        {imovel.destaque ? 'Em Destaque' : 'Normal'}
-                      </Badge>
-                    </div>
-                    <Button
-                      onClick={() => toggleDestaque('imoveis', imovel.id, imovel.destaque)}
-                      className={imovel.destaque ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'}
-                      size="sm"
-                    >
-                      {imovel.destaque ? 'Remover' : 'Destacar'}
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="parceiros" className="space-y-4">
-            <h2 className="text-xl font-semibold text-primary-gray mb-4">Gerenciar Parceiros em Destaque</h2>
-            {parceiros.map(parceiro => (
-              <Card key={parceiro.id} className={`card-custom ${parceiro.destaque ? 'border-primary-teal' : 'border-gray-200'}`}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg text-primary-gray">{parceiro.nome_empresa}</CardTitle>
-                      <CardDescription>{parceiro.categoria}</CardDescription>
-                      <Badge className={`mt-2 ${parceiro.destaque ? 'badge-teal' : 'badge-beige'}`}>
-                        {parceiro.destaque ? 'Em Destaque' : 'Normal'}
-                      </Badge>
-                    </div>
-                    <Button
-                      onClick={() => toggleDestaque('parceiros', parceiro.id, parceiro.destaque)}
-                      className={parceiro.destaque ? 'bg-red-500 hover:bg-red-600' : 'btn-primary'}
-                      size="sm"
-                    >
-                      {parceiro.destaque ? 'Remover' : 'Destacar'}
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-};
-
-const AdminCandidaturas = () => {
-  const [candidaturasMembros, setCandidaturasMembros] = useState([]);
-  const [candidaturasParceiros, setCandidaturasParceiros] = useState([]);
-  const [candidaturasAssociados, setCandidaturasAssociados] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('membros');
-
-  const fetchCandidaturas = async () => {
-    setLoading(true);
-    try {
-      const [membros, parceiros, associados] = await Promise.all([
-        axios.get(`${API}/admin/candidaturas/membros`),
-        axios.get(`${API}/admin/candidaturas/parceiros`),
-        axios.get(`${API}/admin/candidaturas/associados`)
-      ]);
-
-      setCandidaturasMembros(membros.data);
-      setCandidaturasParceiros(parceiros.data);
-      setCandidaturasAssociados(associados.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar candidaturas",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchCandidaturas();
-  }, []);
-
-  const handleAprovar = async (tipo, id) => {
-    try {
-      const response = await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/aprovar`);
-      toast({
-        title: "Candidatura aprovada!",
-        description: `Email enviado. Senha temporária: ${response.data.temp_password}`,
-      });
-      fetchCandidaturas();
-    } catch (error) {
-      toast({
-        title: "Erro ao aprovar",
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRecusar = async (tipo, id, motivo = '') => {
-    try {
-      await axios.post(`${API}/admin/candidaturas/${tipo}/${id}/recusar`,
-        {},
-        { params: { motivo } }
-      );
-      toast({
-        title: "Candidatura recusada",
-        description: "Email de notificação enviado.",
-      });
-      fetchCandidaturas();
-    } catch (error) {
-      toast({
-        title: "Erro ao recusar",
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const CandidaturaCard = ({ candidatura, tipo }) => (
-    <Card key={candidatura.id} className="card-custom mb-4">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg text-primary-gray">{candidatura.nome}</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Badge className="badge-beige">
-              {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
-            </Badge>
-          </div>
-        </div>
-        <CardDescription className="text-primary-teal">{candidatura.email}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className="space-y-2">
-            <p><strong>Telefone:</strong> {candidatura.telefone}</p>
-            {candidatura.endereco && <p><strong>Endereço:</strong> {candidatura.endereco}</p>}
-            {candidatura.num_imoveis && <p><strong>Nº Imóveis:</strong> {candidatura.num_imoveis}</p>}
-            {candidatura.link_imovel && (
-              <p><strong>Link Imóvel:</strong>
-                <a href={candidatura.link_imovel} target="_blank" rel="noopener noreferrer" className="text-primary-teal ml-1">
-                  Ver imóvel
-                </a>
-              </p>
-            )}
-            {candidatura.nome_empresa && <p><strong>Empresa:</strong> {candidatura.nome_empresa}</p>}
-            {candidatura.categoria && <p><strong>Categoria:</strong> {candidatura.categoria}</p>}
-            {candidatura.cnpj && <p><strong>CNPJ:</strong> {candidatura.cnpj}</p>}
-            {candidatura.ocupacao && <p><strong>Ocupação:</strong> {candidatura.ocupacao}</p>}
-            {candidatura.empresa_trabalho && <p><strong>Empresa:</strong> {candidatura.empresa_trabalho}</p>}
-          </div>
-          <div className="space-y-2">
-            {candidatura.mensagem && (
-              <div>
-                <p><strong>Mensagem:</strong></p>
-                <p className="text-gray-700 text-sm mt-1 p-2 bg-gray-50 rounded">{candidatura.mensagem}</p>
-              </div>
-            )}
-            {candidatura.motivo_interesse && (
-              <div>
-                <p><strong>Motivo do Interesse:</strong></p>
-                <p className="text-gray-700 text-sm mt-1 p-2 bg-gray-50 rounded">{candidatura.motivo_interesse}</p>
-              </div>
-            )}
-            {candidatura.servicos_oferecidos && (
-              <div>
-                <p><strong>Serviços:</strong></p>
-                <p className="text-gray-700 text-sm mt-1">{candidatura.servicos_oferecidos}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex space-x-3">
-          <Button
-            onClick={() => handleAprovar(tipo, candidatura.id)}
-            className="bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-            data-testid={`aprovar-${candidatura.id}`}
-          >
-            Aprovar
-          </Button>
-          <Button
-            onClick={() => handleRecusar(tipo, candidatura.id)}
-            variant="destructive"
-            size="sm"
-            data-testid={`recusar-${candidatura.id}`}
-          >
-            Recusar
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Candidaturas</h1>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="membros" className="text-center">
-              Membros ({candidaturasMembros.length})
-            </TabsTrigger>
-            <TabsTrigger value="parceiros" className="text-center">
-              Parceiros ({candidaturasParceiros.length})
-            </TabsTrigger>
-            <TabsTrigger value="associados" className="text-center">
-              Associados ({candidaturasAssociados.length})
-            </TabsTrigger>
-          </TabsList>
-
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="spinner"></div>
-            </div>
-          ) : (
-            <>
-              <TabsContent value="membros" className="space-y-4">
-                <h2 className="text-xl font-semibold text-primary-gray">Candidaturas para Membro</h2>
-                {candidaturasMembros.length === 0 ? (
-                  <Card className="card-custom">
-                    <CardContent className="py-12 text-center text-gray-500">
-                      Nenhuma candidatura pendente
-                    </CardContent>
-                  </Card>
-                ) : (
-                  candidaturasMembros.map(candidatura => (
-                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="membro" />
-                  ))
-                )}
-              </TabsContent>
-
-              <TabsContent value="parceiros" className="space-y-4">
-                <h2 className="text-xl font-semibold text-primary-gray">Candidaturas para Parceiro</h2>
-                {candidaturasParceiros.length === 0 ? (
-                  <Card className="card-custom">
-                    <CardContent className="py-12 text-center text-gray-500">
-                      Nenhuma candidatura pendente
-                    </CardContent>
-                  </Card>
-                ) : (
-                  candidaturasParceiros.map(candidatura => (
-                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="parceiro" />
-                  ))
-                )}
-              </TabsContent>
-
-              <TabsContent value="associados" className="space-y-4">
-                <h2 className="text-xl font-semibold text-primary-gray">Candidaturas para Associado</h2>
-                {candidaturasAssociados.length === 0 ? (
-                  <Card className="card-custom">
-                    <CardContent className="py-12 text-center text-gray-500">
-                      Nenhuma candidatura pendente
-                    </CardContent>
-                  </Card>
-                ) : (
-                  candidaturasAssociados.map(candidatura => (
-                    <CandidaturaCard key={candidatura.id} candidatura={candidatura} tipo="associado" />
-                  ))
-                )}
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
-      </div>
-    </div>
-  );
-};
-
-const AdminConteudo = () => {
-  const [noticias, setNoticias] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [novaNoticia, setNovaNoticia] = useState({
-    titulo: '',
-    subtitulo: '',
-    conteudo: '',
-    resumo: '',
-    categoria: 'geral',
-    // Campos de URL removidos
-    fotos: [],
-    video_url: '',
-    destaque: false
-  });
-
-  useEffect(() => {
-    fetchNoticias();
-  }, []);
-
-  const fetchNoticias = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API}/admin/noticias`);
-      setNoticias(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar notícias",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleCreateNoticia = async (e) => {
-    e.preventDefault();
-    try {
-      // O backend deve aceitar a lista de URLs de fotos, mesmo que algumas sejam vídeos.
-      // Modificamos a estrutura do payload:
-      const payload = {
-        ...novaNoticia,
-        // O campo 'fotos' contém URLs de imagens e vídeos
-        fotos: novaNoticia.fotos,
-        // Remover campos de URL antigos do payload, se existirem
-        video_url: novaNoticia.video_url,
-        link_externo: null
-      };
-
-      await axios.post(`${API}/admin/noticias`, payload);
-      toast({
-        title: "Notícia criada com sucesso!",
-        description: "A notícia foi publicada na área dos membros.",
-      });
-      // Reset
-      setNovaNoticia({
-        titulo: '',
-        subtitulo: '',
-        conteudo: '',
-        resumo: '',
-        categoria: 'geral',
-        fotos: [],
-        destaque: false
-      });
-      setShowForm(false);
-      fetchNoticias();
-    } catch (error) {
-      toast({
-        title: "Erro ao criar notícia",
-        description: error.response?.data?.detail || "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteNoticia = async (id) => {
-    if (window.confirm('Tem certeza que deseja deletar esta notícia?')) {
-      try {
-        await axios.delete(`${API}/admin/noticias/${id}`);
-        toast({
-          title: "Notícia removida com sucesso!",
-        });
-        fetchNoticias();
-      } catch (error) {
-        toast({
-          title: "Erro ao remover notícia",
-          description: "Tente novamente mais tarde.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-primary-gray">Gerenciar Conteúdo</h1>
-          <Button
-            className="btn-primary"
-            onClick={() => setShowForm(true)}
-          >
-            Criar Nova Notícia
-          </Button>
-        </div>
-
-        {showForm && (
-          <Card className="card-custom mb-8">
-            <CardHeader>
-              <CardTitle className="text-primary-gray">Nova Notícia</CardTitle>
-              <CardDescription>
-                Crie uma nova notícia para ser exibida na área dos membros
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCreateNoticia} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="titulo" className="form-label">Título *</Label>
-                    <Input
-                      id="titulo"
-                      className="form-input"
-                      value={novaNoticia.titulo}
-                      onChange={(e) => setNovaNoticia({ ...novaNoticia, titulo: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="categoria" className="form-label">Categoria</Label>
-                    <Select
-                      value={novaNoticia.categoria}
-                      onValueChange={(value) => setNovaNoticia({ ...novaNoticia, categoria: value })}
-                    >
-                      <SelectTrigger className="form-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="geral">Geral</SelectItem>
-                        <SelectItem value="evento">Evento</SelectItem>
-                        <SelectItem value="promocao">Promoção</SelectItem>
-                        <SelectItem value="regulamentacao">Regulamentação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="subtitulo" className="form-label">Subtítulo</Label>
-                  <Input
-                    id="subtitulo"
-                    className="form-input"
-                    value={novaNoticia.subtitulo}
-                    onChange={(e) => setNovaNoticia({ ...novaNoticia, subtitulo: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="resumo" className="form-label">Resumo</Label>
-                  <Textarea
-                    id="resumo"
-                    className="form-input"
-                    rows={3}
-                    value={novaNoticia.resumo}
-                    onChange={(e) => setNovaNoticia({ ...novaNoticia, resumo: e.target.value })}
-                    placeholder="Breve resumo da notícia..."
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <PhotoUpload
-                    photos={novaNoticia.fotos}
-                    onPhotosChange={(newPhotos) => setNovaNoticia({ ...novaNoticia, fotos: newPhotos })}
-                    maxPhotos={5}
-                    label="Fotos e Vídeos da Notícia"
-                  />
-                  <div className="text-xs text-gray-600">
-                    Os vídeos e fotos devem ser carregados aqui. O primeiro item será usado como capa.
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="conteudo" className="form-label">Conteúdo *</Label>
-                  <Textarea
-                    id="conteudo"
-                    className="form-input"
-                    rows={8}
-                    value={novaNoticia.conteudo}
-                    onChange={(e) => setNovaNoticia({ ...novaNoticia, conteudo: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="destaque"
-                    checked={novaNoticia.destaque}
-                    onChange={(e) => setNovaNoticia({ ...novaNoticia, destaque: e.target.checked })}
-                    className="rounded focus-teal"
-                  />
-                  <Label htmlFor="destaque" className="form-label mb-0">
-                    Destacar na página principal
-                  </Label>
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button type="submit" className="btn-primary">Publicar</Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowForm(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="spinner"></div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {noticias.length === 0 ? (
-              <Card className="card-custom">
-                <CardContent className="py-12 text-center text-gray-500">
-                  Nenhuma notícia publicada
-                </CardContent>
-              </Card>
-            ) : (
-              noticias.map(noticia => (
-                <Card key={noticia.id} className="card-custom">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Badge className="badge-teal">{noticia.categoria}</Badge>
-                          {noticia.destaque && <Badge className="badge-beige">Destaque</Badge>}
-                        </div>
-                        <CardTitle className="text-primary-gray">{noticia.titulo}</CardTitle>
-                        {noticia.subtitulo && (
-                          <CardDescription className="text-lg mt-2">{noticia.subtitulo}</CardDescription>
-                        )}
-                        <CardDescription className="mt-1">
-                          Por {noticia.autor_nome} • {new Date(noticia.created_at).toLocaleDateString('pt-BR')}
-                        </CardDescription>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteNoticia(noticia.id)}
-                      >
-                        Remover
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {noticia.resumo && (
-                      <p className="text-gray-600 mb-3">{noticia.resumo}</p>
-                    )}
-                    <p className="whitespace-pre-wrap text-gray-700">{noticia.conteudo}</p>
-                    {(noticia.video_url || noticia.link_externo) && (
-                      <div className="flex space-x-2 mt-4">
-                        {noticia.video_url && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={noticia.video_url} target="_blank" rel="noopener noreferrer">
-                              Ver Vídeo
-                            </a>
-                          </Button>
-                        )}
-                        {noticia.link_externo && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={noticia.link_externo} target="_blank" rel="noopener noreferrer">
-                              Link Externo
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const AdminComunicacao = () => {
-  const [emailData, setEmailData] = useState({
-    destinatarios: [],
-    assunto: '',
-    mensagem: ''
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSendEmail = async (e) => {
-    e.preventDefault();
-    if (emailData.destinatarios.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Selecione pelo menos um grupo de destinatários.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await axios.post(`${API}/admin/email-massa`, emailData);
-      toast({
-        title: "Email enviado com sucesso!",
-        description: `Enviado para ${response.data.destinatarios} usuários.`,
-      });
-      setEmailData({ destinatarios: [], assunto: '', mensagem: '' });
-    } catch (error) {
-      toast({
-        title: "Erro ao enviar email",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleDestinatarioChange = (value, checked) => {
-    if (checked) {
-      setEmailData(prev => ({
-        ...prev,
-        destinatarios: [...prev.destinatarios, value]
-      }));
-    } else {
-      setEmailData(prev => ({
-        ...prev,
-        destinatarios: prev.destinatarios.filter(d => d !== value)
-      }));
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Comunicação</h1>
-
-        <Card className="card-custom max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-primary-gray">Enviar Email em Massa</CardTitle>
-            <CardDescription>
-              Envie emails para grupos específicos de usuários
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSendEmail} className="space-y-6">
-              <div>
-                <Label className="form-label">Destinatários</Label>
-                <div className="space-y-3 mt-2">
-                  {[
-                    { value: 'admin', label: 'Administradores' },
-                    { value: 'membro', label: 'Membros' },
-                    { value: 'parceiro', label: 'Parceiros' },
-                    { value: 'associado', label: 'Associados' },
-                    { value: 'todos', label: 'Todos os Usuários' }
-                  ].map(option => (
-                    <label key={option.value} className="flex items-center space-x-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={emailData.destinatarios.includes(option.value)}
-                        onChange={(e) => handleDestinatarioChange(option.value, e.target.checked)}
-                        className="rounded focus-teal"
-                      />
-                      <span className="text-gray-700">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="assunto" className="form-label">Assunto *</Label>
-                <Input
-                  id="assunto"
-                  className="form-input"
-                  value={emailData.assunto}
-                  onChange={(e) => setEmailData({ ...emailData, assunto: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="mensagem" className="form-label">Mensagem *</Label>
-                <Textarea
-                  id="mensagem"
-                  className="form-input"
-                  rows={8}
-                  value={emailData.mensagem}
-                  onChange={(e) => setEmailData({ ...emailData, mensagem: e.target.value })}
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full btn-primary"
-              >
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="spinner w-4 h-4"></div>
-                    <span>Enviando...</span>
-                  </div>
-                ) : (
-                  'Enviar Email'
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-const AdminUsuarios = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get(`${API}/admin/users`);
-      setUsers(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar usuários",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const toggleUserStatus = async (userId, currentStatus) => {
-    try {
-      await axios.put(`${API}/admin/users/${userId}`, { ativo: !currentStatus });
-      toast({
-        title: "Status do usuário atualizado!",
-      });
-      fetchUsers();
-    } catch (error) {
-      toast({
-        title: "Erro ao atualizar usuário",
-        description: "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const deleteUser = async (userId, userName, userEmail) => {
-    const confirmMessage = `⚠️ ATENÇÃO: Esta ação não pode ser desfeita!\n\nVocê tem certeza que deseja DELETAR permanentemente o usuário:\n\n👤 ${userName} (${userEmail})\n\nTodos os dados associados (imóveis, perfis, etc.) também serão removidos.\n\nDigite "DELETAR" para confirmar:`;
-
-    const confirmText = window.prompt(confirmMessage);
-
-    if (confirmText !== "DELETAR") {
-      toast({
-        title: "Operação cancelada",
-        description: "Usuário não foi removido.",
-      });
-      return;
-    }
-
-    try {
-      const response = await axios.delete(`${API}/admin/users/${userId}`);
-      toast({
-        title: "Usuário deletado!",
-        description: response.data.message,
-      });
-      fetchUsers();
-    } catch (error) {
-      toast({
-        title: "Erro ao deletar usuário",
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Navigation />
-        <div className="flex justify-center items-center py-12">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Usuários</h1>
-
-        <Card className="card-custom">
-          <CardHeader>
-            <CardTitle className="text-primary-gray">Lista de Usuários</CardTitle>
-            <CardDescription>
-              Gerencie todos os usuários do sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {users.map(user => (
-                <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div>
-                      <h3 className="font-semibold text-primary-gray">{user.nome}</h3>
-                      <p className="text-sm text-gray-600">{user.email}</p>
-                      <p className="text-sm text-gray-500">{user.telefone}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Badge className="badge-teal">{user.role}</Badge>
-                      {user.ativo ? (
-                        <Badge className="bg-green-100 text-green-800">Ativo</Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-800">Inativo</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant={user.ativo ? "destructive" : "default"}
-                      onClick={() => toggleUserStatus(user.id, user.ativo)}
-                    >
-                      {user.ativo ? 'Desativar' : 'Ativar'}
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteUser(user.id, user.nome, user.email)}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Deletar
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-const HomePage = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <section className="hero-gradient text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 fade-in">
-            Bem-vindo à ALT Ilhabela
-          </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed fade-in">
-            A Associação de Locação por Temporada de Ilhabela é uma entidade dedicada
-            a promover o turismo responsável e a qualidade dos serviços de hospedagem
-            em nossa bela ilha.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="glass-card p-6 hover-lift">
-              <h3 className="text-xl font-bold mb-4">Para Proprietários</h3>
-              <p className="text-white/90 mb-4 text-sm">
-                Cadastre seus imóveis e faça parte da nossa rede qualificada
-              </p>
-              <Button
-                className="btn-secondary w-full hover-lift"
-                onClick={() => window.location.href = '/candidatura/membro'}
-                data-testid="seja-membro-btn"
-              >
-                Seja Membro
-              </Button>
-            </div>
-
-            <div className="glass-card p-6 hover-lift">
-              <h3 className="text-xl font-bold mb-4">Para Empresas</h3>
-              <p className="text-white/90 mb-4 text-sm">
-                Ofereça seus serviços para nossa comunidade de turistas
-              </p>
-              <Button
-                className="btn-secondary w-full hover-lift"
-                onClick={() => window.location.href = '/candidatura/parceiro'}
-                data-testid="seja-parceiro-btn"
-              >
-                Seja Parceiro
-              </Button>
-            </div>
-
-            <div className="glass-card p-6 hover-lift">
-              <h3 className="text-xl font-bold mb-4">Para Apoiadores</h3>
-              <p className="text-white/90 mb-4 text-sm">
-                Apoie nossa missão de promover o turismo em Ilhabela
-              </p>
-              <Button
-                className="btn-secondary w-full hover-lift"
-                onClick={() => window.location.href = '/candidatura/associado'}
-                data-testid="seja-associado-btn"
-              >
-                Seja Associado
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white" id="sobre">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-8 text-primary-gray">Sobre a ALT Ilhabela</h2>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="text-left">
-                <h3 className="text-2xl font-semibold mb-4 text-primary-teal">Nossa Missão</h3>
-                <p className="text-gray-700 mb-6 leading-relaxed">
-                  Promover o desenvolvimento sustentável do turismo em Ilhabela através
-                  da qualificação e certificação de imóveis e serviços de locação por temporada.
-                </p>
-
-                <h3 className="text-2xl font-semibold mb-4 text-primary-teal">Nossos Valores</h3>
-                <ul className="text-gray-700 space-y-2">
-                  <li>• Qualidade e excelência no atendimento</li>
-                  <li>• Transparência e confiança</li>
-                  <li>• Sustentabilidade ambiental</li>
-                  <li>• Desenvolvimento local</li>
-                </ul>
-              </div>
-
-              <div className="space-y-6">
-                <Card className="card-custom hover-lift">
-                  <CardHeader>
-                    <CardTitle className="text-primary-teal">Membros</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-sm">
-                      Proprietários de imóveis certificados para locação por temporada
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="card-custom hover-lift">
-                  <CardHeader>
-                    <CardTitle className="text-primary-teal">Parceiros</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-sm">
-                      Empresas locais que oferecem serviços turísticos qualificados
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="card-custom hover-lift">
-                  <CardHeader>
-                    <CardTitle className="text-primary-teal">Associados</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-sm">
-                      Apoiadores da missão de desenvolvimento do turismo local
-                    </p>
-                  </CardContent>
-                </Card>
+        <section id="sobre" className="py-20">
+          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold mb-6 text-primary-gray">Qualidade e Confiança: O selo ALT Ilhabela</h2>
+              <p className="text-gray-600 mb-4 leading-relaxed">A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência.</p>
+              <p className="text-gray-600 mb-6 leading-relaxed">Ao escolher um imóvel ou serviço com o selo ALT, você tem a certeza de encontrar qualidade, segurança e a verdadeira hospitalidade caiçara.</p>
+              <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                <Button className="btn-primary" onClick={() => navigate('/candidatura/membro')}>Seja um Membro</Button>
+                <Button variant="outline" className="btn-outline-primary" onClick={() => navigate('/candidatura/parceiro')}>Seja um Parceiro</Button>
               </div>
             </div>
+            <div className="rounded-lg overflow-hidden shadow-2xl">
+              <img src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Pessoas na praia de Ilhabela" className="w-full h-full object-cover" />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </div>
   );
 };
@@ -1737,481 +472,92 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showRecuperarSenha, setShowRecuperarSenha] = useState(false);
-  const { login, user } = useAuth();
-
-  if (user) {
-    return <Navigate to="/main" replace />;
-  }
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     const result = await login(email, password);
-
     if (result.success) {
-      toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo de volta.",
-      });
+      navigate(from, { replace: true });
     } else {
-      toast({
-        title: "Erro no login",
-        description: result.error,
-        variant: "destructive",
-      });
+      toast({ title: "Erro no login", description: result.error, variant: "destructive" });
     }
-
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 p-4">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-primary-gray">
-            Entrar na ALT Ilhabela
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Acesse sua conta para gerenciar seu perfil
-          </p>
+          <h2 className="text-3xl font-bold text-primary-gray">Entrar na ALT Ilhabela</h2>
         </div>
-
         <Card className="card-custom">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="email" className="form-label">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  className="form-input mt-1"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  data-testid="login-email-input"
-                />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
-
               <div>
-                <Label htmlFor="password" className="form-label">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  className="form-input mt-1"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  data-testid="login-password-input"
-                />
+                <Label htmlFor="password">Senha</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
               </div>
-
-              <Button
-                type="submit"
-                className="w-full btn-primary"
-                disabled={loading}
-                data-testid="login-submit-btn"
-              >
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="spinner w-4 h-4"></div>
-                    <span>Entrando...</span>
-                  </div>
-                ) : (
-                  'Entrar'
-                )}
+              <Button type="submit" className="w-full btn-primary" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </Button>
-
               <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => setShowRecuperarSenha(true)}
-                  className="text-sm text-primary-teal hover:underline"
-                >
+                <Button type="button" variant="link" onClick={() => setShowRecuperarSenha(true)} className="text-sm text-primary-teal hover:underline">
                   Esqueci minha senha
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
-
-        <div className="text-center">
-          <Button
-            variant="link"
-            onClick={() => window.location.href = '/'}
-            data-testid="voltar-home-btn"
-          >
-            Voltar para a página inicial
-          </Button>
-        </div>
-
-        <RecuperarSenhaModal
-          isOpen={showRecuperarSenha}
-          onClose={() => setShowRecuperarSenha(false)}
-        />
+        <RecuperarSenhaModal isOpen={showRecuperarSenha} onClose={() => setShowRecuperarSenha(false)} />
       </div>
     </div>
   );
 };
 
-const AdminImoveis = () => {
-  const [imoveisPendentes, setImoveisPendentes] = useState([]);
-  const [loading, setLoading] = useState(true);
+// --- Componente Principal (Roteador) ---
+const MainApp = () => (
+  <AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomeLayout />}>
+          <Route index element={<HomePage />} />
+        </Route>
 
-  useEffect(() => {
-    fetchImoveisPendentes();
-  }, []);
+        <Route element={<DefaultLayout />}>
+          <Route path="/imoveis" element={<TodosImoveisPage />} />
+          <Route path="/parceiros" element={<ParceirosPage />} />
+          <Route path="/imovel/:id" element={<ImovelDetalhePage />} />
+          <Route path="/parceiro/:id" element={<ParceiroDetalhePage />} />
+          <Route path="/meus-imoveis" element={<ProtectedRoute allowedRoles={['membro']}><MeusImoveisPage /></ProtectedRoute>} />
+          <Route path="/meu-perfil" element={<ProtectedRoute allowedRoles={['parceiro']}><MeuPerfilPage /></ProtectedRoute>} />
+          <Route path="/alterar-senha" element={<ProtectedRoute><AlterarSenhaPage /></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/candidaturas" element={<ProtectedRoute allowedRoles={['admin']}><AdminCandidaturas /></ProtectedRoute>} />
+          <Route path="/admin/imoveis" element={<ProtectedRoute allowedRoles={['admin']}><AdminImoveis /></ProtectedRoute>} />
+          <Route path="/admin/conteudo" element={<ProtectedRoute allowedRoles={['admin']}><AdminConteudo /></ProtectedRoute>} />
+          <Route path="/admin/comunicacao" element={<ProtectedRoute allowedRoles={['admin']}><AdminComunicacao /></ProtectedRoute>} />
+          <Route path="/admin/usuarios" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsuarios /></ProtectedRoute>} />
+          <Route path="/admin/destaques" element={<ProtectedRoute allowedRoles={['admin']}><AdminDestaques /></ProtectedRoute>} />
+        </Route>
 
-  const fetchImoveisPendentes = async () => {
-    try {
-      const response = await axios.get(`${API}/admin/imoveis-pendentes`);
-      setImoveisPendentes(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar imóveis",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleAprovar = async (imovelId) => {
-    try {
-      await axios.post(`${API}/admin/imoveis/${imovelId}/aprovar`);
-      toast({
-        title: "Imóvel aprovado!",
-        description: "Email de notificação enviado ao proprietário.",
-      });
-      fetchImoveisPendentes();
-    } catch (error) {
-      toast({
-        title: "Erro ao aprovar",
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRecusar = async (imovelId, motivo = '') => {
-    try {
-      await axios.post(`${API}/admin/imoveis/${imovelId}/recusar`, {}, { params: { motivo } });
-      toast({
-        title: "Imóvel recusado",
-        description: "Email de notificação enviado ao proprietário.",
-      });
-      fetchImoveisPendentes();
-    } catch (error) {
-      toast({
-        title: "Erro ao recusar",
-        description: error.response?.data?.detail || "Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-primary-gray">Gerenciar Imóveis</h1>
-
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="spinner"></div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <Card className="card-custom">
-              <CardHeader>
-                <CardTitle className="text-primary-gray">Imóveis Pendentes de Aprovação ({imoveisPendentes.length})</CardTitle>
-                <CardDescription>
-                  Analise e aprove os imóveis enviados pelos membros
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {imoveisPendentes.length === 0 ? (
-                  <div className="py-12 text-center text-gray-500">
-                    Nenhum imóvel pendente de aprovação
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {imoveisPendentes.map((imovel) => (
-                      <Card key={imovel.id} className="border border-orange-200 bg-orange-50">
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
-                              <CardDescription>
-                                {imovel.tipo} • {imovel.regiao} • R$ {imovel.preco_diaria}/dia
-                              </CardDescription>
-                              <Badge className="mt-2 bg-orange-100 text-orange-800">Pendente Aprovação</Badge>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Button
-                                onClick={() => handleAprovar(imovel.id)}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                                size="sm"
-                              >
-                                Aprovar
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  const motivo = window.prompt('Motivo da recusa (opcional):');
-                                  if (motivo !== null) {
-                                    handleRecusar(imovel.id, motivo);
-                                  }
-                                }}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                Recusar
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                              <div>
-                                <strong>Descrição:</strong>
-                                <p className="text-gray-600 text-sm mt-1">{imovel.descricao}</p>
-                              </div>
-                              <div>
-                                <strong>Endereço:</strong>
-                                <p className="text-gray-600 text-sm mt-1">{imovel.endereco_completo}</p>
-                              </div>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div><strong>Quartos:</strong> {imovel.num_quartos}</div>
-                                <div><strong>Banheiros:</strong> {imovel.num_banheiros}</div>
-                                <div><strong>Capacidade:</strong> {imovel.capacidade} pessoas</div>
-                                {imovel.area_m2 && <div><strong>Área:</strong> {imovel.area_m2}m²</div>}
-                              </div>
-                            </div>
-                            <div className="space-y-3">
-                              <div>
-                                <strong>Comodidades:</strong>
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  {imovel.possui_piscina && <Badge className="badge-teal text-xs">Piscina</Badge>}
-                                  {imovel.possui_churrasqueira && <Badge className="badge-teal text-xs">Churrasqueira</Badge>}
-                                  {imovel.possui_wifi && <Badge className="badge-teal text-xs">Wi-Fi</Badge>}
-                                  {imovel.permite_pets && <Badge className="badge-teal text-xs">Pet-Friendly</Badge>}
-                                  {imovel.tem_vista_mar && <Badge className="badge-teal text-xs">Vista Mar</Badge>}
-                                  {imovel.tem_ar_condicionado && <Badge className="badge-teal text-xs">Ar Condicionado</Badge>}
-                                </div>
-                              </div>
-                              <div className="text-sm">
-                                <strong>Preços:</strong>
-                                <div className="grid grid-cols-1 gap-1 mt-1 text-gray-600">
-                                  <div>Diária: R$ {imovel.preco_diaria}</div>
-                                  {imovel.preco_semanal && <div>Semanal: R$ {imovel.preco_semanal}</div>}
-                                  {imovel.preco_mensal && <div>Mensal: R$ {imovel.preco_mensal}</div>}
-                                </div>
-                              </div>
-                              {(imovel.link_booking || imovel.link_airbnb) && (
-                                <div>
-                                  <strong>Links:</strong>
-                                  <div className="flex space-x-2 mt-1">
-                                    {imovel.link_booking && (
-                                      <Button size="sm" variant="outline" asChild>
-                                        <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">
-                                          Booking
-                                        </a>
-                                      </Button>
-                                    )}
-                                    {imovel.link_airbnb && (
-                                      <Button size="sm" variant="outline" asChild>
-                                        <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">
-                                          Airbnb
-                                        </a>
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="mt-4 pt-3 border-t text-xs text-gray-500">
-                            Enviado em: {new Date(imovel.created_at).toLocaleString('pt-BR')}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const MainApp = () => {
-  return (
-    <div className="App">
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-
-            <Route path="/candidatura/membro" element={<CandidaturaMembroPage />} />
-            <Route path="/candidatura/parceiro" element={<CandidaturaParceiroPage />} />
-            <Route path="/candidatura/associado" element={<CandidaturaAssociadoPage />} />
-
-            <Route
-              path="/main"
-              element={
-                <ProtectedRoute>
-                  <MainPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/meus-imoveis"
-              element={
-                <ProtectedRoute allowedRoles={['membro']}>
-                  <MeusImoveisPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/imoveis"
-              element={
-                <ProtectedRoute allowedRoles={['membro', 'parceiro', 'admin']}>
-                  <TodosImoveisPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/meu-perfil"
-              element={
-                <ProtectedRoute allowedRoles={['parceiro']}>
-                  <MeuPerfilPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/parceiros"
-              element={
-                <ProtectedRoute>
-                  <ParceirosPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/imovel/:id"
-              element={
-                <ProtectedRoute>
-                  <ImovelDetalhePage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/parceiro/:id"
-              element={
-                <ProtectedRoute>
-                  <ParceiroDetalhePage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/alterar-senha"
-              element={
-                <ProtectedRoute>
-                  <AlterarSenhaPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/candidaturas"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminCandidaturas />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/imoveis"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminImoveis />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/conteudo"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminConteudo />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/comunicacao"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminComunicacao />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/usuarios"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminUsuarios />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin/destaques"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDestaques />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Navigate to="/main" replace />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-      </AuthProvider>
-    </div>
-  );
-}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/candidatura/membro" element={<CandidaturaMembroPage />} />
+        <Route path="/candidatura/parceiro" element={<CandidaturaParceiroPage />} />
+        <Route path="/candidatura/associado" element={<CandidaturaAssociadoPage />} />
+        <Route path="/main" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+    <Toaster />
+  </AuthProvider>
+);
 
 export default MainApp;

@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator
+from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
@@ -20,6 +20,10 @@ import secrets
 import string
 import aiofiles
 import shutil
+# <--- Adicione aqui
+from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
+from typing import List, Optional, Dict, Any
+
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -173,7 +177,7 @@ class Imovel(BaseModel):
     tem_vista_mar: bool = False
     tem_ar_condicionado: bool = False
     fotos: List[str] = []
-    video_url: Optional[str] = None  # <-- ADICIONE ESTA LINHA
+    video_url: Optional[str] = None
     link_booking: Optional[str] = None
     link_airbnb: Optional[str] = None
     status_aprovacao: str = Field(default="pendente")
@@ -286,7 +290,7 @@ class PerfilParceiroCreate(BaseModel):
     categoria: str
     telefone: str
     endereco: Optional[str] = None
-    website: Optional[str] = None
+    website: Optional[HttpUrl] = None
     instagram: Optional[str] = None
     facebook: Optional[str] = None
     horario_funcionamento: Optional[str] = None
@@ -308,7 +312,7 @@ class Noticia(BaseModel):
     categoria: str = "geral"  # geral, evento, promocao, regulamentacao
     fotos: List[str] = []
     video_url: Optional[str] = None
-    link_externo: Optional[HttpUrl] = None
+    link_externo: Optional[str] = None
     tags: List[str] = []
     destaque: bool = False
     publicada: bool = True
@@ -325,7 +329,7 @@ class NoticiaCreate(BaseModel):
     resumo: Optional[str] = None
     categoria: str = "geral"
     video_url: Optional[str] = None
-    link_externo: Optional[HttpUrl] = None
+    link_externo: Optional[str] = None
     tags: List[str] = []
     destaque: bool = False
 
@@ -489,34 +493,59 @@ async def root():
 
 
 @api_router.get("/main-page", response_model=MainPageData)
-async def get_main_page_data(current_user: User = Depends(get_current_user)):
-    # Get featured news (max 3)
-    noticias_destaque = await db.noticias.find(
-        {"publicada": True, "destaque": True}
-    ).sort("created_at", -1).limit(3).to_list(length=None)
+async def get_main_page_data():
+    """
+    Fetches data for the main page, ensuring resilience against invalid data.
+    """
+    def _safe_model_init(model, data_list):
+        """Safely initialize a list of Pydantic models, skipping invalid items."""
+        valid_items = []
+        for item_data in data_list:
+            try:
+                valid_items.append(model(**item_data))
+            except ValidationError as e:
+                # Log the validation error for debugging purposes
+                print(
+                    f"Validation Error for model {model.__name__} with ID {item_data.get('id', 'N/A')}: {e}")
+        return valid_items
 
-    # Get featured properties (max 6) - only approved ones
-    imoveis_destaque = await db.imoveis.find(
-        {"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}
-    ).sort("created_at", -1).limit(6).to_list(length=None)
+    try:
+        # Fetch all data from the database
+        noticias_destaque_data = await db.noticias.find(
+            {"publicada": True, "destaque": True}
+        ).sort("created_at", -1).limit(3).to_list(length=None)
 
-    # Get featured partners (max 6)
-    parceiros_destaque = await db.perfis_parceiros.find(
-        {"ativo": True, "destaque": True}
-    ).sort("created_at", -1).limit(6).to_list(length=None)
+        imoveis_destaque_data = await db.imoveis.find(
+            {"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}
+        ).sort("created_at", -1).limit(6).to_list(length=None)
 
-    # Get latest news (max 10)
-    ultimas_noticias = await db.noticias.find(
-        {"publicada": True}
-    ).sort("created_at", -1).limit(10).to_list(length=None)
+        parceiros_destaque_data = await db.perfis_parceiros.find(
+            {"ativo": True, "destaque": True}
+        ).sort("created_at", -1).limit(6).to_list(length=None)
 
-    return MainPageData(
-        noticias_destaque=[Noticia(**n) for n in noticias_destaque],
-        imoveis_destaque=[Imovel(**i) for i in imoveis_destaque],
-        parceiros_destaque=[PerfilParceiro(**p)
-                            for p in parceiros_destaque],
-        ultimas_noticias=[Noticia(**n) for n in ultimas_noticias]
-    )
+        ultimas_noticias_data = await db.noticias.find(
+            {"publicada": True}
+        ).sort("created_at", -1).limit(10).to_list(length=None)
+
+        # Safely validate and create Pydantic models
+        noticias_destaque = _safe_model_init(Noticia, noticias_destaque_data)
+        imoveis_destaque = _safe_model_init(Imovel, imoveis_destaque_data)
+        parceiros_destaque = _safe_model_init(
+            PerfilParceiro, parceiros_destaque_data)
+        ultimas_noticias = _safe_model_init(Noticia, ultimas_noticias_data)
+
+        return MainPageData(
+            noticias_destaque=noticias_destaque,
+            imoveis_destaque=imoveis_destaque,
+            parceiros_destaque=parceiros_destaque,
+            ultimas_noticias=ultimas_noticias
+        )
+    except Exception as e:
+        # Catch any other unexpected errors during DB query
+        print(f"Unexpected database error in /main-page route: {e}")
+        raise HTTPException(
+            status_code=500, detail="An internal error occurred while fetching main page data.")
+
 
 # Authentication Routes
 
@@ -733,8 +762,8 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
 
 
 @api_router.get("/imoveis", response_model=List[Imovel])
-async def get_imoveis(current_user: User = Depends(get_current_user)):
-    """Get all approved properties"""
+async def get_imoveis():
+    """Get all approved properties (PUBLIC)"""
     imoveis = await db.imoveis.find({"status_aprovacao": "aprovado", "ativo": True}).sort("created_at", -1).to_list(length=None)
 
     # Remove MongoDB ObjectId from all properties
@@ -795,7 +824,8 @@ async def create_imovel(imovel_data: ImovelCreate, current_user: User = Depends(
 
 
 @api_router.get("/imoveis/{imovel_id}", response_model=Imovel)
-async def get_imovel(imovel_id: str, current_user: User = Depends(get_current_user)):
+async def get_imovel(imovel_id: str):
+    """Get single property details (PUBLIC)"""
     imovel = await db.imoveis.find_one({"id": imovel_id, "ativo": True})
     if not imovel:
         raise HTTPException(status_code=404, detail="Imóvel não encontrado")
@@ -890,17 +920,54 @@ async def delete_imovel(imovel_id: str, current_user: User = Depends(get_membro_
 
 
 @api_router.get("/parceiros", response_model=List[PerfilParceiro])
-async def get_parceiros(current_user: User = Depends(get_current_user)):
-    parceiros = await db.perfis_parceiros.find({"ativo": True}).sort("created_at", -1).to_list(length=None)
-    return [PerfilParceiro(**parceiro) for parceiro in parceiros]
+async def get_parceiros():
+    """Get all active partners (PUBLIC) - Versão Robusta"""
+    parceiros_cursor = await db.perfis_parceiros.find(
+        {"ativo": True}
+    ).sort("created_at", -1).to_list(length=None)
+
+    parceiros_validos = []
+    for parceiro_data in parceiros_cursor:
+        try:
+            # Tenta validar cada parceiro individualmente
+            parceiros_validos.append(PerfilParceiro(**parceiro_data))
+        except ValidationError as e:
+            # Se a validação falhar, imprime um erro no terminal do servidor
+            # e continua para o próximo, sem quebrar a aplicação.
+            print(
+                f"AVISO: Dados de parceiro inválidos encontrados (ID: {parceiro_data.get('id', 'N/A')}). Erro: {e}")
+
+    return parceiros_validos
+
+
+@api_router.get("/parceiros/{parceiro_id}", response_model=PerfilParceiro)
+async def get_parceiro_detalhe(parceiro_id: str):
+    """Get single partner details (PUBLIC)"""
+    perfil = await db.perfis_parceiros.find_one({"id": parceiro_id, "ativo": True})
+    if not perfil:
+        raise HTTPException(status_code=404, detail="Parceiro não encontrado")
+    return PerfilParceiro(**perfil)
 
 
 @api_router.get("/meu-perfil-parceiro", response_model=PerfilParceiro)
 async def get_meu_perfil_parceiro(current_user: User = Depends(get_parceiro_user)):
-    perfil = await db.perfis_parceiros.find_one({"user_id": current_user.id})
-    if not perfil:
-        raise HTTPException(status_code=404, detail="Perfil não encontrado")
-    return PerfilParceiro(**perfil)
+    perfil_data = await db.perfis_parceiros.find_one({"user_id": current_user.id})
+
+    if not perfil_data:
+        raise HTTPException(
+            status_code=404, detail="Perfil de parceiro não encontrado para este usuário.")
+
+    try:
+        # Tenta validar os dados do perfil encontrados na base de dados
+        return PerfilParceiro(**perfil_data)
+    except ValidationError as e:
+        # Se a validação falhar, lança um erro 500 controlado em vez de quebrar
+        print(
+            f"ERRO CRÍTICO: Dados inválidos no perfil do parceiro user_id: {current_user.id}. Erro: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ocorreu um erro ao carregar o seu perfil. Os dados armazenados parecem estar corrompidos ou desatualizados."
+        )
 
 
 @api_router.post("/perfil-parceiro", response_model=PerfilParceiro)
@@ -1558,17 +1625,22 @@ async def toggle_parceiro_destaque(
         raise HTTPException(status_code=404, detail="Parceiro não encontrado")
     return {"message": f"Parceiro {'adicionado ao' if destaque else 'removido do'} destaque"}
 
-# Include router in app
-app.include_router(api_router)
 
-# CORS
+# CORS Configuration
+origins_from_env = os.environ.get(
+    'CORS_ORIGINS', 'http://localhost:3000').split(',')
+allowed_origins = list(set(origins_from_env + ["http://localhost:3000"]))
+
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include router in app
+app.include_router(api_router)
 
 # Logging
 logging.basicConfig(

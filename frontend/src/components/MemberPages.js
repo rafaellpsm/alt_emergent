@@ -15,166 +15,7 @@ import { VideoUpload } from './VideoUpload';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Header Component
-const Header = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUserInfo();
-    }
-  }, []);
-
-  const fetchUserInfo = async () => {
-    try {
-      const response = await axios.get(`${API}/auth/me`);
-      setUser(response.data);
-    } catch (error) {
-      console.log('Error fetching user info');
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
-    window.location.href = '/';
-  };
-
-  return (
-    <header className="header-gradient text-white shadow-lg">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
-          <span className="text-sm opacity-90 hidden md:block">Associação de Locação por Temporada</span>
-        </div>
-
-        {user && (
-          <div className="flex items-center space-x-4">
-            <span className="text-sm hidden sm:block">
-              Olá, {user.nome}
-              <Badge className="ml-2 bg-white/20">{user.role}</Badge>
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="text-white border-white/50 hover:bg-white hover:text-gray-800 transition-all"
-            >
-              Sair
-            </Button>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-};
-
-// Navigation for logged-in users
-const Navigation = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${API}/auth/me`);
-        setUser(response.data);
-      } catch (error) {
-        console.log('Navigation: User not logged in');
-      }
-    };
-    fetchUser();
-  }, []);
-
-  if (!user) return null;
-
-  return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
-          <a
-            href="/main"
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Início
-          </a>
-
-          {user.role === 'admin' && (
-            <>
-              <a
-                href="/admin/dashboard"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Dashboard
-              </a>
-              <a
-                href="/admin/candidaturas"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Candidaturas
-              </a>
-              <a
-                href="/admin/usuarios"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Usuários
-              </a>
-              <a
-                href="/admin/conteudo"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Conteúdo
-              </a>
-              <a
-                href="/admin/comunicacao"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Comunicação
-              </a>
-            </>
-          )}
-
-          {user.role === 'membro' && (
-            <>
-              <a
-                href="/meus-imoveis"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Meus Imóveis
-              </a>
-              <a
-                href="/imoveis"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Todos os Imóveis
-              </a>
-            </>
-          )}
-
-          {user.role === 'parceiro' && (
-            <>
-              <a
-                href="/meu-perfil"
-                className="nav-link py-3 px-3 whitespace-nowrap"
-              >
-                Meu Perfil
-              </a>
-            </>
-          )}
-
-          <a
-            href="/parceiros"
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Parceiros
-          </a>
-        </div>
-      </div>
-    </nav>
-  );
-};
-// All Properties View Page (for members to see all properties)
+// All Properties View Page (PUBLIC)
 export const TodosImoveisPage = () => {
   const navigate = useNavigate();
   const [imoveis, setImoveis] = useState([]);
@@ -193,6 +34,7 @@ export const TodosImoveisPage = () => {
 
   const fetchTodosImoveis = async () => {
     try {
+      // Token is not required anymore for this public route
       const response = await axios.get(`${API}/imoveis`);
       setImoveis(response.data);
     } catch (error) {
@@ -205,6 +47,7 @@ export const TodosImoveisPage = () => {
     setLoading(false);
   };
 
+
   const aplicarFiltros = () => {
     // Filter logic can be implemented later
     fetchTodosImoveis();
@@ -212,9 +55,6 @@ export const TodosImoveisPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-primary-gray mb-8">Todos os Imóveis</h1>
 
@@ -463,9 +303,6 @@ export const MeuPerfilPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-primary-gray">Meu Perfil de Parceiro</h1>
@@ -636,8 +473,7 @@ export const MeuPerfilPage = () => {
     </div>
   );
 };
-
-// Partners Page (for all users to see partners)
+// Partners Page (PUBLIC)
 export const ParceirosPage = () => {
   const navigate = useNavigate();
   const [parceiros, setParceiros] = useState([]);
@@ -670,9 +506,6 @@ export const ParceirosPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-primary-gray mb-8">Nossos Parceiros</h1>
 
@@ -962,9 +795,6 @@ export const MeusImoveisPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-primary-gray">Meus Imóveis</h1>
