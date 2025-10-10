@@ -269,6 +269,7 @@ class PerfilParceiro(BaseModel):
     website: Optional[HttpUrl] = None
     instagram: Optional[str] = None
     facebook: Optional[str] = None
+    whatsapp: Optional[str] = None
     fotos: List[str] = []
     video_url: Optional[str] = None
     horario_funcionamento: Optional[str] = None
@@ -293,6 +294,7 @@ class PerfilParceiroCreate(BaseModel):
     website: Optional[HttpUrl] = None
     instagram: Optional[str] = None
     facebook: Optional[str] = None
+    whatsapp: Optional[str] = None
     horario_funcionamento: Optional[str] = None
     servicos_oferecidos: Optional[str] = None
     fotos: List[str] = []
@@ -940,6 +942,22 @@ async def get_parceiros():
     return parceiros_validos
 
 
+@api_router.get("/admin/parceiros", response_model=List[PerfilParceiro])
+async def get_admin_parceiros(current_user: User = Depends(get_admin_user)):
+    """Get all partner profiles for admin view"""
+    parceiros_cursor = await db.perfis_parceiros.find({}).sort("created_at", -1).to_list(length=None)
+
+    parceiros_validos = []
+    for parceiro_data in parceiros_cursor:
+        try:
+            parceiros_validos.append(PerfilParceiro(**parceiro_data))
+        except Exception as e:
+            print(
+                f"AVISO: Dados de parceiro inválidos (ID: {parceiro_data.get('id', 'N/A')}). Erro: {e}")
+
+    return parceiros_validos
+
+
 @api_router.get("/parceiros/{parceiro_id}", response_model=PerfilParceiro)
 async def get_parceiro_detalhe(parceiro_id: str):
     """Get single partner details (PUBLIC)"""
@@ -990,28 +1008,54 @@ async def create_perfil_parceiro(
     return perfil
 
 
-# Adicionado {perfil_id}
 @api_router.put("/perfil-parceiro/{perfil_id}", response_model=PerfilParceiro)
 async def update_perfil_parceiro(
     perfil_id: str,
     perfil_data: PerfilParceiroCreate,
     current_user: User = Depends(get_parceiro_user)
 ):
-    update_data = perfil_data.dict(exclude_unset=True)
-    update_data["updated_at"] = datetime.now(timezone.utc)
+    try:
+        # Converte o modelo Pydantic para um dicionário, excluindo campos que não foram enviados
+        update_data = perfil_data.dict(exclude_unset=True)
+        update_data["updated_at"] = datetime.now(timezone.utc)
 
-    result = await db.perfis_parceiros.update_one(
-        {"id": perfil_id, "user_id": current_user.id},
-        {"$set": update_data}
-    )
+        # Trata campos de URL que podem ser inválidos ou vazios
+        url_fields = ["website", "instagram", "facebook"]
+        for field in url_fields:
+            if field in update_data and (update_data[field] == '' or update_data[field] is None):
+                # Garante que strings vazias se tornem nulas no DB
+                update_data[field] = None
+            elif field in update_data:
+                # Converte o objeto HttpUrl de volta para string para o DB
+                update_data[field] = str(update_data[field])
 
-    if result.matched_count == 0:
+        result = await db.perfis_parceiros.update_one(
+            {"id": perfil_id, "user_id": current_user.id},
+            {"$set": update_data}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=404, detail="Perfil não encontrado ou não tem permissão para editar")
+
+        updated_perfil = await db.perfis_parceiros.find_one({"id": perfil_id})
+        if not updated_perfil:
+            raise HTTPException(
+                status_code=404, detail="Perfil não encontrado após atualização.")
+
+        updated_perfil.pop("_id", None)
+        return PerfilParceiro(**updated_perfil)
+
+    except ValidationError as e:
+        # Se houver um erro de validação (ex: URL inválida), regista-o
+        print(
+            f"!!!!! Pydantic Validation Error in update_perfil_parceiro: {e.json()}")
+        raise HTTPException(status_code=422, detail=e.errors())
+    except Exception as e:
+        # Se houver qualquer outro erro, regista-o
+        print(f"!!!!! UNEXPECTED ERROR in update_perfil_parceiro: {e}")
         raise HTTPException(
-            status_code=404, detail="Perfil não encontrado ou não tem permissão para editar")
-
-    updated_perfil = await db.perfis_parceiros.find_one({"id": perfil_id})
-    updated_perfil.pop("_id", None)
-    return PerfilParceiro(**updated_perfil)
+            status_code=500, detail="Ocorreu um erro interno no servidor ao atualizar o perfil.")
 
 # Enhanced Content Management Routes
 
@@ -1337,47 +1381,77 @@ async def update_user(
     user_updates: dict,
     current_user: User = Depends(get_admin_user)
 ):
+    # Primeiro, verifica se o utilizador existe
+    user_to_update = await db.users.find_one({"id": user_id})
+    if not user_to_update:
+        raise HTTPException(
+            status_code=404, detail="Utilizador não encontrado")
+
+    # Se a atualização for para desativar o utilizador, desativa também os seus imóveis/perfis
+    if user_updates.get("ativo") is False:
+        if user_to_update.get("role") == "membro":
+            await db.imoveis.update_many(
+                {"proprietario_id": user_id},
+                {"$set": {"ativo": False}}
+            )
+        elif user_to_update.get("role") == "parceiro":
+            await db.perfis_parceiros.update_many(
+                {"user_id": user_id},
+                {"$set": {"ativo": False}}
+            )
+
+    # Procede com a atualização do utilizador
     result = await db.users.update_one(
         {"id": user_id},
         {"$set": user_updates}
     )
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return {"message": "Usuário atualizado com sucesso"}
+        raise HTTPException(
+            status_code=404, detail="Utilizador não encontrado durante a atualização")
+
+    return {"message": "Utilizador atualizado com sucesso"}
 
 
 @api_router.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)):
-    """Delete user (admin only) - removes user and all associated data"""
+    """Delete user (admin only) - deactivates associated data"""
 
-    # Prevent admin from deleting themselves
+    # Impede que o admin se apague a si mesmo
     if user_id == current_user.id:
         raise HTTPException(
-            status_code=400, detail="Você não pode deletar sua própria conta")
+            status_code=400, detail="Você não pode apagar a sua própria conta")
 
-    # Find user to delete
+    # Encontra o utilizador para apagar
     user_to_delete = await db.users.find_one({"id": user_id})
     if not user_to_delete:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        raise HTTPException(
+            status_code=404, detail="Utilizador não encontrado")
 
-    # Delete associated data based on user role
+    # Desativa os dados associados com base na função do utilizador
     user_role = user_to_delete.get("role")
 
     if user_role == "membro":
-        # Delete all properties owned by this member
-        await db.imoveis.delete_many({"proprietario_id": user_id})
+        # DESATIVA todos os imóveis do membro em vez de os apagar
+        await db.imoveis.update_many(
+            {"proprietario_id": user_id},
+            {"$set": {"ativo": False}}
+        )
     elif user_role == "parceiro":
-        # Delete partner profile
-        await db.perfis_parceiros.delete_many({"user_id": user_id})
+        # DESATIVA o perfil do parceiro em vez de o apagar
+        await db.perfis_parceiros.update_many(
+            {"user_id": user_id},
+            {"$set": {"ativo": False}}
+        )
 
-    # Delete the user
+    # Apaga o utilizador
     result = await db.users.delete_one({"id": user_id})
 
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        raise HTTPException(
+            status_code=404, detail="Utilizador não encontrado durante a exclusão")
 
     return {
-        "message": f"Usuário {user_to_delete.get('nome', 'desconhecido')} e todos os dados associados foram removidos com sucesso",
+        "message": f"Utilizador {user_to_delete.get('nome', 'desconhecido')} foi removido e todos os seus dados associados foram desativados.",
         "deleted_user": {
             "id": user_id,
             "nome": user_to_delete.get('nome'),
@@ -1389,16 +1463,65 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
 # Property Approval Routes (Admin)
 
 
-@api_router.get("/admin/imoveis-pendentes", response_model=List[Imovel])
-async def get_imoveis_pendentes(current_user: User = Depends(get_admin_user)):
-    """Get all properties pending approval"""
-    imoveis = await db.imoveis.find({"status_aprovacao": "pendente"}).to_list(length=None)
+@api_router.get("/imoveis", response_model=List[Imovel])
+async def get_imoveis(
+    tipo: Optional[str] = None,
+    regiao: Optional[str] = None,
+    preco_max: Optional[float] = None,
+    num_quartos: Optional[int] = None,
+    possui_piscina: Optional[bool] = None,
+    permite_pets: Optional[bool] = None
+):
+    """Get all approved properties with optional filters (PUBLIC)"""
+    query = {"status_aprovacao": "aprovado", "ativo": True}
 
-    # Remove MongoDB ObjectId from all properties
-    for imovel in imoveis:
-        imovel.pop("_id", None)
+    # Adiciona filtros à query do MongoDB se eles forem fornecidos
+    if tipo and tipo != 'todos':
+        query["tipo"] = tipo
+    if regiao and regiao != 'todas':
+        query["regiao"] = regiao
+    if preco_max is not None and preco_max > 0:
+        query["preco_diaria"] = {"$lte": preco_max}
+    if num_quartos is not None and num_quartos > 0:
+        query["num_quartos"] = {"$gte": num_quartos}
+    if possui_piscina:
+        query["possui_piscina"] = True
+    if permite_pets:
+        query["permite_pets"] = True
 
-    return [Imovel(**imovel) for imovel in imoveis]
+    imoveis_cursor = db.imoveis.find(query).sort("created_at", -1)
+    imoveis = await imoveis_cursor.to_list(length=None)
+
+    # Validação segura dos dados antes de retornar
+    valid_imoveis = []
+    for imovel_data in imoveis:
+        imovel_data.pop("_id", None)
+        try:
+            valid_imoveis.append(Imovel(**imovel_data))
+        except ValidationError as e:
+            # Apenas regista no log do servidor se um imóvel tiver dados inválidos
+            print(
+                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
+
+    return valid_imoveis
+
+
+@api_router.get("/admin/imoveis", response_model=List[Imovel])
+async def get_admin_imoveis(current_user: User = Depends(get_admin_user)):
+    """Get all properties for admin view (approved, pending, etc.)"""
+    imoveis = await db.imoveis.find({}).sort("created_at", -1).to_list(length=None)
+
+    # Remove MongoDB ObjectId and validate
+    valid_imoveis = []
+    for imovel_data in imoveis:
+        imovel_data.pop("_id", None)
+        try:
+            valid_imoveis.append(Imovel(**imovel_data))
+        except Exception as e:
+            print(
+                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
+
+    return valid_imoveis
 
 
 @api_router.post("/admin/imoveis/{imovel_id}/aprovar")

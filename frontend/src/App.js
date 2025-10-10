@@ -17,6 +17,8 @@ import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
 import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils } from 'lucide-react';
+import AdminDashboard from './components/AdminDashboard';
+import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 
 
 // Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
@@ -351,14 +353,6 @@ const HomeHeader = () => {
 
 // --- Componentes de Página ---
 
-const AdminDashboard = () => <div>Admin Dashboard</div>;
-const AdminDestaques = () => <div>Admin Destaques</div>;
-const AdminCandidaturas = () => <div>Admin Candidaturas</div>;
-const AdminConteudo = () => <div>Admin Conteudo</div>;
-const AdminComunicacao = () => <div>Admin Comunicacao</div>;
-const AdminUsuarios = () => <div>Admin Usuarios</div>;
-const AdminImoveis = () => <div>Admin Imoveis</div>;
-
 const HomePage = () => {
   const navigate = useNavigate();
   const [pageData, setPageData] = useState({ imoveis_destaque: [] });
@@ -517,6 +511,11 @@ const LoginPage = () => {
             </form>
           </CardContent>
         </Card>
+        <div className="text-center">
+          <Button type="button" variant="link" onClick={() => window.location.href = '/'} className="text-sm text-primary-teal hover:underline">
+            Voltar para a tela inicial
+          </Button>
+        </div>
         <RecuperarSenhaModal isOpen={showRecuperarSenha} onClose={() => setShowRecuperarSenha(false)} />
       </div>
     </div>
@@ -541,12 +540,12 @@ const MainApp = () => (
           <Route path="/meu-perfil" element={<ProtectedRoute allowedRoles={['parceiro']}><MeuPerfilPage /></ProtectedRoute>} />
           <Route path="/alterar-senha" element={<ProtectedRoute><AlterarSenhaPage /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/candidaturas" element={<ProtectedRoute allowedRoles={['admin']}><AdminCandidaturas /></ProtectedRoute>} />
-          <Route path="/admin/imoveis" element={<ProtectedRoute allowedRoles={['admin']}><AdminImoveis /></ProtectedRoute>} />
-          <Route path="/admin/conteudo" element={<ProtectedRoute allowedRoles={['admin']}><AdminConteudo /></ProtectedRoute>} />
-          <Route path="/admin/comunicacao" element={<ProtectedRoute allowedRoles={['admin']}><AdminComunicacao /></ProtectedRoute>} />
-          <Route path="/admin/usuarios" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsuarios /></ProtectedRoute>} />
-          <Route path="/admin/destaques" element={<ProtectedRoute allowedRoles={['admin']}><AdminDestaques /></ProtectedRoute>} />
+          <Route path="/admin/candidaturas" element={<ProtectedRoute allowedRoles={['admin']}><AdminCandidaturasPage /></ProtectedRoute>} />
+          <Route path="/admin/imoveis" element={<ProtectedRoute allowedRoles={['admin']}><AdminImoveisPage /></ProtectedRoute>} />
+          <Route path="/admin/usuarios" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsuariosPage /></ProtectedRoute>} />
+          <Route path="/admin/conteudo" element={<ProtectedRoute allowedRoles={['admin']}><AdminConteudoPage /></ProtectedRoute>} />
+          <Route path="/admin/comunicacao" element={<ProtectedRoute allowedRoles={['admin']}><AdminComunicacaoPage /></ProtectedRoute>} />
+          <Route path="/admin/destaques" element={<ProtectedRoute allowedRoles={['admin']}><AdminDestaquesPage /></ProtectedRoute>} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />

@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from '../hooks/use-toast';
+import PageHeader from './PageHeader';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -77,10 +78,7 @@ export const CandidaturaMembroPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
-            Candidatura para Membro
-          </h1>
-
+          <PageHeader title="Candidatura de Membro" />
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas do Candidato</CardTitle>
@@ -336,10 +334,7 @@ export const CandidaturaParceiroPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
-            Candidatura para Parceiro
-          </h1>
-
+          <PageHeader title="Candidatura de Parceiro" />
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas da Empresa</CardTitle>
@@ -620,10 +615,7 @@ export const CandidaturaAssociadoPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center text-primary-gray">
-            Candidatura para Associado
-          </h1>
-
+          <PageHeader title="Candidatura de Associado" />
           <Card className="card-custom">
             <CardHeader>
               <CardTitle className="text-primary-gray">Informações Detalhadas do Candidato</CardTitle>

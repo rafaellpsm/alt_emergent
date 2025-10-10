@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // <--- ADICIONADO: useNavigate
 import axios from 'axios';
-import ReactMarkdown from 'react-markdown'; // Import this
+import ReactMarkdown from 'react-markdown';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
+import { ArrowLeft } from 'lucide-react'; // <--- ADICIONADO: Ícone de seta
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -13,6 +14,7 @@ const API = `${BACKEND_URL}/api`;
 // Property Details Page (PUBLIC)
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); // <--- ADICIONADO: Hook para navegação
   const [imovel, setImovel] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -53,6 +55,11 @@ export const ImovelDetalhePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
+        {/* BOTÃO VOLTAR ADICIONADO AQUI */}
+        <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+
         <Card className="card-custom">
           <CardHeader>
             <CardTitle className="text-3xl text-primary-gray">{imovel.titulo}</CardTitle>
@@ -78,7 +85,7 @@ export const ImovelDetalhePage = () => {
                         src={imovel.video_url}
                         controls
                         className="w-full h-full object-cover"
-                        poster={imovel.fotos[0] || ''} // Usa a primeira foto como capa do vídeo
+                        poster={imovel.fotos[0] || ''}
                       >
                         Seu navegador não suporta o player de vídeo.
                       </video>
@@ -133,6 +140,7 @@ export const ImovelDetalhePage = () => {
 // Partner Details Page (PUBLIC)
 export const ParceiroDetalhePage = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); // <--- ADICIONADO: Hook para navegação
   const [parceiro, setParceiro] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -173,6 +181,11 @@ export const ParceiroDetalhePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
+        {/* BOTÃO VOLTAR ADICIONADO AQUI */}
+        <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+
         <Card className="card-custom">
           <CardHeader>
             <CardTitle className="text-3xl text-primary-gray">{parceiro.nome_empresa}</CardTitle>
