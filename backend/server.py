@@ -1,6 +1,10 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+# ==============================================================================
+# App Initialization and Configuration
+# ==============================================================================
+
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
@@ -19,47 +23,38 @@ from pathlib import Path
 import secrets
 import string
 import aiofiles
-import shutil
-# <--- Adicione aqui
-from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
-from typing import List, Optional, Dict, Any
-
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Upload configuration
+# --- Main App Creation (ONCE ONLY) ---
+app = FastAPI(title="ALT Ilhabela Portal", version="1.0.0")
+api_router = APIRouter(prefix="/api")
+
+# --- Database Connection ---
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+db_name = os.environ.get('DB_NAME', 'alt_ilhabela')
+client = AsyncIOMotorClient(mongo_url)
+db = client[db_name]
+
+# --- Upload Configuration ---
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp",
                       ".heic", ".heif", ".mp4", ".mov", ".avi", ".mkv"}
 MAX_FILE_SIZE = 50 * 1024 * 1024
 
-# Security
+# --- Security and Authentication Configuration ---
 SECRET_KEY = os.getenv("SECRET_KEY", "SUPER_SECRET_KEY_2004")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Create FastAPI app
-app = FastAPI(title="ALT Ilhabela Portal", version="1.0.0")
-api_router = APIRouter(prefix="/api")
-
-# Mount uploads directory for static files (use /api prefix for proper routing)
-app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-
-# Security
 security = HTTPBearer()
 
-# User roles
+# ==============================================================================
+# Pydantic Models
+# ==============================================================================
 
 
 class UserRole:
@@ -67,8 +62,6 @@ class UserRole:
     ASSOCIADO = "associado"
     MEMBRO = "membro"
     PARCEIRO = "parceiro"
-
-# Pydantic Models
 
 
 class User(BaseModel):
@@ -78,6 +71,8 @@ class User(BaseModel):
     telefone: Optional[str] = None
     role: str
     ativo: bool = True
+    descricao: Optional[str] = None
+    foto_url: Optional[str] = None
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
 
@@ -364,7 +359,9 @@ class EmailMassa(BaseModel):
     assunto: str
     mensagem: str
 
-# Helper Functions
+# ==============================================================================
+# Helper Functions & Security
+# ==============================================================================
 
 
 def verify_password(plain_password, hashed_password):
@@ -380,7 +377,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + \
+            timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -433,20 +431,18 @@ async def get_parceiro_user(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
+# ==============================================================================
 # Email Service
+# ==============================================================================
 
 
 def generate_random_password(length=8):
-    """Generate a random password with letters and numbers"""
     characters = string.ascii_letters + string.digits
     return ''.join(secrets.choice(characters) for _ in range(length))
 
 
 async def send_email(to_email: str, subject: str, body: str, is_html: bool = False):
     try:
-        print(f"Tentando enviar email para: {to_email}")
-        print(f"Assunto: {subject}")
-
         msg = MIMEMultipart()
         msg['From'] = os.getenv('DEFAULT_FROM_EMAIL',
                                 os.getenv('EMAIL_HOST_USER'))
@@ -458,18 +454,15 @@ async def send_email(to_email: str, subject: str, body: str, is_html: bool = Fal
         else:
             msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-        # Use environment variables with fallbacks
         smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
         smtp_port = int(os.getenv('EMAIL_PORT', '587'))
         email_user = os.getenv('EMAIL_HOST_USER')
         email_password = os.getenv('EMAIL_HOST_PASSWORD')
 
         if not email_user or not email_password:
-            print("Email credentials not found in environment variables")
+            logging.error(
+                "Email credentials not found in environment variables")
             return False
-
-        print(f"Conectando ao servidor SMTP: {smtp_host}:{smtp_port}")
-        print(f"Usuario: {email_user}")
 
         server = smtplib.SMTP(smtp_host, smtp_port)
         server.starttls()
@@ -477,14 +470,15 @@ async def send_email(to_email: str, subject: str, body: str, is_html: bool = Fal
         text = msg.as_string()
         server.sendmail(email_user, to_email, text)
         server.quit()
-
-        print(f"Email enviado com sucesso para: {to_email}")
+        logging.info(f"Email sent successfully to: {to_email}")
         return True
     except Exception as e:
-        print(f"Erro ao enviar email: {str(e)}")
+        logging.error(f"Error sending email: {str(e)}")
         return False
 
-# Routes
+# ==============================================================================
+# API Routes
+# ==============================================================================
 
 
 @api_router.get("/")
@@ -496,40 +490,22 @@ async def root():
 
 @api_router.get("/main-page", response_model=MainPageData)
 async def get_main_page_data():
-    """
-    Fetches data for the main page, ensuring resilience against invalid data.
-    """
     def _safe_model_init(model, data_list):
-        """Safely initialize a list of Pydantic models, skipping invalid items."""
         valid_items = []
         for item_data in data_list:
             try:
                 valid_items.append(model(**item_data))
             except ValidationError as e:
-                # Log the validation error for debugging purposes
-                print(
+                logging.warning(
                     f"Validation Error for model {model.__name__} with ID {item_data.get('id', 'N/A')}: {e}")
         return valid_items
 
     try:
-        # Fetch all data from the database
-        noticias_destaque_data = await db.noticias.find(
-            {"publicada": True, "destaque": True}
-        ).sort("created_at", -1).limit(3).to_list(length=None)
+        noticias_destaque_data = await db.noticias.find({"publicada": True, "destaque": True}).sort("created_at", -1).limit(3).to_list(length=None)
+        imoveis_destaque_data = await db.imoveis.find({"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}).sort("created_at", -1).limit(6).to_list(length=None)
+        parceiros_destaque_data = await db.perfis_parceiros.find({"ativo": True, "destaque": True}).sort("created_at", -1).limit(6).to_list(length=None)
+        ultimas_noticias_data = await db.noticias.find({"publicada": True}).sort("created_at", -1).limit(10).to_list(length=None)
 
-        imoveis_destaque_data = await db.imoveis.find(
-            {"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}
-        ).sort("created_at", -1).limit(6).to_list(length=None)
-
-        parceiros_destaque_data = await db.perfis_parceiros.find(
-            {"ativo": True, "destaque": True}
-        ).sort("created_at", -1).limit(6).to_list(length=None)
-
-        ultimas_noticias_data = await db.noticias.find(
-            {"publicada": True}
-        ).sort("created_at", -1).limit(10).to_list(length=None)
-
-        # Safely validate and create Pydantic models
         noticias_destaque = _safe_model_init(Noticia, noticias_destaque_data)
         imoveis_destaque = _safe_model_init(Imovel, imoveis_destaque_data)
         parceiros_destaque = _safe_model_init(
@@ -543,35 +519,25 @@ async def get_main_page_data():
             ultimas_noticias=ultimas_noticias
         )
     except Exception as e:
-        # Catch any other unexpected errors during DB query
-        print(f"Unexpected database error in /main-page route: {e}")
+        logging.error(f"Unexpected database error in /main-page route: {e}")
         raise HTTPException(
             status_code=500, detail="An internal error occurred while fetching main page data.")
 
 
-# Authentication Routes
-
-
 @api_router.post("/auth/register", response_model=User)
 async def register_user(user_data: UserCreate, current_user: User = Depends(get_admin_user)):
-    # Check if user exists
     existing_user = await db.users.find_one({"email": user_data.email})
     if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email já está em uso"
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Email já está em uso")
 
-    # Create user
     hashed_password = get_password_hash(user_data.password)
     user_dict = user_data.dict()
     del user_dict['password']
     user_obj = User(**user_dict)
 
-    # Store user with hashed password
     user_doc = user_obj.dict()
     user_doc['hashed_password'] = hashed_password
-
     await db.users.insert_one(user_doc)
     return user_obj
 
@@ -579,24 +545,17 @@ async def register_user(user_data: UserCreate, current_user: User = Depends(get_
 @api_router.post("/auth/login", response_model=Token)
 async def login(user_credentials: UserLogin):
     user = await db.users.find_one({"email": user_credentials.email})
-    if not user or not verify_password(user_credentials.password, user['hashed_password']):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou senha incorretos",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    if not user or not verify_password(user_credentials.password, user.get('hashed_password', '')):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Email ou senha incorretos", headers={"WWW-Authenticate": "Bearer"})
 
-    if not user['ativo']:
+    if not user.get('ativo', False):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Conta desativada",
-        )
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Conta desativada")
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user['email']}, expires_delta=access_token_expires
-    )
-
+        data={"sub": user['email']}, expires_delta=access_token_expires)
     user_obj = User(**user)
     return Token(access_token=access_token, token_type="bearer", user=user_obj)
 
@@ -645,39 +604,19 @@ async def alterar_senha(
 
 @api_router.post("/auth/recuperar-senha")
 async def recuperar_senha(dados_email: dict):
-    """Recover password by email - generates new random password"""
     email = dados_email.get("email")
-
     if not email:
         raise HTTPException(status_code=400, detail="Email é obrigatório")
 
-    # Find user by email
     user = await db.users.find_one({"email": email.lower()})
-
     if not user:
-        # Don't reveal if email exists for security
         return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
 
-    # Generate new random password
     nova_senha = generate_random_password(10)
     nova_senha_hash = pwd_context.hash(nova_senha)
+    await db.users.update_one({"id": user["id"]}, {"$set": {"hashed_password": nova_senha_hash}})
 
-    # Update password in database
-    result = await db.users.update_one(
-        {"id": user["id"]},
-        {"$set": {"hashed_password": nova_senha_hash}}
-    )
-
-    if result.matched_count == 0:
-        return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
-
-    # Send email with new password
-    try:
-        await send_email(
-            to_email=email,
-            subject="Recuperação de Senha - ALT Ilhabela",
-            body=f"""
-Olá {user.get('nome', 'Usuário')},
+    body = f"""Olá {user.get('nome', 'Usuário')},
 
 Você solicitou a recuperação de senha para sua conta no Portal ALT Ilhabela.
 
@@ -696,12 +635,8 @@ Acesse o portal: https://temporada-portal.preview.emergentagent.com/login
 
 Atenciosamente,
 Equipe ALT Ilhabela
-            """
-        )
-    except Exception as e:
-        print(f"Erro ao enviar email de recuperação: {e}")
-        # Even if email fails, don't reveal the error for security
-
+"""
+    await send_email(to_email=email, subject="Recuperação de Senha - ALT Ilhabela", body=body)
     return {"message": "Se o email estiver cadastrado, você receberá instruções de recuperação"}
 
 # Enhanced Application Routes
@@ -764,15 +699,37 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
 
 
 @api_router.get("/imoveis", response_model=List[Imovel])
-async def get_imoveis():
-    """Get all approved properties (PUBLIC)"""
-    imoveis = await db.imoveis.find({"status_aprovacao": "aprovado", "ativo": True}).sort("created_at", -1).to_list(length=None)
+async def get_imoveis(
+    tipo: Optional[str] = None,
+    regiao: Optional[str] = None,
+    preco_max: Optional[float] = None,
+    num_quartos: Optional[int] = None,
+    possui_piscina: Optional[bool] = None,
+    permite_pets: Optional[bool] = None
+):
+    query = {"status_aprovacao": "aprovado", "ativo": True}
+    if tipo and tipo.lower() != "todos":
+        query["tipo"] = tipo.lower()
+    if regiao and regiao.lower() != "todas":
+        query["regiao"] = regiao.lower()
+    if preco_max and preco_max > 0:
+        query["preco_diaria"] = {"$lte": preco_max}
+    if num_quartos and num_quartos > 0:
+        query["num_quartos"] = {"$gte": num_quartos}
+    if possui_piscina:
+        query["possui_piscina"] = True
+    if permite_pets:
+        query["permite_pets"] = True
 
-    # Remove MongoDB ObjectId from all properties
-    for imovel in imoveis:
-        imovel.pop("_id", None)
-
-    return [Imovel(**imovel) for imovel in imoveis]
+    imoveis_cursor = await db.imoveis.find(query).sort("created_at", -1).to_list(length=None)
+    valid_imoveis = []
+    for imovel_data in imoveis_cursor:
+        try:
+            valid_imoveis.append(Imovel(**imovel_data))
+        except ValidationError as e:
+            logging.warning(
+                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
+    return valid_imoveis
 
 
 @api_router.get("/meus-imoveis", response_model=List[Imovel])
@@ -863,6 +820,81 @@ async def get_imovel_proprietario(imovel_id: str, current_user: User = Depends(g
     }
 
 
+@api_router.get("/usuarios/{user_id}/perfil-publico")
+async def get_perfil_publico(user_id: str):
+    """Perfil público do anfitrião (dados + imóveis)"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    # Busca todos os imóveis ativos e aprovados do anfitrião
+    imoveis = await db.imoveis.find(
+        {"proprietario_id": user_id, "ativo": True, "status_aprovacao": "aprovado"}
+    ).sort("created_at", -1).to_list(length=None)
+
+    for imovel in imoveis:
+        imovel.pop("_id", None)
+
+    return {
+        "id": user["id"],
+        "nome": user["nome"],
+        "telefone": user.get("telefone"),
+        "role": user.get("role"),
+        "imoveis": imoveis,
+    }
+
+
+@api_router.put("/usuarios/{user_id}/perfil")
+async def atualizar_perfil(
+    user_id: str,
+    descricao: str = Form(None),
+    foto: UploadFile = File(None),
+    current_user: User = Depends(get_current_user)  # Adicionado para segurança
+):
+    """Atualiza a descrição e foto do perfil do usuário"""
+    # Verificação de segurança: Apenas o próprio usuário ou um admin podem editar o perfil.
+    if user_id != current_user.id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Não autorizado a editar este perfil")
+
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    update_data = {}
+    if descricao is not None:
+        update_data["descricao"] = descricao
+
+    if foto:
+        # Cria um diretório específico para fotos de perfil dentro de 'uploads' se não existir
+        perfil_upload_dir = UPLOAD_DIR / "perfis"
+        perfil_upload_dir.mkdir(exist_ok=True)
+
+        # Gera um nome de arquivo único para evitar conflitos e problemas de segurança
+        file_ext = Path(foto.filename).suffix.lower()
+        if file_ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400, detail="Tipo de arquivo de foto não permitido.")
+
+        unique_filename = f"{user_id}_{uuid.uuid4()}{file_ext}"
+        file_path = perfil_upload_dir / unique_filename
+
+        try:
+            async with aiofiles.open(file_path, "wb") as f:
+                contents = await foto.read()
+                await f.write(contents)
+            # Constrói a URL pública correta, que já é servida pelo FastAPI
+            update_data["foto_url"] = f"/api/uploads/perfis/{unique_filename}"
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Erro ao salvar a foto: {e}")
+
+    if update_data:
+        await db.users.update_one({"id": user_id}, {"$set": update_data})
+
+    return {"message": "Perfil atualizado com sucesso"}
+
+
 @api_router.put("/imoveis/{imovel_id}", response_model=Imovel)
 async def update_imovel(
     imovel_id: str,
@@ -923,23 +955,15 @@ async def delete_imovel(imovel_id: str, current_user: User = Depends(get_membro_
 
 @api_router.get("/parceiros", response_model=List[PerfilParceiro])
 async def get_parceiros():
-    """Get all active partners (PUBLIC) - Versão Robusta"""
-    parceiros_cursor = await db.perfis_parceiros.find(
-        {"ativo": True}
-    ).sort("created_at", -1).to_list(length=None)
-
-    parceiros_validos = []
+    parceiros_cursor = await db.perfis_parceiros.find({"ativo": True}).sort("created_at", -1).to_list(length=None)
+    valid_parceiros = []
     for parceiro_data in parceiros_cursor:
         try:
-            # Tenta validar cada parceiro individualmente
-            parceiros_validos.append(PerfilParceiro(**parceiro_data))
+            valid_parceiros.append(PerfilParceiro(**parceiro_data))
         except ValidationError as e:
-            # Se a validação falhar, imprime um erro no terminal do servidor
-            # e continua para o próximo, sem quebrar a aplicação.
-            print(
-                f"AVISO: Dados de parceiro inválidos encontrados (ID: {parceiro_data.get('id', 'N/A')}). Erro: {e}")
-
-    return parceiros_validos
+            logging.warning(
+                f"Skipping invalid partner data (ID: {parceiro_data.get('id')}): {e}")
+    return valid_parceiros
 
 
 @api_router.get("/admin/parceiros", response_model=List[PerfilParceiro])
@@ -1460,299 +1484,15 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
         }
     }
 
-# Property Approval Routes (Admin)
 
+# ==============================================================================
+# App Finalization (Middleware, Router, etc.)
+# ==============================================================================
 
-@api_router.get("/imoveis", response_model=List[Imovel])
-async def get_imoveis(
-    tipo: Optional[str] = None,
-    regiao: Optional[str] = None,
-    preco_max: Optional[float] = None,
-    num_quartos: Optional[int] = None,
-    possui_piscina: Optional[bool] = None,
-    permite_pets: Optional[bool] = None
-):
-    """Get all approved properties with optional filters (PUBLIC)"""
-    query = {"status_aprovacao": "aprovado", "ativo": True}
-
-    # Adiciona filtros à query do MongoDB se eles forem fornecidos
-    if tipo and tipo != 'todos':
-        query["tipo"] = tipo
-    if regiao and regiao != 'todas':
-        query["regiao"] = regiao
-    if preco_max is not None and preco_max > 0:
-        query["preco_diaria"] = {"$lte": preco_max}
-    if num_quartos is not None and num_quartos > 0:
-        query["num_quartos"] = {"$gte": num_quartos}
-    if possui_piscina:
-        query["possui_piscina"] = True
-    if permite_pets:
-        query["permite_pets"] = True
-
-    imoveis_cursor = db.imoveis.find(query).sort("created_at", -1)
-    imoveis = await imoveis_cursor.to_list(length=None)
-
-    # Validação segura dos dados antes de retornar
-    valid_imoveis = []
-    for imovel_data in imoveis:
-        imovel_data.pop("_id", None)
-        try:
-            valid_imoveis.append(Imovel(**imovel_data))
-        except ValidationError as e:
-            # Apenas regista no log do servidor se um imóvel tiver dados inválidos
-            print(
-                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
-
-    return valid_imoveis
-
-
-@api_router.get("/admin/imoveis", response_model=List[Imovel])
-async def get_admin_imoveis(current_user: User = Depends(get_admin_user)):
-    """Get all properties for admin view (approved, pending, etc.)"""
-    imoveis = await db.imoveis.find({}).sort("created_at", -1).to_list(length=None)
-
-    # Remove MongoDB ObjectId and validate
-    valid_imoveis = []
-    for imovel_data in imoveis:
-        imovel_data.pop("_id", None)
-        try:
-            valid_imoveis.append(Imovel(**imovel_data))
-        except Exception as e:
-            print(
-                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
-
-    return valid_imoveis
-
-
-@api_router.post("/admin/imoveis/{imovel_id}/aprovar")
-async def aprovar_imovel(imovel_id: str, current_user: User = Depends(get_admin_user)):
-    """Approve property"""
-    # Update property status
-    result = await db.imoveis.update_one(
-        {"id": imovel_id},
-        {"$set": {"status_aprovacao": "aprovado",
-                  "updated_at": datetime.now(timezone.utc)}}
-    )
-
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
-
-    # Get property and owner info for notification
-    imovel = await db.imoveis.find_one({"id": imovel_id})
-    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
-
-    # Send notification email
-    if owner and owner.get("email"):
-        try:
-            await send_email(
-                to_email=owner["email"],
-                subject="Imóvel Aprovado - ALT Ilhabela",
-                body=f"""
-Olá {owner.get('nome', 'Proprietário')},
-
-Ótimas notícias! Seu imóvel "{imovel['titulo']}" foi aprovado e já está disponível no portal da ALT Ilhabela.
-
-Seu imóvel agora pode ser visualizado por outros membros e turistas que acessam nossa plataforma.
-
-Para gerenciar seus imóveis, acesse: https://temporada-portal.preview.emergentagent.com/login
-
-Atenciosamente,
-Equipe ALT Ilhabela
-                """
-            )
-        except Exception as e:
-            print(f"Erro ao enviar email de aprovação: {e}")
-
-    return {"message": "Imóvel aprovado com sucesso"}
-
-
-@api_router.post("/admin/imoveis/{imovel_id}/recusar")
-async def recusar_imovel(
-    imovel_id: str,
-    motivo: str = "",
-    current_user: User = Depends(get_admin_user)
-):
-    """Reject property"""
-    # Update property status
-    result = await db.imoveis.update_one(
-        {"id": imovel_id},
-        {"$set": {"status_aprovacao": "recusado",
-                  "updated_at": datetime.now(timezone.utc)}}
-    )
-
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
-
-    # Get property and owner info for notification
-    imovel = await db.imoveis.find_one({"id": imovel_id})
-    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
-
-    # Send notification email
-    if owner and owner.get("email"):
-        try:
-            await send_email(
-                to_email=owner["email"],
-                subject="Imóvel Não Aprovado - ALT Ilhabela",
-                body=f"""
-Olá {owner.get('nome', 'Proprietário')},
-
-Infelizmente, seu imóvel "{imovel['titulo']}" não foi aprovado para publicação no portal da ALT Ilhabela.
-
-{f'Motivo: {motivo}' if motivo else ''}
-
-Você pode revisar as informações e enviar uma nova solicitação através da sua área de membros.
-
-Para mais informações, entre em contato conosco.
-
-Atenciosamente,
-Equipe ALT Ilhabela
-                """
-            )
-        except Exception as e:
-            print(f"Erro ao enviar email de recusa: {e}")
-
-    return {"message": "Imóvel recusado com sucesso"}
-
-# File Upload Routes
-
-
-@api_router.post("/upload/foto")
-async def upload_foto(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
-):
-    """Upload photo for properties or partners"""
-
-    # Validate file type
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="Arquivo inválido")
-
-    file_ext = Path(file.filename).suffix.lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Tipo de arquivo não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-
-    # Check file size
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400, detail="Arquivo muito grande. Máximo 10MB.")
-
-    # Generate unique filename
-    file_id = str(uuid.uuid4())
-    filename = f"{file_id}{file_ext}"
-    file_path = UPLOAD_DIR / filename
-
-    # Save file
-    try:
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(content)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erro ao salvar arquivo")
-
-    # Return file URL with /api prefix for proper routing
-    file_url = f"/api/uploads/{filename}"
-    return {"url": file_url, "filename": filename}
-
-
-@api_router.delete("/upload/foto/{filename}")
-async def delete_foto(
-    filename: str,
-    current_user: User = Depends(get_current_user)
-):
-    """Delete uploaded photo"""
-    file_path = UPLOAD_DIR / filename
-
-    try:
-        if file_path.exists():
-            file_path.unlink()
-        return {"message": "Foto removida com sucesso"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erro ao remover foto")
-
-
-@api_router.post("/upload/video")
-async def upload_video(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
-):
-    """Upload video for properties, partners, or news"""
-
-    # Validate file type
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="Ficheiro inválido")
-
-    file_ext = Path(file.filename).suffix.lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Tipo de ficheiro não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}"
-        )
-
-    # Check file size (usando o mesmo MAX_FILE_SIZE)
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400, detail=f"Ficheiro muito grande. Máximo {MAX_FILE_SIZE // 1024 // 1024}MB.")
-
-    # Generate unique filename
-    file_id = str(uuid.uuid4())
-    filename = f"{file_id}{file_ext}"
-    file_path = UPLOAD_DIR / filename
-
-    # Save file
-    try:
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(content)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail="Erro ao salvar o ficheiro")
-
-    # Return file URL
-    file_url = f"/api/uploads/{filename}"
-    return {"url": file_url, "filename": filename}
-
-# Admin - Toggle Featured Content
-
-
-@api_router.put("/admin/imoveis/{imovel_id}/destaque")
-async def toggle_imovel_destaque(
-    imovel_id: str,
-    destaque: bool,
-    current_user: User = Depends(get_admin_user)
-):
-    result = await db.imoveis.update_one(
-        {"id": imovel_id},
-        {"$set": {"destaque": destaque,
-                  "updated_at": datetime.now(timezone.utc)}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
-    return {"message": f"Imóvel {'adicionado ao' if destaque else 'removido do'} destaque"}
-
-
-@api_router.put("/admin/parceiros/{parceiro_id}/destaque")
-async def toggle_parceiro_destaque(
-    parceiro_id: str,
-    destaque: bool,
-    current_user: User = Depends(get_admin_user)
-):
-    result = await db.perfis_parceiros.update_one(
-        {"id": parceiro_id},
-        {"$set": {"destaque": destaque,
-                  "updated_at": datetime.now(timezone.utc)}}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Parceiro não encontrado")
-    return {"message": f"Parceiro {'adicionado ao' if destaque else 'removido do'} destaque"}
-
-
-# CORS Configuration
 origins_from_env = os.environ.get(
     'CORS_ORIGINS', 'http://localhost:3000').split(',')
-allowed_origins = list(set(origins_from_env + ["http://localhost:3000"]))
+allowed_origins = list(
+    set(origins_from_env + ["http://localhost:3000", "http://127.0.0.1:3000"]))
 
 app.add_middleware(
     CORSMiddleware,
@@ -1762,14 +1502,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include router in app
+app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
 app.include_router(api_router)
 
-# Logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

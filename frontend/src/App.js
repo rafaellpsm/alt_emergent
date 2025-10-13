@@ -19,6 +19,10 @@ import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
 import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
+import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
+import { PerfilPage } from "./components/PerfilPage";
+
+
 
 
 // Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
@@ -153,10 +157,23 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>{user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge></DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><a href="/alterar-senha"><Key className="mr-2 h-4 w-4" />Alterar Senha</a></DropdownMenuItem>
-        {user.role === 'parceiro' && <DropdownMenuItem asChild><a href="/meu-perfil"><Briefcase className="mr-2 h-4 w-4" />Meu Perfil</a></DropdownMenuItem>}
+        <DropdownMenuItem asChild>
+          <a href="/perfil">
+            <User className="mr-2 h-4 w-4" /> Meu Perfil
+          </a>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <a href="/alterar-senha">
+            <Key className="mr-2 h-4 w-4" /> Alterar Senha
+          </a>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" />Sair</DropdownMenuItem>
+        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
+          <LogOut className="mr-2 h-4 w-4" /> Sair
+        </DropdownMenuItem>
+
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -538,6 +555,7 @@ const MainApp = () => (
           <Route path="/parceiro/:id" element={<ParceiroDetalhePage />} />
           <Route path="/meus-imoveis" element={<ProtectedRoute allowedRoles={['membro']}><MeusImoveisPage /></ProtectedRoute>} />
           <Route path="/meu-perfil" element={<ProtectedRoute allowedRoles={['parceiro']}><MeuPerfilPage /></ProtectedRoute>} />
+          <Route path="/anfitriao/:id" element={<AnfitriaoPerfilPage />} />
           <Route path="/alterar-senha" element={<ProtectedRoute><AlterarSenhaPage /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/candidaturas" element={<ProtectedRoute allowedRoles={['admin']}><AdminCandidaturasPage /></ProtectedRoute>} />
@@ -546,6 +564,8 @@ const MainApp = () => (
           <Route path="/admin/conteudo" element={<ProtectedRoute allowedRoles={['admin']}><AdminConteudoPage /></ProtectedRoute>} />
           <Route path="/admin/comunicacao" element={<ProtectedRoute allowedRoles={['admin']}><AdminComunicacaoPage /></ProtectedRoute>} />
           <Route path="/admin/destaques" element={<ProtectedRoute allowedRoles={['admin']}><AdminDestaquesPage /></ProtectedRoute>} />
+          <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
+
         </Route>
 
         <Route path="/login" element={<LoginPage />} />

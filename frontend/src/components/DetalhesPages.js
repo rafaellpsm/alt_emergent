@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // <--- ADICIONADO: useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
-import { ArrowLeft } from 'lucide-react'; // <--- ADICIONADO: Ícone de seta
+import { ArrowLeft } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -14,7 +14,8 @@ const API = `${BACKEND_URL}/api`;
 // Property Details Page (PUBLIC)
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // <--- ADICIONADO: Hook para navegação
+  const navigate = useNavigate();
+  const [anfitriao, setAnfitriao] = useState(null);
   const [imovel, setImovel] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +24,12 @@ export const ImovelDetalhePage = () => {
       try {
         const response = await axios.get(`${API}/imoveis/${id}`);
         setImovel(response.data);
+
+        const hostRes = await axios.get(`${API}/imoveis/${id}/proprietario`);
+        if (hostRes.data?.id) {
+          const perfilRes = await axios.get(`${API}/usuarios/${hostRes.data.id}/perfil-publico`);
+          setAnfitriao(perfilRes.data);
+        }
       } catch (error) {
         toast({
           title: "Erro ao carregar imóvel",
@@ -129,6 +136,23 @@ export const ImovelDetalhePage = () => {
                 </div>
               </div>
             </div>
+            {anfitriao && (
+              <Card className="bg-gray-50 p-6 mt-8">
+                <h3 className="font-semibold text-lg mb-4 text-primary-gray">Anfitrião</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-primary-gray">{anfitriao.nome}</p>
+                    {anfitriao.telefone && <p className="text-gray-700">📞 {anfitriao.telefone}</p>}
+                  </div>
+                  <Button
+                    onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}
+                    className="btn-primary mt-4 sm:mt-0"
+                  >
+                    Ver perfil público
+                  </Button>
+                </div>
+              </Card>
+            )}
           </CardContent>
         </Card>
       </div>

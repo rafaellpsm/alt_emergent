@@ -4,130 +4,10 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
-import PageHeader from './PageHeader';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Header Component
-const Header = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUserInfo();
-    }
-  }, []);
-
-  const fetchUserInfo = async () => {
-    try {
-      const response = await axios.get(`${API}/auth/me`);
-      setUser(response.data);
-    } catch (error) {
-      console.log('Error fetching user info');
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
-    window.location.href = '/';
-  };
-
-  return (
-    <header className="header-gradient text-white shadow-lg">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
-          <span className="text-sm opacity-90 hidden md:block">Associação de Locação por Temporada</span>
-        </div>
-
-        {user && (
-          <div className="flex items-center space-x-4">
-            <span className="text-sm hidden sm:block">
-              Olá, {user.nome}
-              <Badge className="ml-2 bg-white/20">{user.role}</Badge>
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="text-white border-white/50 hover:bg-white hover:text-gray-800 transition-all"
-            >
-              Sair
-            </Button>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-};
-
-// Navigation for logged-in users
-const Navigation = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${API}/auth/me`);
-        setUser(response.data);
-      } catch (error) {
-        console.log('Navigation: User not logged in');
-      }
-    };
-    fetchUser();
-  }, []);
-
-  if (!user) return null;
-
-  return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex space-x-2 md:space-x-8 overflow-x-auto">
-          <a
-            href="/main"
-            className="nav-link py-3 px-3 whitespace-nowrap"
-          >
-            Início
-          </a>
-
-          {user.role === 'admin' && (
-            <>
-              <a href="/admin/dashboard" className="nav-link py-3 px-3 whitespace-nowrap">Dashboard</a>
-              <a href="/admin/candidaturas" className="nav-link py-3 px-3 whitespace-nowrap">Candidaturas</a>
-              <a href="/admin/imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Imóveis</a>
-              <a href="/admin/usuarios" className="nav-link py-3 px-3 whitespace-nowrap">Usuários</a>
-              <a href="/admin/conteudo" className="nav-link py-3 px-3 whitespace-nowrap">Conteúdo</a>
-              <a href="/admin/comunicacao" className="nav-link py-3 px-3 whitespace-nowrap">Comunicação</a>
-            </>
-          )}
-
-          {user.role === 'membro' && (
-            <>
-              <a href="/meus-imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Meus Imóveis</a>
-              <a href="/imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Todos os Imóveis</a>
-            </>
-          )}
-
-          {user.role === 'parceiro' && (
-            <>
-              <a href="/meu-perfil" className="nav-link py-3 px-3 whitespace-nowrap">Meu Perfil</a>
-              <a href="/imoveis" className="nav-link py-3 px-3 whitespace-nowrap">Imóveis</a>
-            </>
-          )}
-
-          <a href="/parceiros" className="nav-link py-3 px-3 whitespace-nowrap">Parceiros</a>
-          <a href="/alterar-senha" className="nav-link py-3 px-3 whitespace-nowrap">Alterar Senha</a>
-        </div>
-      </div>
-    </nav>
-  );
-};
 
 // Página de Alteração de Senha
 export const AlterarSenhaPage = () => {
@@ -212,10 +92,7 @@ export const AlterarSenhaPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Navigation />
-
+    <div className="min-h-screen bg-gray-50 pt-20">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
           <Card className="card-custom">
@@ -285,15 +162,6 @@ export const AlterarSenhaPage = () => {
                   )}
                 </Button>
               </form>
-
-              <div className="mt-6 text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/main'}
-                >
-                  Voltar ao Início
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
