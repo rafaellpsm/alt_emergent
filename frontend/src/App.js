@@ -156,18 +156,23 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>{user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge></DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <a href="/perfil">
-            <User className="mr-2 h-4 w-4" /> Meu Perfil
-          </a>
-        </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <a href="/alterar-senha">
-            <Key className="mr-2 h-4 w-4" /> Alterar Senha
-          </a>
-        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {user.role !== 'admin' && (
+          <DropdownMenuItem asChild>
+            <a href={user.role === 'parceiro' ? '/meu-perfil' : '/perfil'}>
+              <User className="mr-2 h-4 w-4" /> Meu Perfil
+            </a>
+          </DropdownMenuItem>
+        )}
+
+        {user.role !== 'admin' && (
+          <DropdownMenuItem asChild>
+            <a href="/alterar-senha">
+              <Key className="mr-2 h-4 w-4" /> Alterar Senha
+            </a>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
@@ -409,7 +414,7 @@ const HomePage = () => {
     <div className="bg-gray-50">
       <HomeHeader />
       <section className="relative h-screen flex items-center justify-center text-center text-white overflow-hidden pt-20">
-        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://images.pexels.com/photos/1684293/pexels-photo-1684293.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://www.carpemundi.com.br/wp-content/uploads/2018/12/melhores-praias-de-ilhabela.jpg">
           <source src="https://videos.pexels.com/video-files/4433435/4433435-hd_1920_1080_25fps.mp4" type="video/mp4" />
         </video>
         <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
@@ -452,6 +457,54 @@ const HomePage = () => {
                       <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria} <span className="text-sm font-normal text-gray-600">/ noite</span></div>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        {/* Bloco 1: Adicionar Parceiros em Destaque */}
+        {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
+          <section className="py-20 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Parceiros em Destaque</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {pageData.parceiros_destaque.map((parceiro) => (
+                  <div key={parceiro.id} className="property-card-v2" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
+                    <div className="relative">
+                      <img src={parceiro.fotos[0] || 'https://via.placeholder.com/400x300'} alt={parceiro.nome_empresa} className="w-full h-64 object-cover" />
+                      <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{parceiro.nome_empresa}</h3>
+                      <p className="text-sm text-gray-500 mb-4 line-clamp-2">{parceiro.descricao}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        {/* Bloco 2: Adicionar Notícias em Destaque */}
+        {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
+          <section id="noticias" className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Últimas Notícias</h2>
+              <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+                {pageData.noticias_destaque.map((noticia) => (
+                  <Card key={noticia.id} className="card-custom hover-lift cursor-pointer">
+                    {noticia.fotos && noticia.fotos.length > 0 && (
+                      <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
+                        <img src={noticia.fotos[0]} alt={noticia.titulo} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-lg text-primary-gray">{noticia.titulo}</CardTitle>
+                      <CardDescription>{new Date(noticia.created_at).toLocaleDateString('pt-BR')} por {noticia.autor_nome}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4 line-clamp-3 text-sm">{noticia.conteudo}</p>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>

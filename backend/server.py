@@ -48,7 +48,7 @@ MAX_FILE_SIZE = 50 * 1024 * 1024
 # --- Security and Authentication Configuration ---
 SECRET_KEY = os.getenv("SECRET_KEY", "SUPER_SECRET_KEY_2004")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
@@ -490,38 +490,45 @@ async def root():
 
 @api_router.get("/main-page", response_model=MainPageData)
 async def get_main_page_data():
-    def _safe_model_init(model, data_list):
-        valid_items = []
-        for item_data in data_list:
-            try:
-                valid_items.append(model(**item_data))
-            except ValidationError as e:
-                logging.warning(
-                    f"Validation Error for model {model.__name__} with ID {item_data.get('id', 'N/A')}: {e}")
-        return valid_items
-
     try:
-        noticias_destaque_data = await db.noticias.find({"publicada": True, "destaque": True}).sort("created_at", -1).limit(3).to_list(length=None)
-        imoveis_destaque_data = await db.imoveis.find({"ativo": True, "destaque": True, "status_aprovacao": "aprovado"}).sort("created_at", -1).limit(6).to_list(length=None)
-        parceiros_destaque_data = await db.perfis_parceiros.find({"ativo": True, "destaque": True}).sort("created_at", -1).limit(6).to_list(length=None)
-        ultimas_noticias_data = await db.noticias.find({"publicada": True}).sort("created_at", -1).limit(10).to_list(length=None)
+        noticias_destaque_data = await db.noticias.find(
+            {"destaque": True, "publicada": True}
+        ).sort("created_at", -1).limit(3).to_list(length=None)
 
-        noticias_destaque = _safe_model_init(Noticia, noticias_destaque_data)
-        imoveis_destaque = _safe_model_init(Imovel, imoveis_destaque_data)
-        parceiros_destaque = _safe_model_init(
-            PerfilParceiro, parceiros_destaque_data)
-        ultimas_noticias = _safe_model_init(Noticia, ultimas_noticias_data)
+        imoveis_destaque_data = await db.imoveis.find(
+            {"destaque": True, "ativo": True, "status_aprovacao": "aprovado"}
+        ).sort("created_at", -1).limit(6).to_list(length=None)
+        parceiros_destaque_data = await db.perfis_parceiros.find(
+            {"destaque": True, "ativo": True}
+        ).sort("created_at", -1).limit(6).to_list(length=None)
+
+        ultimas_noticias_data = await db.noticias.find(
+            {"publicada": True}
+        ).sort("created_at", -1).limit(5).to_list(length=None)
+
+        def _safe_model_init(model, data_list):
+            valid_items = []
+            for item_data in data_list:
+                try:
+                    valid_items.append(model(**item_data))
+                except ValidationError as e:
+                    logging.warning(
+                        f"Skipping invalid data for model {model.__name__} (ID: {item_data.get('id')}): {e}")
+            return valid_items
 
         return MainPageData(
-            noticias_destaque=noticias_destaque,
-            imoveis_destaque=imoveis_destaque,
-            parceiros_destaque=parceiros_destaque,
-            ultimas_noticias=ultimas_noticias
+            noticias_destaque=_safe_model_init(
+                Noticia, noticias_destaque_data),
+            imoveis_destaque=_safe_model_init(Imovel, imoveis_destaque_data),
+            parceiros_destaque=_safe_model_init(
+                PerfilParceiro, parceiros_destaque_data),
+            ultimas_noticias=_safe_model_init(Noticia, ultimas_noticias_data),
         )
+
     except Exception as e:
-        logging.error(f"Unexpected database error in /main-page route: {e}")
+        logging.error(f"Erro inesperado na rota /main-page: {e}")
         raise HTTPException(
-            status_code=500, detail="An internal error occurred while fetching main page data.")
+            status_code=500, detail="Ocorreu um erro interno ao buscar os dados da página principal.")
 
 
 @api_router.post("/auth/register", response_model=User)
@@ -1483,6 +1490,294 @@ async def delete_user(user_id: str, current_user: User = Depends(get_admin_user)
             "role": user_role
         }
     }
+
+# Property Approval Routes (Admin)
+
+
+@api_router.get("/imoveis", response_model=List[Imovel])
+async def get_imoveis(
+    tipo: Optional[str] = None,
+    regiao: Optional[str] = None,
+    preco_max: Optional[float] = None,
+    num_quartos: Optional[int] = None,
+    possui_piscina: Optional[bool] = None,
+    permite_pets: Optional[bool] = None
+):
+    """Get all approved properties with optional filters (PUBLIC)"""
+    query = {"status_aprovacao": "aprovado", "ativo": True}
+
+    # Adiciona filtros à query do MongoDB se eles forem fornecidos
+    if tipo and tipo != 'todos':
+        query["tipo"] = tipo
+    if regiao and regiao != 'todas':
+        query["regiao"] = regiao
+    if preco_max is not None and preco_max > 0:
+        query["preco_diaria"] = {"$lte": preco_max}
+    if num_quartos is not None and num_quartos > 0:
+        query["num_quartos"] = {"$gte": num_quartos}
+    if possui_piscina:
+        query["possui_piscina"] = True
+    if permite_pets:
+        query["permite_pets"] = True
+
+    imoveis_cursor = db.imoveis.find(query).sort("created_at", -1)
+    imoveis = await imoveis_cursor.to_list(length=None)
+
+    # Validação segura dos dados antes de retornar
+    valid_imoveis = []
+    for imovel_data in imoveis:
+        imovel_data.pop("_id", None)
+        try:
+            valid_imoveis.append(Imovel(**imovel_data))
+        except ValidationError as e:
+            # Apenas regista no log do servidor se um imóvel tiver dados inválidos
+            print(
+                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
+
+    return valid_imoveis
+
+
+@api_router.get("/admin/imoveis", response_model=List[Imovel])
+async def get_admin_imoveis(current_user: User = Depends(get_admin_user)):
+    """Get all properties for admin view (approved, pending, etc.)"""
+    imoveis = await db.imoveis.find({}).sort("created_at", -1).to_list(length=None)
+
+    # Remove MongoDB ObjectId and validate
+    valid_imoveis = []
+    for imovel_data in imoveis:
+        imovel_data.pop("_id", None)
+        try:
+            valid_imoveis.append(Imovel(**imovel_data))
+        except Exception as e:
+            print(
+                f"Skipping invalid property data (ID: {imovel_data.get('id')}): {e}")
+
+    return valid_imoveis
+
+
+@api_router.post("/admin/imoveis/{imovel_id}/aprovar")
+async def aprovar_imovel(imovel_id: str, current_user: User = Depends(get_admin_user)):
+    """Approve property"""
+    # Update property status
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"status_aprovacao": "aprovado",
+                  "updated_at": datetime.now(timezone.utc)}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+
+    # Get property and owner info for notification
+    imovel = await db.imoveis.find_one({"id": imovel_id})
+    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
+
+    # Send notification email
+    if owner and owner.get("email"):
+        try:
+            await send_email(
+                to_email=owner["email"],
+                subject="Imóvel Aprovado - ALT Ilhabela",
+                body=f"""
+Olá {owner.get('nome', 'Proprietário')},
+
+Ótimas notícias! Seu imóvel "{imovel['titulo']}" foi aprovado e já está disponível no portal da ALT Ilhabela.
+
+Seu imóvel agora pode ser visualizado por outros membros e turistas que acessam nossa plataforma.
+
+Para gerenciar seus imóveis, acesse: https://temporada-portal.preview.emergentagent.com/login
+
+Atenciosamente,
+Equipe ALT Ilhabela
+                """
+            )
+        except Exception as e:
+            print(f"Erro ao enviar email de aprovação: {e}")
+
+    return {"message": "Imóvel aprovado com sucesso"}
+
+
+@api_router.post("/admin/imoveis/{imovel_id}/recusar")
+async def recusar_imovel(
+    imovel_id: str,
+    motivo: str = "",
+    current_user: User = Depends(get_admin_user)
+):
+    """Reject property"""
+    # Update property status
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"status_aprovacao": "recusado",
+                  "updated_at": datetime.now(timezone.utc)}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+
+    # Get property and owner info for notification
+    imovel = await db.imoveis.find_one({"id": imovel_id})
+    owner = await db.users.find_one({"id": imovel["proprietario_id"]})
+
+    # Send notification email
+    if owner and owner.get("email"):
+        try:
+            await send_email(
+                to_email=owner["email"],
+                subject="Imóvel Não Aprovado - ALT Ilhabela",
+                body=f"""
+Olá {owner.get('nome', 'Proprietário')},
+
+Infelizmente, seu imóvel "{imovel['titulo']}" não foi aprovado para publicação no portal da ALT Ilhabela.
+
+{f'Motivo: {motivo}' if motivo else ''}
+
+Você pode revisar as informações e enviar uma nova solicitação através da sua área de membros.
+
+Para mais informações, entre em contato conosco.
+
+Atenciosamente,
+Equipe ALT Ilhabela
+                """
+            )
+        except Exception as e:
+            print(f"Erro ao enviar email de recusa: {e}")
+
+    return {"message": "Imóvel recusado com sucesso"}
+
+# File Upload Routes
+
+
+@api_router.post("/upload/foto")
+async def upload_foto(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload photo for properties or partners"""
+
+    # Validate file type
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Arquivo inválido")
+
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de arquivo não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+
+    # Check file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400, detail="Arquivo muito grande. Máximo 10MB.")
+
+    # Generate unique filename
+    file_id = str(uuid.uuid4())
+    filename = f"{file_id}{file_ext}"
+    file_path = UPLOAD_DIR / filename
+
+    # Save file
+    try:
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao salvar arquivo")
+
+    # Return file URL with /api prefix for proper routing
+    file_url = f"/api/uploads/{filename}"
+    return {"url": file_url, "filename": filename}
+
+
+@api_router.delete("/upload/foto/{filename}")
+async def delete_foto(
+    filename: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete uploaded photo"""
+    file_path = UPLOAD_DIR / filename
+
+    try:
+        if file_path.exists():
+            file_path.unlink()
+        return {"message": "Foto removida com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro ao remover foto")
+
+
+@api_router.post("/upload/video")
+async def upload_video(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """Upload video for properties, partners, or news"""
+
+    # Validate file type
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Ficheiro inválido")
+
+    file_ext = Path(file.filename).suffix.lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de ficheiro não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+
+    # Check file size (usando o mesmo MAX_FILE_SIZE)
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400, detail=f"Ficheiro muito grande. Máximo {MAX_FILE_SIZE // 1024 // 1024}MB.")
+
+    # Generate unique filename
+    file_id = str(uuid.uuid4())
+    filename = f"{file_id}{file_ext}"
+    file_path = UPLOAD_DIR / filename
+
+    # Save file
+    try:
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="Erro ao salvar o ficheiro")
+
+    # Return file URL
+    file_url = f"/api/uploads/{filename}"
+    return {"url": file_url, "filename": filename}
+
+# Admin - Toggle Featured Content
+
+
+@api_router.put("/admin/imoveis/{imovel_id}/destaque")
+async def toggle_imovel_destaque(
+    imovel_id: str,
+    destaque: bool,
+    current_user: User = Depends(get_admin_user)
+):
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"destaque": destaque,
+                  "updated_at": datetime.now(timezone.utc)}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+    return {"message": f"Imóvel {'adicionado ao' if destaque else 'removido do'} destaque"}
+
+
+@api_router.put("/admin/parceiros/{parceiro_id}/destaque")
+async def toggle_parceiro_destaque(
+    parceiro_id: str,
+    destaque: bool,
+    current_user: User = Depends(get_admin_user)
+):
+    result = await db.perfis_parceiros.update_one(
+        {"id": parceiro_id},
+        {"$set": {"destaque": destaque,
+                  "updated_at": datetime.now(timezone.utc)}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Parceiro não encontrado")
+    return {"message": f"Parceiro {'adicionado ao' if destaque else 'removido do'} destaque"}
 
 
 # ==============================================================================
