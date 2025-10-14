@@ -383,7 +383,7 @@ const HomePage = () => {
   // PASSO 2: A NOVA FUNÇÃO DE ROLAGEM
   const handleScrollToDestaques = () => {
     // CORREÇÃO: O ID da seção de imóveis foi alterado para ser mais específico
-    const section = document.getElementById('imoveis-destaque-section');
+    const section = document.getElementById('section-2');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

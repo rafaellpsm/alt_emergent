@@ -15,8 +15,9 @@ import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
 import { toast } from '../hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-import RichTextEditor from './RichTextEditor'; // <-- Importe o novo editor
+import RichTextEditor from './RichTextEditor';
 import { PhotoUpload } from './PhotoUpload';
+import { VideoUpload } from './VideoUpload'; // <-- Adicionar importação
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -91,20 +92,23 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                             <PhotoUpload
                                 photos={formData.fotos}
                                 onPhotosChange={(newPhotos) => setFormData(prev => ({ ...prev, fotos: newPhotos }))}
-                                maxPhotos={1} // Apenas 1 foto de destaque
+                                maxPhotos={1}
                                 label="Foto de Destaque (para o card e topo da página)"
                             />
                         </div>
 
-                        {/* CAMPO PARA URL DO VÍDEO */}
+                        {/* MELHORIA: Usar o componente VideoUpload */}
                         <div>
-                            <Label htmlFor="video_url">URL do Vídeo (Opcional)</Label>
-                            <Input id="video_url" name="video_url" value={formData.video_url} onChange={handleChange} placeholder="Cole o link do vídeo aqui..." />
+                            <VideoUpload
+                                videoUrl={formData.video_url}
+                                onVideoChange={(newUrl) => setFormData(prev => ({ ...prev, video_url: newUrl }))}
+                                label="Vídeo de Destaque (Opcional)"
+                            />
                         </div>
 
                         {/* EDITOR DE TEXTO COM UPLOAD DE IMAGEM EMBUTIDO */}
                         <div>
-                            <Label>Conteúdo Completo (insira as fotos da matéria aqui)</Label>
+                            <Label>Conteúdo Completo (insira fotos e vídeos da matéria aqui)</Label>
                             <RichTextEditor
                                 value={formData.conteudo}
                                 onChange={handleContentChange}
@@ -130,12 +134,10 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
     );
 };
 
+// --- O RESTANTE DO FICHEIRO CONTINUA IGUAL ---
+// (Copy and paste the rest of your AdminPages.js file here)
 
-// ... O restante do seu arquivo AdminPages.js continua exatamente igual ...
-// (AdminConteudoPage, AdminCandidaturasPage, etc.)
-// ... cole o resto do seu arquivo aqui ...
-
-export const AdminConteudoPage = () => {
+export const AdminConteudoPage = ({ /* ... as props ... */ }) => {
     const [noticias, setNoticias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -193,7 +195,7 @@ export const AdminConteudoPage = () => {
 
             {isFormOpen && <NoticiaForm noticia={editingNoticia} onSave={handleSave} onCancel={() => setIsFormOpen(false)} />}
 
-            {loading ? <div className="spinner-center"><div className="spinner"></div></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <Card>
                     <Table>
                         <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Autor</TableHead><TableHead>Data</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
@@ -219,7 +221,9 @@ export const AdminConteudoPage = () => {
             )}
         </div>
     );
-}; const CandidaturaCard = ({ candidatura, tipo, onAction }) => (
+};
+
+const CandidaturaCard = ({ candidatura, tipo, onAction }) => (
     <Card className="card-custom mb-4">
         <CardHeader>
             <CardTitle>{candidatura.nome}</CardTitle>
@@ -275,7 +279,7 @@ export const AdminCandidaturasPage = () => {
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Candidaturas</h1>
-            {loading ? <div className="spinner-center"><div className="spinner"></div></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <Tabs defaultValue="membros">
                     <TabsList>
                         <TabsTrigger value="membros">Membros ({candidaturas.membros.length})</TabsTrigger>
@@ -297,8 +301,6 @@ export const AdminCandidaturasPage = () => {
     );
 };
 
-
-// --- PÁGINA: GERIR IMÓVEIS ---
 const getStatusBadge = (status) => {
     switch (status) {
         case 'aprovado': return <Badge className="badge-teal">Aprovado</Badge>;
@@ -341,7 +343,7 @@ export const AdminImoveisPage = () => {
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Imóveis</h1>
-            {loading ? <div className="spinner-center"><div className="spinner"></div></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <Tabs defaultValue="pendentes">
                     <TabsList>
                         <TabsTrigger value="pendentes">Pendentes ({imoveisPendentes.length})</TabsTrigger>
@@ -380,8 +382,6 @@ export const AdminImoveisPage = () => {
     );
 };
 
-
-// --- PÁGINA: GERIR UTILIZADORES ---
 export const AdminUsuariosPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -428,7 +428,7 @@ export const AdminUsuariosPage = () => {
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Utilizadores</h1>
-            {loading ? <div className="spinner-center"><div className="spinner"></div></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <Card>
                     <Table>
                         <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Função</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
@@ -460,8 +460,6 @@ export const AdminUsuariosPage = () => {
     );
 };
 
-
-// --- PÁGINA: GERIR DESTAQUES ---
 export const AdminDestaquesPage = () => {
     const [imoveis, setImoveis] = useState([]);
     const [parceiros, setParceiros] = useState([]);
@@ -498,7 +496,7 @@ export const AdminDestaquesPage = () => {
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Destaques</h1>
-            {loading ? <div className="spinner-center"><div className="spinner"></div></div> : (
+            {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <div className="grid md:grid-cols-2 gap-8">
                     <Card>
                         <CardHeader><CardTitle>Imóveis</CardTitle></CardHeader>
@@ -532,8 +530,6 @@ export const AdminDestaquesPage = () => {
     );
 };
 
-
-// --- PÁGINA: COMUNICAÇÃO ---
 export const AdminComunicacaoPage = () => {
     const [formData, setFormData] = useState({ assunto: '', mensagem: '', destinatarios: [] });
     const [loading, setLoading] = useState(false);
