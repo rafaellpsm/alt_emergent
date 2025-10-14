@@ -13,7 +13,6 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Validação de tipo e tamanho (ex: 50MB)
         const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
         if (!allowedTypes.includes(file.type)) {
             toast({
@@ -23,11 +22,10 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
             });
             return;
         }
-
-        if (file.size > 50 * 1024 * 1024) { // 50MB
+        if (file.size > 500 * 1024 * 1024) { // 500MB
             toast({
                 title: "Ficheiro muito grande",
-                description: "O vídeo não pode exceder 50MB.",
+                description: "O vídeo não pode exceder 500MB.",
                 variant: "destructive",
             });
             return;
@@ -41,7 +39,6 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
             const response = await axios.post(`${API}/upload/video`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-
             const newVideoUrl = `${BACKEND_URL}${response.data.url}`;
             onVideoChange(newVideoUrl);
 
@@ -59,7 +56,7 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
     };
 
     const removeVideo = () => {
-        onVideoChange(''); // Limpa a URL do vídeo
+        onVideoChange('');
         toast({ title: "Vídeo removido" });
     };
 
@@ -78,22 +75,11 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
                         id="video-upload"
                     />
                     <label htmlFor="video-upload">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full cursor-pointer"
-                            disabled={uploading}
-                            asChild
-                        >
+                        <Button type="button" variant="outline" className="w-full cursor-pointer" disabled={uploading} asChild>
                             <span>
                                 {uploading ? (
-                                    <>
-                                        <div className="spinner w-4 h-4 mr-2"></div>
-                                        Enviando...
-                                    </>
-                                ) : (
-                                    'Adicionar Vídeo'
-                                )}
+                                    <><div className="spinner w-4 h-4 mr-2"></div>Enviando...</>
+                                ) : ('Adicionar Vídeo')}
                             </span>
                         </Button>
                     </label>
@@ -101,13 +87,7 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
             ) : (
                 <div className="relative">
                     <video src={videoUrl} controls className="w-full rounded-md" />
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={removeVideo}
-                        type="button"
-                    >
+                    <Button variant="destructive" size="sm" className="absolute top-2 right-2" onClick={removeVideo} type="button">
                         Remover Vídeo
                     </Button>
                 </div>
@@ -115,7 +95,7 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
 
             <div className="text-xs text-gray-500">
                 <p>• Formatos aceites: MP4, MOV, AVI, MKV</p>
-                <p>• Tamanho máximo: 50MB</p>
+                <p>• Tamanho máximo: 500MB</p>
             </div>
         </div>
     );

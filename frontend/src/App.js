@@ -21,6 +21,7 @@ import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
+import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 
 
 
@@ -377,11 +378,12 @@ const HomeHeader = () => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [pageData, setPageData] = useState({ imoveis_destaque: [] });
+  const [pageData, setPageData] = useState({ imoveis_destaque: [], parceiros_destaque: [], noticias_destaque: [] });
 
   // PASSO 2: A NOVA FUNÇÃO DE ROLAGEM
   const handleScrollToDestaques = () => {
-    const section = document.getElementById('section-2');
+    // CORREÇÃO: O ID da seção de imóveis foi alterado para ser mais específico
+    const section = document.getElementById('imoveis-destaque-section');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -439,9 +441,61 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+        {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
+          <section id="noticias" className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Fique por Dentro</h2>
+
+              {(() => {
+                const noticiaPrincipal = pageData.noticias_destaque[0];
+                const outrasNoticias = pageData.noticias_destaque.slice(1, 3);
+
+                return (
+                  <div className="news-highlight-grid">
+                    {/* Card Principal (Grande, à Esquerda) */}
+                    <div className="news-highlight-main" onClick={() => navigate(`/noticia/${noticiaPrincipal.id}`)}>
+                      <img
+                        // CORREÇÃO APLICADA AQUI
+                        src={noticiaPrincipal.fotos && noticiaPrincipal.fotos.length > 0 ? noticiaPrincipal.fotos[0] : 'https://placehold.co/800x600?text=Imagem+Indisponível'}
+                        alt={noticiaPrincipal.titulo}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="news-highlight-overlay">
+                        <Badge className="badge-teal mb-2">{noticiaPrincipal.categoria || 'Geral'}</Badge>
+                        <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{noticiaPrincipal.titulo}</h3>
+                        <p className="text-gray-200 text-sm hidden md:block">{noticiaPrincipal.resumo}</p>
+                      </div>
+                    </div>
+
+                    {/* Container para os Cards Secundários (à Direita) */}
+                    <div className="news-highlight-side">
+                      {outrasNoticias.map((noticia) => (
+                        <div key={noticia.id} className="news-side-card" onClick={() => navigate(`/noticia/${noticia.id}`)}>
+                          <div className="news-side-card-image">
+                            <img
+                              // CORREÇÃO APLICADA AQUI
+                              src={noticia.fotos && noticia.fotos.length > 0 ? noticia.fotos[0] : 'https://placehold.co/400x300?text=Imagem'}
+                              alt={noticia.titulo}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="news-side-card-content">
+                            <Badge className="badge-beige mb-2 text-xs">{noticia.categoria || 'Geral'}</Badge>
+                            <h4 className="font-bold text-primary-gray leading-tight">{noticia.titulo}</h4>
+                            <span className="text-primary-teal text-sm mt-auto">Ler Mais →</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </section>
+        )}
         {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
           // PASSO 1: ID ADICIONADO À SECÇÃO
-          <section className="py-20 bg-white">
+          <section id="imoveis-destaque-section" className="py-20 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -484,32 +538,6 @@ const HomePage = () => {
             </div>
           </section>
         )}
-        {/* Bloco 2: Adicionar Notícias em Destaque */}
-        {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
-          <section id="noticias" className="py-20 bg-white">
-            <div className="container mx-auto px-4">
-              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Últimas Notícias</h2>
-              <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
-                {pageData.noticias_destaque.map((noticia) => (
-                  <Card key={noticia.id} className="card-custom hover-lift cursor-pointer">
-                    {noticia.fotos && noticia.fotos.length > 0 && (
-                      <div className="aspect-video bg-gray-200 rounded-t-lg overflow-hidden">
-                        <img src={noticia.fotos[0]} alt={noticia.titulo} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="text-lg text-primary-gray">{noticia.titulo}</CardTitle>
-                      <CardDescription>{new Date(noticia.created_at).toLocaleDateString('pt-BR')} por {noticia.autor_nome}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4 line-clamp-3 text-sm">{noticia.conteudo}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
         <section id="sobre" className="py-20">
           <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -530,6 +558,7 @@ const HomePage = () => {
     </div>
   );
 };
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -618,7 +647,7 @@ const MainApp = () => (
           <Route path="/admin/comunicacao" element={<ProtectedRoute allowedRoles={['admin']}><AdminComunicacaoPage /></ProtectedRoute>} />
           <Route path="/admin/destaques" element={<ProtectedRoute allowedRoles={['admin']}><AdminDestaquesPage /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
-
+          <Route path="/noticia/:id" element={<NoticiaDetalhePage />} />
         </Route>
 
         <Route path="/login" element={<LoginPage />} />

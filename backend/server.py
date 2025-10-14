@@ -43,7 +43,7 @@ UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp",
                       ".heic", ".heif", ".mp4", ".mov", ".avi", ".mkv"}
-MAX_FILE_SIZE = 50 * 1024 * 1024
+MAX_FILE_SIZE = 500 * 1024 * 1024
 
 # --- Security and Authentication Configuration ---
 SECRET_KEY = os.getenv("SECRET_KEY", "SUPER_SECRET_KEY_2004")
@@ -307,7 +307,7 @@ class Noticia(BaseModel):
     autor_id: str
     autor_nome: str
     categoria: str = "geral"  # geral, evento, promocao, regulamentacao
-    fotos: List[str] = []
+    fotos: List[str] = []      # <--- A LINHA QUE FALTAVA
     video_url: Optional[str] = None
     link_externo: Optional[str] = None
     tags: List[str] = []
@@ -325,6 +325,7 @@ class NoticiaCreate(BaseModel):
     conteudo: str
     resumo: Optional[str] = None
     categoria: str = "geral"
+    fotos: List[str] = []
     video_url: Optional[str] = None
     link_externo: Optional[str] = None
     tags: List[str] = []
@@ -1106,7 +1107,7 @@ async def get_noticias(
 
 
 @api_router.get("/noticias/{noticia_id}", response_model=Noticia)
-async def get_noticia(noticia_id: str, current_user: User = Depends(get_current_user)):
+async def get_noticia(noticia_id: str):
     noticia = await db.noticias.find_one({"id": noticia_id, "publicada": True})
     if not noticia:
         raise HTTPException(status_code=404, detail="Notícia não encontrada")
@@ -1121,6 +1122,7 @@ async def create_noticia(noticia_data: NoticiaCreate, current_user: User = Depen
         conteudo=noticia_data.conteudo,
         resumo=noticia_data.resumo,
         categoria=noticia_data.categoria,
+        fotos=noticia_data.fotos,
         video_url=noticia_data.video_url,
         link_externo=noticia_data.link_externo,
         tags=noticia_data.tags,

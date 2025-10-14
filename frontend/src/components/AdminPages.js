@@ -1,3 +1,5 @@
+// src/components/AdminPages.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -13,14 +15,13 @@ import { Textarea } from './ui/textarea';
 import { Checkbox } from './ui/checkbox';
 import { toast } from '../hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-
+import RichTextEditor from './RichTextEditor'; // <-- Importe o novo editor
+import { PhotoUpload } from './PhotoUpload';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR');
-
-// --- PÁGINA: GERIR CONTEÚDO (NOTÍCIAS) ---
 
 // Formulário para Criar/Editar Notícia
 const NoticiaForm = ({ noticia, onSave, onCancel }) => {
@@ -31,6 +32,8 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
         resumo: '',
         categoria: 'geral',
         destaque: false,
+        fotos: [],
+        video_url: '',
     });
 
     useEffect(() => {
@@ -42,6 +45,8 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                 resumo: noticia.resumo || '',
                 categoria: noticia.categoria || 'geral',
                 destaque: noticia.destaque || false,
+                fotos: noticia.fotos || [],
+                video_url: noticia.video_url || '',
             });
         }
     }, [noticia]);
@@ -56,43 +61,79 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
+    const handleContentChange = (content) => {
+        setFormData(prev => ({ ...prev, conteudo: content }));
+    };
+
     return (
         <Dialog open={true} onOpenChange={onCancel}>
-            <DialogContent className="sm:max-w-[625px]">
+            <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{noticia ? 'Editar Notícia' : 'Criar Nova Notícia'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div>
-                        <Label htmlFor="titulo">Título</Label>
-                        <Input id="titulo" name="titulo" value={formData.titulo} onChange={handleChange} required />
-                    </div>
-                    <div>
-                        <Label htmlFor="subtitulo">Subtítulo</Label>
-                        <Input id="subtitulo" name="subtitulo" value={formData.subtitulo} onChange={handleChange} />
-                    </div>
-                    <div>
-                        <Label htmlFor="conteudo">Conteúdo (Markdown)</Label>
-                        <Textarea id="conteudo" name="conteudo" value={formData.conteudo} onChange={handleChange} required rows={10} />
-                    </div>
-                    <div>
-                        <Label htmlFor="categoria">Categoria</Label>
-                        <Input id="categoria" name="categoria" value={formData.categoria} onChange={handleChange} />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="destaque" name="destaque" checked={formData.destaque} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, destaque: checked }))} />
-                        <Label htmlFor="destaque">Marcar como destaque</Label>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-                        <Button type="submit" className="btn-primary">Salvar</Button>
-                    </DialogFooter>
-                </form>
+                <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+                    <form id="noticia-form" onSubmit={handleSubmit} className="space-y-4 py-4">
+                        <div>
+                            <Label htmlFor="titulo">Título</Label>
+                            <Input id="titulo" name="titulo" value={formData.titulo} onChange={handleChange} required />
+                        </div>
+                        <div>
+                            <Label htmlFor="subtitulo">Subtítulo</Label>
+                            <Input id="subtitulo" name="subtitulo" value={formData.subtitulo} onChange={handleChange} />
+                        </div>
+                        <div>
+                            <Label htmlFor="resumo">Resumo (para a página principal)</Label>
+                            <Textarea id="resumo" name="resumo" value={formData.resumo} onChange={handleChange} rows={3} placeholder="Escreva uma chamada curta e atrativa..." />
+                        </div>
+
+                        {/* CAMPO PARA FOTO DE DESTAQUE (CAPA) */}
+                        <div>
+                            <PhotoUpload
+                                photos={formData.fotos}
+                                onPhotosChange={(newPhotos) => setFormData(prev => ({ ...prev, fotos: newPhotos }))}
+                                maxPhotos={1} // Apenas 1 foto de destaque
+                                label="Foto de Destaque (para o card e topo da página)"
+                            />
+                        </div>
+
+                        {/* CAMPO PARA URL DO VÍDEO */}
+                        <div>
+                            <Label htmlFor="video_url">URL do Vídeo (Opcional)</Label>
+                            <Input id="video_url" name="video_url" value={formData.video_url} onChange={handleChange} placeholder="Cole o link do vídeo aqui..." />
+                        </div>
+
+                        {/* EDITOR DE TEXTO COM UPLOAD DE IMAGEM EMBUTIDO */}
+                        <div>
+                            <Label>Conteúdo Completo (insira as fotos da matéria aqui)</Label>
+                            <RichTextEditor
+                                value={formData.conteudo}
+                                onChange={handleContentChange}
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="categoria">Categoria</Label>
+                            <Input id="categoria" name="categoria" value={formData.categoria} onChange={handleChange} />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="destaque" name="destaque" checked={formData.destaque} onCheckedChange={(checked) => setFormData(prev => ({ ...prev, destaque: checked }))} />
+                            <Label htmlFor="destaque">Marcar como destaque</Label>
+                        </div>
+                    </form>
+                </div>
+                <DialogFooter className="pt-4 border-t flex-shrink-0">
+                    <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
+                    <Button type="submit" form="noticia-form" className="btn-primary">Salvar</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 };
 
+
+// ... O restante do seu arquivo AdminPages.js continua exatamente igual ...
+// (AdminConteudoPage, AdminCandidaturasPage, etc.)
+// ... cole o resto do seu arquivo aqui ...
 
 export const AdminConteudoPage = () => {
     const [noticias, setNoticias] = useState([]);
@@ -561,9 +602,3 @@ export const AdminComunicacaoPage = () => {
         </div>
     );
 };
-
-
-
-
-
-
