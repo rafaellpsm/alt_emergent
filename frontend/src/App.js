@@ -305,7 +305,7 @@ const HomeHeader = () => {
   }, []);
 
   const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-    ? 'bg-white/90 backdrop-blur-sm shadow-md text-primary-gray'
+    ? 'bg-white/80 backdrop-blur-sm shadow-md text-primary-gray'
     : 'bg-transparent text-white'
     }`;
 
@@ -416,13 +416,13 @@ const HomePage = () => {
     <div className="bg-gray-50">
       <HomeHeader />
       <section className="relative h-screen flex items-center justify-center text-center text-white overflow-hidden pt-20">
-        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://www.carpemundi.com.br/wp-content/uploads/2018/12/melhores-praias-de-ilhabela.jpg">
+        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://images.alphacoders.com/103/1031883.jpg">
           <source src="https://videos.pexels.com/video-files/4433435/4433435-hd_1920_1080_25fps.mp4" type="video/mp4" />
         </video>
         <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
         <div className="relative z-10 p-4">
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 animate-fade-in-up">Seu refúgio em Ilhabela</h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-300">Descubra acomodações e experiências únicas, com a qualidade e segurança que você merece.</p>
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-4 animate-fade-in-up">ALT Ilhabela</h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-300">Descubra acomodações e experiências únicas, com selo de qualidade ALT.</p>
 
           {/* PASSO 3: BOTÃO ATUALIZADO */}
           <Button size="lg" className="btn-primary-inverse text-lg px-8 py-6 animate-fade-in-up animation-delay-600" onClick={handleScrollToDestaques}>
