@@ -1062,7 +1062,7 @@ async def get_noticias(
     return [Noticia(**noticia) for noticia in noticias]
 
 
-@api_VECEL_URL
+@api_router.get("/noticias/{noticia_id}", response_model=Noticia)
 async def get_noticia(noticia_id: str):
     noticia = await db.noticias.find_one({"id": noticia_id, "publicada": True})
     if not noticia:
