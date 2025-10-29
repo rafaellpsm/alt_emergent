@@ -6,7 +6,8 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.staticfiles import StaticFiles
+# CORREÇÃO: StaticFiles não é mais necessário para uploads
+# from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
 from typing import List, Optional, Dict, Any
@@ -25,6 +26,10 @@ import secrets
 import string
 import aiofiles
 
+# --- NOVA IMPORTAÇÃO DO CLOUDINARY ---
+import cloudinary
+import cloudinary.uploader
+
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -39,13 +44,21 @@ db_name = os.environ.get('DB_NAME', 'alt_ilhabela')
 client = AsyncIOMotorClient(mongo_url)
 db = client[db_name]
 
-# --- Upload Configuration ---
-UPLOAD_DIR = ROOT_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp",
-                      ".heic", ".heif", ".mp4", ".mov", ".avi", ".mkv"}
-# CORREÇÃO: Aumentado o limite de tamanho do ficheiro para 500MB para vídeos
-MAX_FILE_SIZE = 500 * 1024 * 1024
+# --- NOVA CONFIGURAÇÃO DO CLOUDINARY ---
+# O Cloudinary vai ler a variável de ambiente CLOUDINARY_URL automaticamente
+# Certifica-te de que definiste a CLOUDINARY_URL=cloudinary://... no teu ambiente
+cloudinary.config(
+    secure=True  # Garante que as URLs retornadas sejam sempre HTTPS
+)
+logging.info("Cloudinary configurado.")
+
+# --- Upload Configuration (REMOVIDO) ---
+# A pasta UPLOAD_DIR não é mais necessária, pois tudo vai para a nuvem.
+# UPLOAD_DIR = ROOT_DIR / "uploads"
+# UPLOAD_DIR.mkdir(exist_ok=True)
+# ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp",
+#                       ".heic", ".heif", ".mp4", ".mov", ".avi", ".mkv"}
+# MAX_FILE_SIZE = 500 * 1024 * 1024
 
 # --- Security and Authentication Configuration ---
 SECRET_KEY = os.getenv("SECRET_KEY", "SUPER_SECRET_KEY_2004")
@@ -57,6 +70,8 @@ security = HTTPBearer()
 # ==============================================================================
 # Pydantic Models
 # ==============================================================================
+# (Nenhuma alteração nos modelos Pydantic, eles continuam iguais...)
+# ... (todo o teu código de Pydantic Models vai aqui) ...
 
 
 class UserRole:
@@ -366,6 +381,8 @@ class EmailMassa(BaseModel):
 # ==============================================================================
 # Helper Functions & Security
 # ==============================================================================
+# (Nenhuma alteração aqui, exceto a remoção da função de salvar local)
+# ... (todo o teu código de Helpers & Security vai aqui) ...
 
 
 def verify_password(plain_password, hashed_password):
@@ -438,6 +455,8 @@ async def get_parceiro_user(current_user: User = Depends(get_current_user)):
 # ==============================================================================
 # Email Service
 # ==============================================================================
+# (Nenhuma alteração aqui)
+# ... (todo o teu código do Email Service vai aqui) ...
 
 
 def create_praia_email_html(titulo: str, pre_cabecalho: str, nome_usuario: str, corpo_mensagem: str, texto_botao: Optional[str] = None, url_botao: Optional[str] = None) -> str:
@@ -523,6 +542,8 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
 # ==============================================================================
 # API Routes
 # ==============================================================================
+# (A maior parte das rotas continua igual. Apenas as rotas de upload e perfil de usuário foram alteradas)
+# ... (todo o teu código de API Routes vai aqui, com as exceções abaixo) ...
 
 
 @api_router.get("/")
@@ -836,6 +857,7 @@ async def get_perfil_publico(user_id: str):
             "role": user.get("role"), "imoveis": imoveis}
 
 
+# --- ROTA ATUALIZAR PERFIL MODIFICADA ---
 @api_router.put("/usuarios/{user_id}/perfil")
 async def atualizar_perfil(
     user_id: str,
@@ -849,28 +871,41 @@ async def atualizar_perfil(
     user = await db.users.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
     update_data = {}
     if descricao is not None:
         update_data["descricao"] = descricao
+
     if foto:
-        perfil_upload_dir = UPLOAD_DIR / "perfis"
-        perfil_upload_dir.mkdir(exist_ok=True)
-        file_ext = Path(foto.filename).suffix.lower()
-        if file_ext not in ALLOWED_EXTENSIONS:
-            raise HTTPException(
-                status_code=400, detail="Tipo de arquivo de foto não permitido.")
-        unique_filename = f"{user_id}_{uuid.uuid4()}{file_ext}"
-        file_path = perfil_upload_dir / unique_filename
+        # Fazer upload para o Cloudinary em vez de salvar localmente
         try:
-            async with aiofiles.open(file_path, "wb") as f:
-                contents = await foto.read()
-                await f.write(contents)
-            update_data["foto_url"] = f"/api/uploads/perfis/{unique_filename}"
+            # Gerar um ID público único para a foto de perfil
+            public_id = f"alt_ilhabela/perfis/{user_id}_{uuid.uuid4()}"
+
+            # Ler o conteúdo do ficheiro
+            contents = await foto.read()
+
+            # Fazer o upload para o Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                contents,
+                public_id=public_id,
+                folder="alt_ilhabela/perfis",  # Organiza numa pasta
+                overwrite=True,
+                resource_type="image"  # Define como imagem
+            )
+
+            # Salvar a URL segura retornada pelo Cloudinary
+            update_data["foto_url"] = upload_result.get("secure_url")
+
         except Exception as e:
+            logging.error(
+                f"Erro ao fazer upload da foto de perfil para o Cloudinary: {e}")
             raise HTTPException(
                 status_code=500, detail=f"Erro ao salvar a foto: {e}")
+
     if update_data:
         await db.users.update_one({"id": user_id}, {"$set": update_data})
+
     return {"message": "Perfil atualizado com sucesso"}
 
 
@@ -1027,7 +1062,7 @@ async def get_noticias(
     return [Noticia(**noticia) for noticia in noticias]
 
 
-@api_router.get("/noticias/{noticia_id}", response_model=Noticia)
+@api_VECEL_URL
 async def get_noticia(noticia_id: str):
     noticia = await db.noticias.find_one({"id": noticia_id, "publicada": True})
     if not noticia:
@@ -1342,6 +1377,7 @@ async def recusar_imovel(
     return {"message": "Imóvel recusado com sucesso"}
 
 
+# --- ROTA DE UPLOAD DE FOTO MODIFICADA ---
 @api_router.post("/upload/foto")
 async def upload_foto(
     file: UploadFile = File(...),
@@ -1349,40 +1385,71 @@ async def upload_foto(
 ):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Arquivo inválido")
-    file_ext = Path(file.filename).suffix.lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400,
-                            detail=f"Tipo de arquivo não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}")
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400, detail="Arquivo muito grande. Máximo 10MB.")
+
+    # Gerar um ID público único para o Cloudinary
     file_id = str(uuid.uuid4())
-    filename = f"{file_id}{file_ext}"
-    file_path = UPLOAD_DIR / filename
+
     try:
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(content)
+        # Ler o conteúdo do ficheiro
+        contents = await file.read()
+
+        # Fazer o upload para o Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            contents,
+            public_id=file_id,
+            folder="alt_ilhabela/fotos",  # Organiza numa pasta
+            resource_type="image"  # Garante que é tratado como imagem
+        )
+
+        # O "filename" que o frontend espera é o ID + extensão
+        # O Cloudinary pode converter o formato, por isso usamos o formato retornado
+        file_format = upload_result.get("format", "jpg")
+        filename = f"{file_id}.{file_format}"
+
+        # Retornamos a URL segura do Cloudinary e o "filename"
+        return {"url": upload_result.get("secure_url"), "filename": filename}
+
     except Exception as e:
+        logging.error(f"Erro ao fazer upload da foto para o Cloudinary: {e}")
         raise HTTPException(status_code=500, detail="Erro ao salvar arquivo")
-    file_url = f"/api/uploads/{filename}"
-    return {"url": file_url, "filename": filename}
 
 
+# --- ROTA DE APAGAR FOTO MODIFICADA ---
 @api_router.delete("/upload/foto/{filename}")
 async def delete_foto(
     filename: str,
     current_user: User = Depends(get_current_user)
 ):
-    file_path = UPLOAD_DIR / filename
     try:
-        if file_path.exists():
-            file_path.unlink()
+        # O "public_id" é o nome do ficheiro sem a extensão
+        # E precisamos de incluir a pasta
+        public_id = f"alt_ilhabela/fotos/{Path(filename).stem}"
+
+        # Apagar do Cloudinary
+        result = cloudinary.uploader.destroy(
+            public_id,
+            resource_type="image"  # Especifica que é uma imagem
+        )
+
+        # Se não for encontrado, tenta apagar como vídeo (para o /upload/video)
+        if result.get("result") == "not found":
+            public_id_video = f"alt_ilhabela/videos/{Path(filename).stem}"
+            result_video = cloudinary.uploader.destroy(
+                public_id_video,
+                resource_type="video"  # Especifica que é um vídeo
+            )
+            if result_video.get("result") == "not found":
+                logging.warning(
+                    f"Ficheiro {filename} (public_id: {public_id}) não encontrado no Cloudinary para apagar.")
+
         return {"message": "Foto removida com sucesso"}
+
     except Exception as e:
+        logging.error(f"Erro ao remover foto do Cloudinary: {e}")
         raise HTTPException(status_code=500, detail="Erro ao remover foto")
 
 
+# --- ROTA DE UPLOAD DE VÍDEO MODIFICADA ---
 @api_router.post("/upload/video")
 async def upload_video(
     file: UploadFile = File(...),
@@ -1390,25 +1457,32 @@ async def upload_video(
 ):
     if not file.filename:
         raise HTTPException(status_code=400, detail="Ficheiro inválido")
-    file_ext = Path(file.filename).suffix.lower()
-    if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400, detail=f"Tipo de ficheiro não permitido. Use: {', '.join(ALLOWED_EXTENSIONS)}")
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=400, detail=f"Ficheiro muito grande. Máximo {MAX_FILE_SIZE // 1024 // 1024}MB.")
+
+    # Gerar um ID público único
     file_id = str(uuid.uuid4())
-    filename = f"{file_id}{file_ext}"
-    file_path = UPLOAD_DIR / filename
+
     try:
-        async with aiofiles.open(file_path, 'wb') as f:
-            await f.write(content)
+        # Ler o conteúdo
+        contents = await file.read()
+
+        # Fazer o upload para o Cloudinary como vídeo
+        upload_result = cloudinary.uploader.upload(
+            contents,
+            public_id=file_id,
+            folder="alt_ilhabela/videos",
+            resource_type="video"  # MUITO IMPORTANTE: define como vídeo
+        )
+
+        # Construir o filename
+        file_format = upload_result.get("format", "mp4")
+        filename = f"{file_id}.{file_format}"
+
+        return {"url": upload_result.get("secure_url"), "filename": filename}
+
     except Exception as e:
+        logging.error(f"Erro ao fazer upload do vídeo para o Cloudinary: {e}")
         raise HTTPException(
             status_code=500, detail="Erro ao salvar o ficheiro")
-    file_url = f"/api/uploads/{filename}"
-    return {"url": file_url, "filename": filename}
 
 
 @api_router.put("/admin/imoveis/{imovel_id}/destaque")
@@ -1460,7 +1534,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+# --- REMOVIDO ---
+# A pasta /uploads não é mais servida estaticamente
+# app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 app.include_router(api_router)
 
