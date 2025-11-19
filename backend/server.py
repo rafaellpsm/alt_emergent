@@ -36,6 +36,12 @@ load_dotenv(ROOT_DIR / '.env')
 
 # --- Main App Creation (ONCE ONLY) ---
 app = FastAPI(title="ALT Ilhabela Portal", version="1.0.0")
+
+
+@app.get("/")
+async def health_check():
+    return {"status": "online", "message": "ALT Ilhabela Backend is running!"}
+
 api_router = APIRouter(prefix="/api")
 
 # --- Database Connection ---
@@ -690,7 +696,7 @@ async def recuperar_senha(dados_email: dict):
         nome_usuario=user.get('nome', 'Usuário'),
         corpo_mensagem=body_html_content,
         texto_botao="Acessar o Portal",
-        url_botao="https://temporada-portal.preview.emergentagent.com/login"
+        url_botao="https://alt-ilhabela.vercel.app/"
     )
     await send_email(to_email=email, subject="Recuperação de Senha",
                      body=body_plain, html_body=html_email)
@@ -1332,7 +1338,7 @@ async def aprovar_imovel(imovel_id: str, current_user: User = Depends(get_admin_
                 nome_usuario=owner.get('nome', 'Proprietário'),
                 corpo_mensagem=body_html_content,
                 texto_botao="Gerenciar Meus Imóveis",
-                url_botao="https://temporada-portal.preview.emergentagent.com/meus-imoveis"
+                url_botao="https://alt-ilhabela.vercel.app/meus-imoveis"
             )
             await send_email(to_email=owner["email"], subject=subject,
                              body=body_plain, html_body=html_email)
@@ -1368,7 +1374,7 @@ async def recusar_imovel(
                 nome_usuario=owner.get('nome', 'Proprietário'),
                 corpo_mensagem=body_html_content,
                 texto_botao="Acessar Meus Imóveis",
-                url_botao="https://temporada-portal.preview.emergentagent.com/meus-imoveis"
+                url_botao="https://alt-ilhabela.vercel.app/meus-imoveis"
             )
             await send_email(to_email=owner["email"], subject=subject,
                              body=body_plain, html_body=html_email)
