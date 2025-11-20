@@ -525,16 +525,24 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         if html_body:
             msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
         smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
         smtp_port = int(os.getenv('EMAIL_PORT', '587'))
         email_user = os.getenv('EMAIL_HOST_USER')
         email_password = os.getenv('EMAIL_HOST_PASSWORD')
+
         if not email_user or not email_password:
             logging.error(
                 "Email credentials not found in environment variables")
             return False
-        server = smtplib.SMTP(smtp_host, smtp_port)
-        server.starttls()
+
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.starttls()
+        # ----------------------------------------------------
+
         server.login(email_user, email_password)
         text = msg.as_string()
         server.sendmail(email_user, to_email, text)
@@ -548,8 +556,6 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
 # ==============================================================================
 # API Routes
 # ==============================================================================
-# (A maior parte das rotas continua igual. Apenas as rotas de upload e perfil de usuário foram alteradas)
-# ... (todo o teu código de API Routes vai aqui, com as exceções abaixo) ...
 
 
 @api_router.get("/")
