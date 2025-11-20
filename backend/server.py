@@ -527,30 +527,41 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
             msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
         smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-        smtp_port = int(os.getenv('EMAIL_PORT', '587'))
+        # Forçar conversão segura para int, com fallback para 465
+        try:
+            smtp_port = int(os.getenv('EMAIL_PORT', '465'))
+        except ValueError:
+            smtp_port = 465
+
         email_user = os.getenv('EMAIL_HOST_USER')
         email_password = os.getenv('EMAIL_HOST_PASSWORD')
 
         if not email_user or not email_password:
-            logging.error(
-                "Email credentials not found in environment variables")
+            logging.error("Credenciais de email não encontradas.")
             return False
 
+        logging.info(
+            f"Tentando enviar email para {to_email} via {smtp_host}:{smtp_port}...")
+
+        # Lógica de conexão robusta
         if smtp_port == 465:
+            # SSL direto (Recomendado para Gmail)
             server = smtplib.SMTP_SSL(smtp_host, smtp_port)
         else:
+            # TLS (Alternativo)
             server = smtplib.SMTP(smtp_host, smtp_port)
             server.starttls()
-        # ----------------------------------------------------
 
         server.login(email_user, email_password)
-        text = msg.as_string()
-        server.sendmail(email_user, to_email, text)
+        server.send_message(msg)
         server.quit()
-        logging.info(f"Email sent successfully to: {to_email}")
+        logging.info(f"Email enviado com sucesso para: {to_email}")
         return True
+
     except Exception as e:
-        logging.error(f"Error sending email: {str(e)}")
+        # Log detalhado do erro para sabermos o que se passa
+        logging.error(
+            f"ERRO CRÍTICO ao enviar email: {type(e).__name__}: {str(e)}")
         return False
 
 # ==============================================================================
@@ -1546,9 +1557,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- REMOVIDO ---
-# A pasta /uploads não é mais servida estaticamente
-# app.mount("/api/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 app.include_router(api_router)
 
