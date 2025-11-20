@@ -176,13 +176,9 @@ class Imovel(BaseModel):
     tipo: str
     regiao: str
     endereco_completo: str
-    preco_diaria: float
-    preco_semanal: Optional[float] = None
-    preco_mensal: Optional[float] = None
     num_quartos: int
     num_banheiros: int
     capacidade: int
-    area_m2: Optional[float] = None
     possui_piscina: bool = False
     possui_churrasqueira: bool = False
     possui_wifi: bool = True
@@ -218,13 +214,9 @@ class ImovelCreate(BaseModel):
     tipo: str
     regiao: str
     endereco_completo: str
-    preco_diaria: float
-    preco_semanal: Optional[float] = None
-    preco_mensal: Optional[float] = None
     num_quartos: int
     num_banheiros: int
     capacidade: int
-    area_m2: Optional[float] = None
     possui_piscina: bool = False
     possui_churrasqueira: bool = False
     possui_wifi: bool = True
@@ -249,13 +241,9 @@ class ImovelUpdate(BaseModel):
     tipo: Optional[str] = None
     regiao: Optional[str] = None
     endereco_completo: Optional[str] = None
-    preco_diaria: Optional[float] = None
-    preco_semanal: Optional[float] = None
-    preco_mensal: Optional[float] = None
     num_quartos: Optional[int] = None
     num_banheiros: Optional[int] = None
     capacidade: Optional[int] = None
-    area_m2: Optional[float] = None
     possui_piscina: Optional[bool] = None
     possui_churrasqueira: Optional[bool] = None
     possui_wifi: Optional[bool] = None
@@ -287,7 +275,6 @@ class PerfilParceiro(BaseModel):
     video_url: Optional[str] = None
     horario_funcionamento: Optional[str] = None
     servicos_oferecidos: Optional[str] = None
-    preco_medio: Optional[str] = None
     aceita_cartao: bool = True
     delivery: bool = False
     destaque: bool = False
@@ -772,7 +759,6 @@ async def submit_candidatura_associado(candidatura: CandidaturaAssociado):
 async def get_imoveis(
     tipo: Optional[str] = None,
     regiao: Optional[str] = None,
-    preco_max: Optional[float] = None,
     num_quartos: Optional[int] = None,
     possui_piscina: Optional[bool] = None,
     permite_pets: Optional[bool] = None
@@ -782,8 +768,6 @@ async def get_imoveis(
         query["tipo"] = tipo
     if regiao and regiao != 'todas':
         query["regiao"] = regiao
-    if preco_max is not None and preco_max > 0:
-        query["preco_diaria"] = {"$lte": preco_max}
     if num_quartos is not None and num_quartos > 0:
         query["num_quartos"] = {"$gte": num_quartos}
     if possui_piscina:

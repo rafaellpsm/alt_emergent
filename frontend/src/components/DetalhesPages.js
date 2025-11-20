@@ -111,7 +111,6 @@ export const ImovelDetalhePage = () => {
                     <p><strong>Quartos:</strong> {imovel.num_quartos}</p>
                     <p><strong>Banheiros:</strong> {imovel.num_banheiros}</p>
                     <p><strong>Capacidade:</strong> {imovel.capacidade} pessoas</p>
-                    {imovel.area_m2 && <p><strong>Área:</strong> {imovel.area_m2} m²</p>}
                   </div>
                 </Card>
                 <Card className="bg-gray-50 p-6">
@@ -126,9 +125,7 @@ export const ImovelDetalhePage = () => {
                   </div>
                 </Card>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary-teal">
-                    R$ {imovel.preco_diaria} <span className="text-lg font-normal text-gray-600">/ noite</span>
-                  </div>
+
                   <div className="flex space-x-2 mt-4 justify-center">
                     {imovel.link_booking && <Button asChild className="btn-primary"><a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">Reservar no Booking</a></Button>}
                     {imovel.link_airbnb && <Button asChild className="btn-primary"><a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">Reservar no Airbnb</a></Button>}

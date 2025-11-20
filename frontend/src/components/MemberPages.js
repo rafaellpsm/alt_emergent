@@ -25,7 +25,6 @@ export const TodosImoveisPage = () => {
   const [filtros, setFiltros] = useState({
     tipo: '',
     regiao: '',
-    preco_max: '',
     num_quartos: '',
     possui_piscina: false,
     permite_pets: false
@@ -65,7 +64,7 @@ export const TodosImoveisPage = () => {
 
   const handleClearFilters = () => {
     const clearedFilters = {
-      tipo: '', regiao: '', preco_max: '', num_quartos: '',
+      tipo: '', regiao: '', num_quartos: '',
       possui_piscina: false, permite_pets: false
     };
     setFiltros(clearedFilters);
@@ -89,10 +88,10 @@ export const TodosImoveisPage = () => {
                   <SelectTrigger className="form-input"><SelectValue placeholder="Todos" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="casa">Casa</SelectItem>
-                    <SelectItem value="apartamento">Apartamento</SelectItem>
-                    <SelectItem value="pousada">Pousada</SelectItem>
-                    <SelectItem value="chale">Chalé</SelectItem>
+                    <SelectItem value="casa">Casas</SelectItem>
+                    <SelectItem value="pousada">Pousadas</SelectItem>
+                    <SelectItem value="suite">Suítes</SelectItem>
+                    <SelectItem value="chale">Chalés</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -108,10 +107,6 @@ export const TodosImoveisPage = () => {
                     <SelectItem value="barra-velha">Barra Velha</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label className="form-label">Preço Máximo/dia</Label>
-                <Input type="number" className="form-input" placeholder="Ex: 500" value={filtros.preco_max} onChange={(e) => handleFilterChange('preco_max', e.target.value)} />
               </div>
               <div>
                 <Label className="form-label">Nº de Quartos (mín.)</Label>
@@ -163,7 +158,7 @@ export const TodosImoveisPage = () => {
                     <p className="text-gray-600 mb-4 line-clamp-2 text-sm">{imovel.descricao}</p>
                     <div className="flex justify-between items-center mb-4">
                       <div className="text-xs text-gray-500"><span>{imovel.num_quartos}q • {imovel.num_banheiros}b • {imovel.capacidade}p</span></div>
-                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria}/dia</div>
+
                     </div>
                   </CardContent>
                 </Card>
@@ -586,13 +581,9 @@ export const MeusImoveisPage = () => {
     tipo: '',
     regiao: '',
     endereco_completo: '',
-    preco_diaria: '',
-    preco_semanal: '',
-    preco_mensal: '',
     num_quartos: 1,
     num_banheiros: 1,
     capacidade: 2,
-    area_m2: '',
     possui_piscina: false,
     possui_churrasqueira: false,
     possui_wifi: true,
@@ -655,8 +646,8 @@ export const MeusImoveisPage = () => {
   const resetForm = () => {
     setFormData({
       titulo: '', descricao: '', tipo: '', regiao: '', endereco_completo: '',
-      preco_diaria: '', preco_semanal: '', preco_mensal: '', num_quartos: 1,
-      num_banheiros: 1, capacidade: 2, area_m2: '', possui_piscina: false,
+      num_quartos: 1,
+      num_banheiros: 1, capacidade: 2, possui_piscina: false,
       possui_churrasqueira: false, possui_wifi: true, permite_pets: false,
       tem_vista_mar: false, tem_ar_condicionado: false, link_booking: '',
       link_airbnb: '', fotos: [], video_url: ''
@@ -671,13 +662,9 @@ export const MeusImoveisPage = () => {
       tipo: imovel.tipo || '',
       regiao: imovel.regiao || '',
       endereco_completo: imovel.endereco_completo || '',
-      preco_diaria: imovel.preco_diaria || '',
-      preco_semanal: imovel.preco_semanal || '',
-      preco_mensal: imovel.preco_mensal || '',
       num_quartos: imovel.num_quartos || 1,
       num_banheiros: imovel.num_banheiros || 1,
       capacidade: imovel.capacidade || 2,
-      area_m2: imovel.area_m2 || '',
       possui_piscina: imovel.possui_piscina || false,
       possui_churrasqueira: imovel.possui_churrasqueira || false,
       possui_wifi: imovel.possui_wifi !== undefined ? imovel.possui_wifi : true,
@@ -1039,9 +1026,7 @@ export const MeusImoveisPage = () => {
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="text-lg font-bold text-primary-teal">
-                        R$ {imovel.preco_diaria}/dia
-                      </div>
+
                       <div className="text-sm text-gray-500">
                         {new Date(imovel.created_at).toLocaleDateString('pt-BR')}
                       </div>

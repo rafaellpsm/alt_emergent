@@ -509,7 +509,6 @@ const HomePage = () => {
                     <div className="p-4">
                       <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
                       <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
-                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria} <span className="text-sm font-normal text-gray-600">/ noite</span></div>
                     </div>
                   </div>
                 ))}

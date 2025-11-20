@@ -21,15 +21,16 @@ db = client[os.environ['DB_NAME']]
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 async def create_test_member():
     """Create a test member user"""
-    
+
     # Check if test member already exists
     existing_member = await db.users.find_one({"email": "membro@alt-ilhabela.com"})
     if existing_member:
         print("Test member already exists!")
         return existing_member['id']
-    
+
     # Member user data
     member_data = {
         "id": str(uuid.uuid4()),
@@ -41,25 +42,26 @@ async def create_test_member():
         "created_at": datetime.now(timezone.utc),
         "hashed_password": pwd_context.hash("membro123")
     }
-    
+
     # Insert member user
     await db.users.insert_one(member_data)
-    
+
     print("Test member created successfully!")
     print(f"Email: {member_data['email']}")
     print(f"Password: membro123")
-    
+
     return member_data['id']
+
 
 async def create_test_properties(member_id):
     """Create test properties for the member"""
-    
+
     # Check if properties already exist
     existing_props = await db.imoveis.count_documents({"proprietario_id": member_id})
     if existing_props > 0:
         print(f"Test properties already exist ({existing_props} properties)")
         return
-    
+
     # Sample properties
     properties = [
         {
@@ -69,13 +71,9 @@ async def create_test_properties(member_id):
             "tipo": "Casa",
             "regiao": "Centro",
             "endereco_completo": "Rua das Flores, 123 - Centro, Ilhabela/SP",
-            "preco_diaria": 350.0,
-            "preco_semanal": 2100.0,
-            "preco_mensal": 8000.0,
             "num_quartos": 3,
             "num_banheiros": 2,
             "capacidade": 6,
-            "area_m2": 120.0,
             "possui_piscina": True,
             "possui_churrasqueira": True,
             "possui_wifi": True,
@@ -98,12 +96,9 @@ async def create_test_properties(member_id):
             "tipo": "Apartamento",
             "regiao": "Centro",
             "endereco_completo": "Av. Brasil, 456 - Centro, Ilhabela/SP",
-            "preco_diaria": 200.0,
-            "preco_semanal": 1200.0,
             "num_quartos": 2,
             "num_banheiros": 1,
             "capacidade": 4,
-            "area_m2": 80.0,
             "possui_piscina": False,
             "possui_churrasqueira": False,
             "possui_wifi": True,
@@ -120,15 +115,16 @@ async def create_test_properties(member_id):
             "updated_at": datetime.now(timezone.utc)
         }
     ]
-    
+
     # Insert properties
     await db.imoveis.insert_many(properties)
-    
+
     print(f"Created {len(properties)} test properties")
+
 
 async def create_test_partner():
     """Create a test partner user and profile"""
-    
+
     # Check if test partner already exists
     existing_partner = await db.users.find_one({"email": "parceiro@alt-ilhabela.com"})
     if existing_partner:
@@ -146,21 +142,21 @@ async def create_test_partner():
             "created_at": datetime.now(timezone.utc),
             "hashed_password": pwd_context.hash("parceiro123")
         }
-        
+
         # Insert partner user
         await db.users.insert_one(partner_data)
         partner_id = partner_data['id']
-        
+
         print("Test partner created successfully!")
         print(f"Email: {partner_data['email']}")
         print(f"Password: parceiro123")
-    
+
     # Check if partner profile exists
     existing_profile = await db.perfis_parceiros.find_one({"user_id": partner_id})
     if existing_profile:
         print("Partner profile already exists!")
         return
-    
+
     # Partner profile data
     profile_data = {
         "id": str(uuid.uuid4()),
@@ -175,7 +171,6 @@ async def create_test_partner():
         "fotos": [],
         "horario_funcionamento": "12:00 às 22:00",
         "servicos": ["Almoço", "Jantar", "Frutos do Mar", "Vista para o Mar"],
-        "preco_medio": "R$ 80-120",
         "aceita_cartao": True,
         "delivery": False,
         "destaque": True,
@@ -183,25 +178,26 @@ async def create_test_partner():
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc)
     }
-    
+
     # Insert partner profile
     await db.perfis_parceiros.insert_one(profile_data)
-    
+
     print("Created test partner profile")
+
 
 async def main():
     try:
         print("Creating test data for Portal ALT Ilhabela...")
-        
+
         # Create test member and properties
         member_id = await create_test_member()
         await create_test_properties(member_id)
-        
+
         # Create test partner
         await create_test_partner()
-        
+
         print("\n✅ Test data creation completed!")
-        
+
     except Exception as e:
         print(f"Error: {e}")
     finally:

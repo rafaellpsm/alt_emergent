@@ -22,13 +22,14 @@ db = client[os.environ['DB_NAME']]
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 async def ensure_admin_user():
     """Ensure admin user exists"""
     existing_admin = await db.users.find_one({"email": "admin@alt-ilhabela.com"})
     if existing_admin:
         print("✅ Admin user already exists")
         return existing_admin['id']
-    
+
     admin_data = {
         "id": str(uuid.uuid4()),
         "email": "admin@alt-ilhabela.com",
@@ -39,10 +40,11 @@ async def ensure_admin_user():
         "created_at": datetime.now(timezone.utc),
         "hashed_password": pwd_context.hash("admin123")
     }
-    
+
     await db.users.insert_one(admin_data)
     print("🔧 Admin user created")
     return admin_data['id']
+
 
 async def create_membro_user():
     """Create member user with properties"""
@@ -50,7 +52,7 @@ async def create_membro_user():
     if existing_member:
         print("✅ Membro user already exists")
         return existing_member['id']
-    
+
     member_data = {
         "id": str(uuid.uuid4()),
         "email": "membro@alt-ilhabela.com",
@@ -62,13 +64,14 @@ async def create_membro_user():
         "created_at": datetime.now(timezone.utc),
         "hashed_password": pwd_context.hash("membro123")
     }
-    
+
     await db.users.insert_one(member_data)
     print("🏠 Membro user created")
-    
+
     # Create properties for member
     await create_member_properties(member_data['id'])
     return member_data['id']
+
 
 async def create_member_properties(member_id):
     """Create sample properties for member"""
@@ -77,7 +80,7 @@ async def create_member_properties(member_id):
     if existing_props > 0:
         print("✅ Member properties already exist")
         return
-    
+
     properties = [
         {
             "id": str(uuid.uuid4()),
@@ -86,13 +89,9 @@ async def create_member_properties(member_id):
             "tipo": "casa",
             "regiao": "curral",
             "endereco_completo": "Rua dos Corais, 45 - Praia do Curral, Ilhabela/SP - CEP: 11630-000",
-            "preco_diaria": 450.0,
-            "preco_semanal": 2800.0,
-            "preco_mensal": 10000.0,
             "num_quartos": 4,
             "num_banheiros": 3,
             "capacidade": 8,
-            "area_m2": 200.0,
             "possui_piscina": True,
             "possui_churrasqueira": True,
             "possui_wifi": True,
@@ -121,13 +120,9 @@ async def create_member_properties(member_id):
             "tipo": "apartamento",
             "regiao": "centro",
             "endereco_completo": "Av. Princesa Isabel, 234 - Centro, Ilhabela/SP - CEP: 11630-000",
-            "preco_diaria": 180.0,
-            "preco_semanal": 1100.0,
-            "preco_mensal": 4000.0,
             "num_quartos": 2,
             "num_banheiros": 1,
             "capacidade": 4,
-            "area_m2": 70.0,
             "possui_piscina": False,
             "possui_churrasqueira": False,
             "possui_wifi": True,
@@ -155,13 +150,9 @@ async def create_member_properties(member_id):
             "tipo": "chale",
             "regiao": "vila",
             "endereco_completo": "Rua do Bosque, 78 - Vila, Ilhabela/SP - CEP: 11630-000",
-            "preco_diaria": 280.0,
-            "preco_semanal": 1750.0,
-            "preco_mensal": 6500.0,
             "num_quartos": 3,
             "num_banheiros": 2,
             "capacidade": 6,
-            "area_m2": 120.0,
             "possui_piscina": False,
             "possui_churrasqueira": True,
             "possui_wifi": True,
@@ -183,9 +174,10 @@ async def create_member_properties(member_id):
             "updated_at": datetime.now(timezone.utc)
         }
     ]
-    
+
     await db.imoveis.insert_many(properties)
     print(f"🏡 Created {len(properties)} properties for member")
+
 
 async def create_parceiro_user():
     """Create partner user with business profile"""
@@ -204,14 +196,15 @@ async def create_parceiro_user():
             "created_at": datetime.now(timezone.utc),
             "hashed_password": pwd_context.hash("parceiro123")
         }
-        
+
         await db.users.insert_one(partner_data)
         partner_id = partner_data['id']
         print("🏢 Parceiro user created")
-    
+
     # Create partner profiles
     await create_partner_profiles(partner_id)
     return partner_id
+
 
 async def create_partner_profiles(partner_id):
     """Create multiple partner business profiles"""
@@ -219,7 +212,7 @@ async def create_partner_profiles(partner_id):
     if existing_profile:
         print("✅ Partner profiles already exist")
         return
-    
+
     profiles = [
         {
             "id": str(uuid.uuid4()),
@@ -240,7 +233,6 @@ async def create_partner_profiles(partner_id):
             "facebook": "https://facebook.com/restaurantevistamar",
             "whatsapp": "+55 12 99876-5432",
             "horario_funcionamento": "Terça a Domingo: 12h às 22h",
-            "preco_medio": "R$ 80-150 por pessoa",
             "aceita_cartao": True,
             "aceita_pix": True,
             "tem_estacionamento": True,
@@ -256,9 +248,10 @@ async def create_partner_profiles(partner_id):
             "updated_at": datetime.now(timezone.utc)
         }
     ]
-    
+
     await db.perfis_parceiros.insert_many(profiles)
     print(f"🍽️ Created {len(profiles)} partner profiles")
+
 
 async def create_associado_user():
     """Create associado user"""
@@ -266,7 +259,7 @@ async def create_associado_user():
     if existing_associado:
         print("✅ Associado user already exists")
         return existing_associado['id']
-    
+
     associado_data = {
         "id": str(uuid.uuid4()),
         "email": "associado@alt-ilhabela.com",
@@ -281,10 +274,11 @@ async def create_associado_user():
         "created_at": datetime.now(timezone.utc),
         "hashed_password": pwd_context.hash("associado123")
     }
-    
+
     await db.users.insert_one(associado_data)
     print("🤝 Associado user created")
     return associado_data['id']
+
 
 async def create_sample_news():
     """Create sample news articles"""
@@ -292,13 +286,13 @@ async def create_sample_news():
     if existing_news > 0:
         print("✅ Sample news already exist")
         return
-    
+
     # Get admin user for author
     admin_user = await db.users.find_one({"role": "admin"})
     if not admin_user:
         print("⚠️ No admin user found for news creation")
         return
-    
+
     news_articles = [
         {
             "id": str(uuid.uuid4()),
@@ -406,61 +400,62 @@ A ALT Ilhabela está desenvolvendo um selo de 'Propriedade Sustentável' para re
             "updated_at": datetime.now(timezone.utc)
         }
     ]
-    
+
     await db.noticias.insert_many(news_articles)
     print(f"📰 Created {len(news_articles)} news articles")
+
 
 async def main():
     try:
         print("🚀 Creating complete user ecosystem for Portal ALT Ilhabela...\n")
-        
+
         # Create all users
         admin_id = await ensure_admin_user()
         member_id = await create_membro_user()
         partner_id = await create_parceiro_user()
         associado_id = await create_associado_user()
-        
+
         # Create sample content
         await create_sample_news()
-        
+
         print("\n" + "="*60)
         print("🎉 COMPLETE USER ECOSYSTEM CREATED!")
         print("="*60)
-        
+
         print("\n👥 LOGIN CREDENTIALS:")
         print("-" * 40)
         print("🔧 ADMIN (Full Access)")
         print("   Email: admin@alt-ilhabela.com")
         print("   Senha: admin123")
         print("   Acesso: Dashboard, candidaturas, usuários, conteúdo, comunicação")
-        
+
         print("\n🏠 MEMBRO (Property Owner)")
         print("   Email: membro@alt-ilhabela.com")
         print("   Senha: membro123")
         print("   Acesso: Meus imóveis (3 propriedades), todos os imóveis, parceiros")
-        
+
         print("\n🏢 PARCEIRO (Business Partner)")
         print("   Email: parceiro@alt-ilhabela.com")
         print("   Senha: parceiro123")
         print("   Acesso: Meu perfil (restaurante), parceiros, notícias")
-        
+
         print("\n🤝 ASSOCIADO (Supporter)")
         print("   Email: associado@alt-ilhabela.com")
         print("   Senha: associado123")
         print("   Acesso: Início, parceiros, notícias")
-        
+
         print("\n📊 SAMPLE DATA CREATED:")
         print("-" * 40)
         print("🏡 3 Properties (Casa luxuosa, Apartamento, Chalé)")
         print("🍽️ 1 Restaurant Profile (Vista do Mar)")
         print("📰 3 News Articles (Regulamentação, Festival, Sustentabilidade)")
-        
+
         print("\n🌐 ACCESS URL:")
         print("-" * 40)
         print("https://temporada-portal.preview.emergentagent.com/login")
-        
+
         print("\n✅ Ready for complete testing!")
-        
+
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
