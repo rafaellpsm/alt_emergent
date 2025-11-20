@@ -22,6 +22,7 @@ import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteu
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 
 
@@ -660,5 +661,7 @@ const MainApp = () => (
     <Toaster />
   </AuthProvider>
 );
+
+<SpeedInsights />
 
 export default MainApp;
