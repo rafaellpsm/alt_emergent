@@ -754,11 +754,9 @@ export const MeusImoveisPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="casa">Casa</SelectItem>
-                        <SelectItem value="apartamento">Apartamento</SelectItem>
                         <SelectItem value="pousada">Pousada</SelectItem>
                         <SelectItem value="chale">Chalé</SelectItem>
-                        <SelectItem value="studio">Studio</SelectItem>
-                        <SelectItem value="cobertura">Cobertura</SelectItem>
+                        <SelectItem value="suite">Suíte</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -797,17 +795,7 @@ export const MeusImoveisPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="area_m2" className="form-label">Área (m²)</Label>
-                    <Input
-                      id="area_m2"
-                      type="number"
-                      className="form-input"
-                      value={formData.area_m2}
-                      onChange={(e) => setFormData({ ...formData, area_m2: e.target.value })}
-                      placeholder="120"
-                    />
-                  </div>
+
                 </div>
                 <div>
                   <Label htmlFor="endereco_completo" className="form-label">Endereço Completo *</Label>
@@ -819,45 +807,6 @@ export const MeusImoveisPage = () => {
                     required
                     placeholder="Rua, número, bairro, CEP..."
                   />
-                </div>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="preco_diaria" className="form-label">Preço por Dia (R$) *</Label>
-                    <Input
-                      id="preco_diaria"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_diaria}
-                      onChange={(e) => setFormData({ ...formData, preco_diaria: e.target.value })}
-                      required
-                      placeholder="250.00"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="preco_semanal" className="form-label">Preço por Semana (R$)</Label>
-                    <Input
-                      id="preco_semanal"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_semanal}
-                      onChange={(e) => setFormData({ ...formData, preco_semanal: e.target.value })}
-                      placeholder="1500.00"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="preco_mensal" className="form-label">Preço por Mês (R$)</Label>
-                    <Input
-                      id="preco_mensal"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_mensal}
-                      onChange={(e) => setFormData({ ...formData, preco_mensal: e.target.value })}
-                      placeholder="5000.00"
-                    />
-                  </div>
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>

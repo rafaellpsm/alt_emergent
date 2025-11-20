@@ -417,9 +417,9 @@ const HomePage = () => {
     <div className="bg-gray-50">
       <HomeHeader />
       <section className="relative h-screen flex items-center justify-center text-center text-white overflow-hidden pt-20">
-        <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://images.alphacoders.com/103/1031883.jpg">
+        {/* <video autoPlay loop muted playsInline className="absolute top-0 left-0 w-full h-full object-cover" poster="https://images.alphacoders.com/103/1031883.jpg">
           <source src="https://videos.pexels.com/video-files/4433435/4433435-hd_1920_1080_25fps.mp4" type="video/mp4" />
-        </video>
+        </video> */}
         <div className="absolute top-0 left-0 w-full h-full bg-black/50"></div>
         <div className="relative z-10 p-4">
           <h1 className="text-5xl md:text-7xl font-extrabold mb-4 animate-fade-in-up">ALT Ilhabela</h1>
