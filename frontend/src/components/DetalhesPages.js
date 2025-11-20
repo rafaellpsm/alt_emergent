@@ -3,64 +3,116 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
-import { ArrowLeft, X, ArrowRight } from 'lucide-react';
+import { ArrowLeft, X, ArrowRight, ChevronLeft, ChevronRight, MapPin, Home, Users, Bed, Bath, Maximize } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Componente de Galeria Simples
-const ImageGallery = ({ photos, title }) => {
-  const [selectedImage, setSelectedImage] = useState(null);
+// --- COMPONENTE CARROSSEL ATRATIVO ---
+const ModernCarousel = ({ photos, title }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   if (!photos || photos.length === 0) return null;
 
+  const nextSlide = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
+  };
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
   return (
-    <div className="space-y-4 mb-8">
-      {/* Foto Principal (Capa) */}
+    <div className="mb-8 select-none">
+      {/* Imagem Principal */}
       <div
-        className="rounded-lg overflow-hidden shadow-lg cursor-pointer hover:opacity-95 transition-opacity aspect-video bg-gray-100"
-        onClick={() => setSelectedImage(photos[0])}
+        className="relative aspect-video bg-gray-200 rounded-2xl overflow-hidden shadow-md group cursor-zoom-in"
+        onClick={() => setIsLightboxOpen(true)}
       >
-        <img src={photos[0]} alt={`${title} - Capa`} className="w-full h-full object-cover" />
+        <img
+          src={photos[currentIndex]}
+          alt={`${title} - Foto ${currentIndex + 1}`}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        {/* Setas de Navegação (só aparecem se houver mais de 1 foto) */}
+        {photos.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </>
+        )}
+
+        {/* Contador */}
+        <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+          {currentIndex + 1} / {photos.length}
+        </div>
       </div>
 
-      {/* Grid das outras fotos */}
+      {/* Miniaturas (Thumbnails) */}
       {photos.length > 1 && (
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-          {photos.slice(1).map((photo, index) => (
-            <div
+        <div className="flex gap-2 mt-4 overflow-x-auto pb-2 snap-x">
+          {photos.map((photo, index) => (
+            <button
               key={index}
-              className="rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity aspect-video bg-gray-100"
-              onClick={() => setSelectedImage(photo)}
+              onClick={() => goToSlide(index)}
+              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all snap-start ${currentIndex === index ? 'border-primary-teal ring-2 ring-primary-teal/30' : 'border-transparent opacity-70 hover:opacity-100'
+                }`}
             >
-              <img src={photo} alt={`${title} - ${index + 2}`} className="w-full h-full object-cover" />
-            </div>
+              <img src={photo} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+            </button>
           ))}
         </div>
       )}
 
-      {/* Modal de Visualização (Lightbox) */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedImage(null)}>
-          <button className="absolute top-4 right-4 text-white hover:text-gray-300">
-            <X className="h-8 w-8" />
+      {/* Lightbox (Tela Cheia) */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center" onClick={() => setIsLightboxOpen(false)}>
+          <button className="absolute top-6 right-6 text-white/70 hover:text-white p-2">
+            <X className="h-10 w-10" />
           </button>
-          <img
-            src={selectedImage}
-            alt="Visualização em tela cheia"
-            className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
-            onClick={(e) => e.stopPropagation()} // Evita fechar se clicar na imagem
-          />
+
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <img
+              src={photos[currentIndex]}
+              alt="Fullscreen"
+              className="max-w-full max-h-full object-contain rounded-md shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            {photos.length > 1 && (
+              <>
+                <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4"><ChevronLeft className="h-12 w-12" /></button>
+                <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4"><ChevronRight className="h-12 w-12" /></button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// Property Details Page (PUBLIC)
+// --- PÁGINA DE DETALHE DO IMÓVEL ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -80,135 +132,144 @@ export const ImovelDetalhePage = () => {
           setAnfitriao(perfilRes.data);
         }
       } catch (error) {
-        toast({
-          title: "Erro ao carregar imóvel",
-          description: "Imóvel não encontrado ou indisponível.",
-          variant: "destructive",
-        });
+        toast({ title: "Erro", description: "Imóvel não encontrado.", variant: "destructive" });
       }
       setLoading(false);
     };
-
     fetchImovel();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
-
-  if (!imovel) {
-    return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl">Imóvel não encontrado</h1>
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
+  if (!imovel) return <div className="text-center py-20 text-2xl text-gray-400">Imóvel não encontrado</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
-        <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      {/* Cabeçalho Simples */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+        </div>
+      </div>
 
-        <Card className="card-custom">
-          <CardHeader>
-            <CardTitle className="text-3xl text-primary-gray">{imovel.titulo}</CardTitle>
-            <CardDescription className="flex items-center space-x-2">
-              <Badge className="badge-teal">{imovel.tipo}</Badge>
-              <span>•</span>
-              <span>{imovel.regiao}</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                {/* GALERIA DE FOTOS SUBSTITUI A IMAGEM ÚNICA */}
-                <ImageGallery photos={imovel.fotos} title={imovel.titulo} />
-
-                {imovel.video_url && (
-                  <div className="my-8">
-                    <h2 className="text-2xl font-bold text-primary-gray mb-4">Vídeo do Imóvel</h2>
-                    <div className="aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg bg-black">
-                      <video
-                        src={imovel.video_url}
-                        controls
-                        className="w-full h-full object-contain"
-                        poster={imovel.fotos[0] || ''}
-                      >
-                        Seu navegador não suporta o player de vídeo.
-                      </video>
-                    </div>
-                  </div>
-                )}
-                <h3 className="font-semibold text-xl mb-4 text-primary-gray">Sobre este lugar</h3>
-                <div className="prose markdown-content text-gray-700">
-                  <ReactMarkdown>{imovel.descricao}</ReactMarkdown>
-                </div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Título e Localização */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="badge-teal">{imovel.tipo}</Badge>
+                {imovel.destaque && <Badge className="bg-yellow-400 text-yellow-900 hover:bg-yellow-500">Destaque</Badge>}
               </div>
-              <div className="space-y-6">
-                <Card className="bg-gray-50 p-6 border-none shadow-inner">
-                  <h3 className="font-semibold text-lg mb-4 text-primary-gray">Detalhes do Imóvel</h3>
-                  <div className="grid grid-cols-2 gap-4 text-gray-700">
-                    <p><strong>Quartos:</strong> {imovel.num_quartos}</p>
-                    <p><strong>Banheiros:</strong> {imovel.num_banheiros}</p>
-                    <p><strong>Capacidade:</strong> {imovel.capacidade} pessoas</p>
-                    {imovel.area_m2 && <p><strong>Área:</strong> {imovel.area_m2} m²</p>}
-                  </div>
-                </Card>
-                <Card className="bg-gray-50 p-6 border-none shadow-inner">
-                  <h3 className="font-semibold text-lg mb-4 text-primary-gray">Comodidades</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {imovel.possui_piscina && <Badge className="badge-beige">Piscina</Badge>}
-                    {imovel.possui_churrasqueira && <Badge className="badge-beige">Churrasqueira</Badge>}
-                    {imovel.possui_wifi && <Badge className="badge-beige">Wi-Fi</Badge>}
-                    {imovel.permite_pets && <Badge className="badge-beige">Aceita Pets</Badge>}
-                    {imovel.tem_vista_mar && <Badge className="badge-beige">Vista para o Mar</Badge>}
-                    {imovel.tem_ar_condicionado && <Badge className="badge-beige">Ar Condicionado</Badge>}
-                  </div>
-                </Card>
-                <div className="text-center p-6 bg-primary-teal/5 rounded-lg border border-primary-teal/20">
-                  <div className="text-3xl font-bold text-primary-teal">
-                    R$ {imovel.preco_diaria} <span className="text-lg font-normal text-gray-600">/ noite</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-6">
-                    {imovel.link_booking && <Button asChild className="w-full btn-primary"><a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">Reservar no Booking</a></Button>}
-                    {imovel.link_airbnb && <Button asChild variant="outline" className="w-full border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white"><a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">Reservar no Airbnb</a></Button>}
-                  </div>
-                </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-primary-gray">{imovel.titulo}</h1>
+              <div className="flex items-center text-gray-500 mt-2">
+                <MapPin className="h-4 w-4 mr-1" />
+                {imovel.regiao}
+                <span className="mx-2">•</span>
+                <span>{imovel.endereco_completo ? imovel.endereco_completo.split(',')[0] : ''}</span>
               </div>
             </div>
-            {anfitriao && (
-              <Card className="bg-white border shadow-sm p-6 mt-8">
-                <h3 className="font-semibold text-lg mb-4 text-primary-gray">Anfitrião</h3>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-xl font-bold text-primary-gray">{anfitriao.nome}</p>
-                    {anfitriao.telefone && <p className="text-gray-600 mt-1">📞 {anfitriao.telefone}</p>}
-                  </div>
-                  <Button
-                    onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}
-                    variant="ghost"
-                    className="mt-4 sm:mt-0 hover:bg-gray-100"
-                  >
-                    Ver perfil público <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-10">
+          {/* COLUNA ESQUERDA (Fotos e Descrição) - Ocupa 2/3 */}
+          <div className="lg:col-span-2">
+            <ModernCarousel photos={imovel.fotos} title={imovel.titulo} />
+
+            {/* Informações Rápidas (Ícones) */}
+            <div className="flex flex-wrap gap-6 py-6 border-y border-gray-100 mb-8 text-gray-600">
+              <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary-teal" /> <span>{imovel.capacidade} Hóspedes</span></div>
+              <div className="flex items-center gap-2"><Bed className="h-5 w-5 text-primary-teal" /> <span>{imovel.num_quartos} Quartos</span></div>
+              <div className="flex items-center gap-2"><Bath className="h-5 w-5 text-primary-teal" /> <span>{imovel.num_banheiros} Banheiros</span></div>
+              {imovel.area_m2 && <div className="flex items-center gap-2"><Maximize className="h-5 w-5 text-primary-teal" /> <span>{imovel.area_m2} m²</span></div>}
+            </div>
+
+            <div className="prose max-w-none text-gray-700 leading-relaxed">
+              <h3 className="text-xl font-bold text-primary-gray mb-4">Sobre este lugar</h3>
+              <ReactMarkdown>{imovel.descricao}</ReactMarkdown>
+            </div>
+
+            {imovel.video_url && (
+              <div className="mt-10">
+                <h3 className="text-xl font-bold text-primary-gray mb-4">Vídeo do Imóvel</h3>
+                <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-black">
+                  <video src={imovel.video_url} controls className="w-full h-full object-contain" poster={imovel.fotos[0] || ''}>
+                    Seu navegador não suporta o player de vídeo.
+                  </video>
                 </div>
-              </Card>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* COLUNA DIREITA (Sidebar Sticky) - Ocupa 1/3 */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+
+              {/* Card de Ação (Reservar) */}
+              <Card className="border-none shadow-lg rounded-2xl overflow-hidden">
+                <CardContent className="p-6 bg-white">
+                  <h3 className="text-lg font-bold text-primary-gray mb-6">Gostou deste imóvel?</h3>
+
+                  <div className="flex flex-col gap-3">
+                    {imovel.link_booking && (
+                      <Button asChild className="w-full btn-primary py-6 text-lg shadow-md transition-transform hover:scale-[1.02]">
+                        <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">Reservar no Booking</a>
+                      </Button>
+                    )}
+                    {imovel.link_airbnb && (
+                      <Button asChild variant="outline" className="w-full py-6 text-lg border-2 border-[#FF5A5F] text-[#FF5A5F] hover:bg-[#FF5A5F] hover:text-white transition-all">
+                        <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">Reservar no Airbnb</a>
+                      </Button>
+                    )}
+                    {!imovel.link_booking && !imovel.link_airbnb && (
+                      <div className="text-center text-gray-500 italic p-4 bg-gray-50 rounded-lg">
+                        Links de reserva não disponíveis.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card de Comodidades */}
+              <Card className="border shadow-sm rounded-2xl">
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-primary-gray mb-4">O que este lugar oferece</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {imovel.possui_piscina && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🏊 Piscina</Badge>}
+                    {imovel.possui_churrasqueira && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🍖 Churrasqueira</Badge>}
+                    {imovel.possui_wifi && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">📶 Wi-Fi</Badge>}
+                    {imovel.permite_pets && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🐾 Pet Friendly</Badge>}
+                    {imovel.tem_vista_mar && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🌊 Vista Mar</Badge>}
+                    {imovel.tem_ar_condicionado && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">❄️ Ar Condicionado</Badge>}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card do Anfitrião */}
+              {anfitriao && (
+                <div className="bg-white rounded-2xl border shadow-sm p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                  <div className="h-12 w-12 rounded-full bg-primary-teal/10 flex items-center justify-center text-primary-teal font-bold text-xl">
+                    {anfitriao.nome.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500">Anfitrião</p>
+                    <p className="font-bold text-primary-gray text-lg">{anfitriao.nome}</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400" />
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-
-// Partner Details Page (PUBLIC)
+// --- PÁGINA DE DETALHE DO PARCEIRO (Mesmo estilo visual) ---
 export const ParceiroDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -221,106 +282,97 @@ export const ParceiroDetalhePage = () => {
         const response = await axios.get(`${API}/parceiros/${id}`);
         setParceiro(response.data);
       } catch (error) {
-        toast({
-          title: "Erro ao carregar parceiro",
-          description: "Parceiro não encontrado ou indisponível.",
-          variant: "destructive",
-        });
+        toast({ title: "Erro", description: "Parceiro não encontrado.", variant: "destructive" });
       }
       setLoading(false);
     };
-
     fetchParceiro();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
-
-  if (!parceiro) {
-    return (
-      <div className="text-center py-20">
-        <h1 className="text-2xl">Parceiro não encontrado</h1>
-      </div>
-    );
-  }
+  if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
+  if (!parceiro) return <div className="text-center py-20 text-2xl text-gray-400">Parceiro não encontrado</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
-        <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+        </div>
+      </div>
 
-        <Card className="card-custom">
-          <CardHeader>
-            <div className="flex justify-between items-start flex-wrap gap-4">
-              <div>
-                <CardTitle className="text-3xl text-primary-gray">{parceiro.nome_empresa}</CardTitle>
-                <CardDescription className="mt-2">
-                  <Badge className="badge-teal text-sm px-3 py-1">{parceiro.categoria}</Badge>
-                </CardDescription>
-              </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Badge className="badge-teal mb-2">{parceiro.categoria}</Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-primary-gray">{parceiro.nome_empresa}</h1>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-2">
+            <ModernCarousel photos={parceiro.fotos} title={parceiro.nome_empresa} />
+
+            <div className="prose max-w-none text-gray-700 leading-relaxed bg-white p-6 rounded-2xl shadow-sm">
+              <h3 className="text-xl font-bold text-primary-gray mb-4">Sobre</h3>
+              <ReactMarkdown>{parceiro.descricao}</ReactMarkdown>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                {/* GALERIA DE FOTOS TAMBÉM PARA PARCEIROS */}
-                <ImageGallery photos={parceiro.fotos} title={parceiro.nome_empresa} />
 
-                {parceiro.video_url && (
-                  <div className="my-8">
-                    <h2 className="text-2xl font-bold text-primary-gray mb-4">Vídeo de Apresentação</h2>
-                    <div className="aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg bg-black">
-                      <video
-                        src={parceiro.video_url}
-                        controls
-                        className="w-full h-full object-contain"
-                      >
-                        Seu navegador não suporta o player de vídeo.
-                      </video>
+            {parceiro.video_url && (
+              <div className="mt-8">
+                <h3 className="text-xl font-bold text-primary-gray mb-4">Apresentação em Vídeo</h3>
+                <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-black">
+                  <video src={parceiro.video_url} controls className="w-full h-full object-contain">
+                    Seu navegador não suporta o player de vídeo.
+                  </video>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              <Card className="border-none shadow-lg rounded-2xl overflow-hidden bg-white">
+                <CardContent className="p-6 space-y-6">
+                  <h3 className="text-lg font-bold text-primary-gray border-b pb-2">Contatos e Localização</h3>
+
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-teal-50 p-2 rounded-lg"><MapPin className="h-5 w-5 text-primary-teal" /></div>
+                      <div><p className="font-semibold text-sm text-gray-500">Endereço</p><p className="text-gray-800">{parceiro.endereco || "Não informado"}</p></div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="bg-teal-50 p-2 rounded-lg"><Users className="h-5 w-5 text-primary-teal" /></div>
+                      <div><p className="font-semibold text-sm text-gray-500">Telefone</p><p className="text-gray-800">{parceiro.telefone}</p></div>
+                    </div>
+                    {parceiro.horario_funcionamento && (
+                      <div className="flex items-start gap-3">
+                        <div className="bg-teal-50 p-2 rounded-lg"><Home className="h-5 w-5 text-primary-teal" /></div>
+                        <div><p className="font-semibold text-sm text-gray-500">Horário</p><p className="text-gray-800">{parceiro.horario_funcionamento}</p></div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid gap-3 pt-4">
+                    {parceiro.website && <Button asChild className="w-full btn-primary"><a href={parceiro.website} target="_blank" rel="noopener noreferrer">Visitar Site Oficial</a></Button>}
+                    <div className="flex gap-3">
+                      {parceiro.instagram && <Button asChild variant="outline" className="flex-1"><a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
+                      {parceiro.facebook && <Button asChild variant="outline" className="flex-1"><a href={parceiro.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
                     </div>
                   </div>
-                )}
-                <h3 className="font-semibold text-xl mb-4 text-primary-gray">Sobre</h3>
-                <div className="prose markdown-content text-gray-700">
-                  <ReactMarkdown>{parceiro.descricao}</ReactMarkdown>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <Card className="bg-gray-50 p-6 border-none shadow-inner">
-                  <h3 className="font-semibold text-lg mb-4 text-primary-gray">Informações de Contato</h3>
-                  <div className="space-y-4 text-gray-700">
-                    <p className="flex items-center gap-2"><span className="font-bold min-w-[80px]">Telefone:</span> {parceiro.telefone}</p>
-                    {parceiro.whatsapp && <p className="flex items-center gap-2"><span className="font-bold min-w-[80px]">WhatsApp:</span> {parceiro.whatsapp}</p>}
-                    {parceiro.endereco && <p className="flex items-start gap-2"><span className="font-bold min-w-[80px]">Endereço:</span> <span>{parceiro.endereco}</span></p>}
-                    {parceiro.horario_funcionamento && <p className="flex items-start gap-2"><span className="font-bold min-w-[80px]">Horário:</span> <span>{parceiro.horario_funcionamento}</span></p>}
-                  </div>
+                </CardContent>
+              </Card>
+
+              {parceiro.servicos_oferecidos && (
+                <Card className="border-none shadow-sm rounded-2xl bg-teal-50/50">
+                  <CardContent className="p-6">
+                    <h3 className="font-bold text-primary-teal mb-2">Serviços</h3>
+                    <p className="text-gray-700 text-sm">{parceiro.servicos_oferecidos}</p>
+                  </CardContent>
                 </Card>
-
-                {parceiro.servicos_oferecidos && (
-                  <Card className="bg-gray-50 p-6 border-none shadow-inner">
-                    <h3 className="font-semibold text-lg mb-4 text-primary-gray">Serviços Oferecidos</h3>
-                    <p className="text-gray-700 whitespace-pre-line">{parceiro.servicos_oferecidos}</p>
-                  </Card>
-                )}
-
-                <div className="flex flex-col gap-3">
-                  {parceiro.website && <Button asChild className="w-full btn-primary"><a href={parceiro.website} target="_blank" rel="noopener noreferrer">Visitar Website</a></Button>}
-                  <div className="flex gap-3">
-                    {parceiro.instagram && <Button asChild variant="outline" className="flex-1"><a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
-                    {parceiro.facebook && <Button asChild variant="outline" className="flex-1"><a href={parceiro.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
