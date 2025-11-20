@@ -1,180 +1,134 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { Label } from './ui/label';
+import { X, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-export const PhotoUpload = ({ photos = [], onPhotosChange, maxPhotos = 10, label = "Fotos" }) => {
+const PhotoUpload = ({ photos = [], onPhotosChange, maxPhotos = 10, label = "Fotos" }) => {
   const [uploading, setUploading] = useState(false);
 
-  const handleFileUpload = async (event) => {
-    const files = Array.from(event.target.files);
-    
-    if (files.length + photos.length > maxPhotos) {
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    if (photos.length + files.length > maxPhotos) {
       toast({
         title: "Limite excedido",
-        description: `Máximo ${maxPhotos} fotos permitidas`,
+        description: `Você só pode enviar até ${maxPhotos} fotos.`,
         variant: "destructive",
       });
       return;
     }
 
     setUploading(true);
+    const newPhotos = [...photos];
 
     try {
-      const uploadPromises = files.map(async (file) => {
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-        if (!allowedTypes.includes(file.type)) {
-          throw new Error(`Tipo de arquivo não permitido: ${file.name}`);
-        }
-
-        // Validate file size (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-          throw new Error(`Arquivo muito grande: ${file.name}. Máximo 10MB.`);
-        }
-
+      // Upload de cada arquivo sequencialmente
+      for (const file of files) {
         const formData = new FormData();
         formData.append('file', file);
 
         const response = await axios.post(`${API}/upload/foto`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-          },
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
 
-        return `${BACKEND_URL}${response.data.url}`;
-      });
+        // --- AQUI ESTAVA O PROBLEMA ---
+        // Antes pegávamos response.data.filename
+        // Agora pegamos response.data.url (O link do Cloudinary)
+        if (response.data && response.data.url) {
+          newPhotos.push(response.data.url);
+        }
+      }
 
-      const uploadedUrls = await Promise.all(uploadPromises);
-      const newPhotos = [...photos, ...uploadedUrls];
       onPhotosChange(newPhotos);
+      toast({ title: "Fotos enviadas com sucesso!" });
 
-      toast({
-        title: "Fotos enviadas com sucesso!",
-        description: `${uploadedUrls.length} foto(s) adicionada(s)`,
-      });
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Erro no upload:", error);
       toast({
         title: "Erro no upload",
-        description: error.message || "Erro ao enviar fotos. Tente novamente.",
+        description: "Não foi possível enviar algumas imagens.",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
-      // Clear file input
-      event.target.value = '';
+      // Limpa o input para permitir selecionar o mesmo arquivo novamente se necessário
+      e.target.value = '';
     }
   };
 
-  const removePhoto = async (index) => {
+  const handleRemovePhoto = async (indexToRemove) => {
+    const photoUrl = photos[indexToRemove];
+
+    // Tenta remover do backend (opcional, mas limpa o Cloudinary)
     try {
-      const photoUrl = photos[index];
-      
-      // Extract filename from URL
-      const urlParts = photoUrl.split('/');
-      const filename = urlParts[urlParts.length - 1];
-      
-      // Delete from server
-      if (filename && filename !== 'undefined') {
-        await axios.delete(`${API}/upload/foto/${filename}`);
-      }
-      
-      // Update local state
-      const newPhotos = photos.filter((_, i) => i !== index);
-      onPhotosChange(newPhotos);
-      
-      toast({
-        title: "Foto removida",
+      // Extrai o nome do arquivo da URL para enviar ao backend
+      // Ex: .../alt_ilhabela/fotos/abc.jpg -> abc.jpg
+      const filename = photoUrl.split('/').pop();
+      await axios.delete(`${API}/upload/foto/${filename}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast({
-        title: "Erro ao remover foto",
-        description: "Tente novamente.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.warn("Não foi possível apagar do servidor, removendo apenas da lista.");
     }
+
+    const newPhotos = photos.filter((_, index) => index !== indexToRemove);
+    onPhotosChange(newPhotos);
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <label className="form-label">{label}</label>
-        <span className="text-sm text-gray-500">({photos.length}/{maxPhotos})</span>
-      </div>
-      
-      {/* Upload Button */}
-      <div>
-        <input
-          type="file"
-          multiple
-          accept=".jpg,.jpeg,.png,.webp,.heic,.heif"
-          onChange={handleFileUpload}
-          disabled={uploading || photos.length >= maxPhotos}
-          className="hidden"
-          id="photo-upload"
-        />
-        <label htmlFor="photo-upload">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full cursor-pointer"
-            disabled={uploading || photos.length >= maxPhotos}
-            asChild
-          >
-            <span>
+      <Label className="form-label">{label} ({photos.length}/{maxPhotos})</Label>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        {photos.map((photo, index) => (
+          <div key={index} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
+            <img
+              src={photo}
+              alt={`Foto ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => handleRemovePhoto(index)}
+              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+              title="Remover foto"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+
+        {photos.length < maxPhotos && (
+          <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors h-32 md:h-auto aspect-video">
+            <div className="flex flex-col items-center text-gray-500">
               {uploading ? (
-                <>
-                  <div className="spinner w-4 h-4 mr-2"></div>
-                  Enviando...
-                </>
+                <div className="spinner w-6 h-6 mb-2"></div>
               ) : (
-                `Adicionar Fotos (${maxPhotos - photos.length} restantes)`
+                <Upload className="h-8 w-8 mb-2" />
               )}
-            </span>
-          </Button>
-        </label>
-      </div>
-
-      {/* Photo Grid */}
-      {photos.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photos.map((photo, index) => (
-            <Card key={index} className="relative overflow-hidden">
-              <div className="aspect-square">
-                <img
-                  src={photo}
-                  alt={`Foto ${index + 1}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y5ZmFmYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNHB4IiBmaWxsPSIjOWNhM2FmIj5JbWFnZW0gTsOjbyBFbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg==';
-                  }}
-                />
-              </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2 w-6 h-6 p-0"
-                onClick={() => removePhoto(index)}
-                type="button"
-              >
-                ×
-              </Button>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Upload Tips */}
-      <div className="text-xs text-gray-500">
-        <p>• Formatos aceitos: JPG, PNG, WebP, HEIC</p>
-        <p>• Tamanho máximo por arquivo: 10MB</p>
-        <p>• Máximo {maxPhotos} fotos</p>
+              <span className="text-xs text-center px-2">
+                {uploading ? "Enviando..." : "Adicionar Fotos"}
+              </span>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploading}
+            />
+          </label>
+        )}
       </div>
     </div>
   );

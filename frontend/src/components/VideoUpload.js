@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
+import { Label } from './ui/label';
+import { X, Upload, Video } from 'lucide-react';
 import { toast } from '../hooks/use-toast';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -9,23 +11,15 @@ const API = `${BACKEND_URL}/api`;
 export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
     const [uploading, setUploading] = useState(false);
 
-    const handleFileUpload = async (event) => {
-        const file = event.target.files[0];
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
         if (!file) return;
 
-        const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-        if (!allowedTypes.includes(file.type)) {
+        // Limite de tamanho (ex: 100MB)
+        if (file.size > 100 * 1024 * 1024) {
             toast({
-                title: "Tipo de ficheiro não permitido",
-                description: "Por favor, envie um vídeo MP4, MOV, AVI ou MKV.",
-                variant: "destructive",
-            });
-            return;
-        }
-        if (file.size > 500 * 1024 * 1024) { // 500MB
-            toast({
-                title: "Ficheiro muito grande",
-                description: "O vídeo não pode exceder 500MB.",
+                title: "Arquivo muito grande",
+                description: "O vídeo deve ter no máximo 100MB.",
                 variant: "destructive",
             });
             return;
@@ -37,68 +31,77 @@ export const VideoUpload = ({ videoUrl, onVideoChange, label = "Vídeo" }) => {
 
         try {
             const response = await axios.post(`${API}/upload/video`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
-            const newVideoUrl = `${BACKEND_URL}${response.data.url}`;
-            onVideoChange(newVideoUrl);
 
-            toast({ title: "Vídeo enviado com sucesso!" });
+            // CORREÇÃO: Usar a URL completa retornada pelo Cloudinary
+            if (response.data && response.data.url) {
+                onVideoChange(response.data.url);
+                toast({ title: "Vídeo enviado com sucesso!" });
+            }
+
         } catch (error) {
+            console.error("Erro no upload:", error);
             toast({
-                title: "Erro no upload do vídeo",
-                description: error.response?.data?.detail || "Tente novamente.",
+                title: "Erro no upload",
+                description: "Falha ao enviar o vídeo. Tente um arquivo menor.",
                 variant: "destructive",
             });
         } finally {
             setUploading(false);
-            event.target.value = '';
+            e.target.value = '';
         }
     };
 
-    const removeVideo = () => {
+    const handleRemoveVideo = () => {
         onVideoChange('');
-        toast({ title: "Vídeo removido" });
     };
 
     return (
         <div className="space-y-4">
-            <label className="form-label">{label}</label>
+            <Label className="form-label">{label}</Label>
 
-            {!videoUrl ? (
-                <div>
-                    <input
-                        type="file"
-                        accept=".mp4,.mov,.avi,.mkv"
-                        onChange={handleFileUpload}
-                        disabled={uploading}
-                        className="hidden"
-                        id="video-upload"
+            {videoUrl ? (
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden border aspect-video max-w-md">
+                    <video
+                        src={videoUrl}
+                        controls
+                        className="w-full h-full object-cover"
                     />
-                    <label htmlFor="video-upload">
-                        <Button type="button" variant="outline" className="w-full cursor-pointer" disabled={uploading} asChild>
-                            <span>
-                                {uploading ? (
-                                    <><div className="spinner w-4 h-4 mr-2"></div>Enviando...</>
-                                ) : ('Adicionar Vídeo')}
-                            </span>
-                        </Button>
-                    </label>
+                    <button
+                        type="button"
+                        onClick={handleRemoveVideo}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors shadow-sm"
+                        title="Remover vídeo"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
                 </div>
             ) : (
-                <div className="relative">
-                    <video src={videoUrl} controls className="w-full rounded-md" />
-                    <Button variant="destructive" size="sm" className="absolute top-2 right-2" onClick={removeVideo} type="button">
-                        Remover Vídeo
-                    </Button>
-                </div>
+                <label className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors h-40 max-w-md bg-white">
+                    <div className="flex flex-col items-center text-gray-500">
+                        {uploading ? (
+                            <div className="spinner w-8 h-8 mb-3"></div>
+                        ) : (
+                            <Video className="h-10 w-10 mb-3 text-gray-400" />
+                        )}
+                        <span className="text-sm font-medium">
+                            {uploading ? "Enviando vídeo..." : "Clique para fazer upload do vídeo"}
+                        </span>
+                        <span className="text-xs text-gray-400 mt-1">MP4, WebM (Máx 100MB)</span>
+                    </div>
+                    <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                    />
+                </label>
             )}
-
-            <div className="text-xs text-gray-500">
-                <p>• Formatos aceites: MP4, MOV, AVI, MKV</p>
-                <p>• Tamanho máximo: 500MB</p>
-            </div>
         </div>
     );
 };
-
-export default VideoUpload;
