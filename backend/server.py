@@ -501,52 +501,61 @@ def generate_random_password(length=8):
 # ---------------------------------------------------------------
 
 
+# async def send_email(to_email: str, subject: str, body: str, html_body: Optional[str] = None):
+#     try:
+#         msg = MIMEMultipart('alternative')
+#         msg['From'] = os.getenv('DEFAULT_FROM_EMAIL',
+#                                 os.getenv('EMAIL_HOST_USER'))
+#         msg['To'] = to_email
+#         msg['Subject'] = subject
+#         msg.attach(MIMEText(body, 'plain', 'utf-8'))
+#         if html_body:
+#             msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+#         email_user = os.getenv('EMAIL_HOST_USER')
+#         email_password = os.getenv('EMAIL_HOST_PASSWORD')
+
+#         if not email_user or not email_password:
+#             logging.error("Credenciais de email não encontradas.")
+#             return False
+
+#         smtp_host = 'smtp.gmail.com'
+#         smtp_port = 587
+
+#         try:
+#             addr_info = socket.getaddrinfo(
+#                 smtp_host, smtp_port, family=socket.AF_INET)
+#             smtp_ip = addr_info[0][4][0]
+#             logging.info(
+#                 f"Conectando ao Gmail via IPv4: {smtp_ip}:{smtp_port}")
+
+#             server = smtplib.SMTP(smtp_ip, smtp_port)
+#             server.ehlo()
+#             server.starttls()
+#             server.ehlo()
+#         except Exception as dns_error:
+#             logging.error(f"Erro de DNS/Conexão: {dns_error}")
+#             return False
+
+#         server.login(email_user, email_password)
+#         server.send_message(msg)
+#         server.quit()
+#         logging.info(f"Email enviado com sucesso para: {to_email}")
+#         return True
+
+#     except Exception as e:
+#         logging.error(
+#             f"ERRO CRÍTICO ao enviar email: {type(e).__name__}: {str(e)}")
+#         return False
+
 async def send_email(to_email: str, subject: str, body: str, html_body: Optional[str] = None):
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['From'] = os.getenv('DEFAULT_FROM_EMAIL',
-                                os.getenv('EMAIL_HOST_USER'))
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        if html_body:
-            msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-        email_user = os.getenv('EMAIL_HOST_USER')
-        email_password = os.getenv('EMAIL_HOST_PASSWORD')
-
-        if not email_user or not email_password:
-            logging.error("Credenciais de email não encontradas.")
-            return False
-
-        smtp_host = 'smtp.gmail.com'
-        smtp_port = 587
-
-        try:
-            addr_info = socket.getaddrinfo(
-                smtp_host, smtp_port, family=socket.AF_INET)
-            smtp_ip = addr_info[0][4][0]
-            logging.info(
-                f"Conectando ao Gmail via IPv4: {smtp_ip}:{smtp_port}")
-
-            server = smtplib.SMTP(smtp_ip, smtp_port)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        except Exception as dns_error:
-            logging.error(f"Erro de DNS/Conexão: {dns_error}")
-            return False
-
-        server.login(email_user, email_password)
-        server.send_message(msg)
-        server.quit()
-        logging.info(f"Email enviado com sucesso para: {to_email}")
-        return True
-
-    except Exception as e:
-        logging.error(
-            f"ERRO CRÍTICO ao enviar email: {type(e).__name__}: {str(e)}")
-        return False
+    """
+    MODO DE SEGURANÇA:
+    Finge que envia o e-mail para não travar o site no Render Gratuito.
+    """
+    print(f"--- [EMAIL SIMULADO] Para: {to_email} | Assunto: {subject} ---")
+    # Não tenta conectar ao Gmail. Apenas retorna Sucesso.
+    return True
 
 # ==============================================================================
 # API Routes
