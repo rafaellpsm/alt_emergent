@@ -433,25 +433,27 @@ export const AdminUsuariosPage = () => {
                     <Table>
                         <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Função</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
                         <TableBody>
-                            {users.map(user => (
-                                <TableRow key={user.id}>
-                                    <TableCell>{user.nome}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell><Badge className="badge-beige">{user.role}</Badge></TableCell>
-                                    <TableCell>{user.ativo ? <Badge className="badge-teal">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}</TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleToggleActive(user)}>
-                                                    {user.ativo ? <><UserX className="mr-2 h-4 w-4" />Desativar</> : <><UserCheck className="mr-2 h-4 w-4" />Reativar</>}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(user)}><Trash2 className="mr-2 h-4 w-4" />Apagar</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {users
+                                .filter(user => user.role !== 'admin')
+                                .map(user => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>{user.nome}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell><Badge className="badge-beige">{user.role}</Badge></TableCell>
+                                        <TableCell>{user.ativo ? <Badge className="badge-teal">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}</TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleToggleActive(user)}>
+                                                        {user.ativo ? <><UserX className="mr-2 h-4 w-4" />Desativar</> : <><UserCheck className="mr-2 h-4 w-4" />Reativar</>}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(user)}><Trash2 className="mr-2 h-4 w-4" />Apagar</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                         </TableBody>
                     </Table>
                 </Card>

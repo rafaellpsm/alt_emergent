@@ -1,13 +1,7 @@
-# ==============================================================================
-# App Initialization and Configuration
-# ==============================================================================
 
-# CORREÇÃO: Adicionado 'Body' à importação do FastAPI
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status, BackgroundTasks, File, UploadFile, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-# CORREÇÃO: StaticFiles não é mais necessário para uploads
-# from fastapi.staticfiles import StaticFiles
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, field_validator, ValidationError
 from typing import List, Optional, Dict, Any
@@ -25,6 +19,7 @@ from pathlib import Path
 import secrets
 import string
 import aiofiles
+import socket
 
 # --- NOVA IMPORTAÇÃO DO CLOUDINARY ---
 import cloudinary
@@ -515,6 +510,10 @@ def generate_random_password(length=8):
     return ''.join(secrets.choice(characters) for _ in range(length))
 
 
+# --- Certifica-te que tens estes imports no topo do ficheiro ---
+# ---------------------------------------------------------------
+
+
 async def send_email(to_email: str, subject: str, body: str, html_body: Optional[str] = None):
     try:
         msg = MIMEMultipart('alternative')
@@ -526,13 +525,6 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
         if html_body:
             msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-        smtp_host = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-        # Forçar conversão segura para int, com fallback para 465
-        try:
-            smtp_port = int(os.getenv('EMAIL_PORT', '465'))
-        except ValueError:
-            smtp_port = 465
-
         email_user = os.getenv('EMAIL_HOST_USER')
         email_password = os.getenv('EMAIL_HOST_PASSWORD')
 
@@ -540,17 +532,23 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
             logging.error("Credenciais de email não encontradas.")
             return False
 
-        logging.info(
-            f"Tentando enviar email para {to_email} via {smtp_host}:{smtp_port}...")
+        smtp_host = 'smtp.gmail.com'
+        smtp_port = 587
 
-        # Lógica de conexão robusta
-        if smtp_port == 465:
-            # SSL direto (Recomendado para Gmail)
-            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
-        else:
-            # TLS (Alternativo)
-            server = smtplib.SMTP(smtp_host, smtp_port)
+        try:
+            addr_info = socket.getaddrinfo(
+                smtp_host, smtp_port, family=socket.AF_INET)
+            smtp_ip = addr_info[0][4][0]
+            logging.info(
+                f"Conectando ao Gmail via IPv4: {smtp_ip}:{smtp_port}")
+
+            server = smtplib.SMTP(smtp_ip, smtp_port)
+            server.ehlo()
             server.starttls()
+            server.ehlo()
+        except Exception as dns_error:
+            logging.error(f"Erro de DNS/Conexão: {dns_error}")
+            return False
 
         server.login(email_user, email_password)
         server.send_message(msg)
@@ -559,7 +557,6 @@ async def send_email(to_email: str, subject: str, body: str, html_body: Optional
         return True
 
     except Exception as e:
-        # Log detalhado do erro para sabermos o que se passa
         logging.error(
             f"ERRO CRÍTICO ao enviar email: {type(e).__name__}: {str(e)}")
         return False
