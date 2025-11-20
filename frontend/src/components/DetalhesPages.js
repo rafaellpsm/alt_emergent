@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, X, ArrowRight } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
