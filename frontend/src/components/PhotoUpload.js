@@ -135,3 +135,4 @@ const PhotoUpload = ({ photos = [], onPhotosChange, maxPhotos = 10, label = "Fot
 };
 
 export { PhotoUpload };
+export default PhotoUpload;
