@@ -11,7 +11,7 @@ import { ArrowLeft, X, ArrowRight, ChevronLeft, ChevronRight, MapPin, Home, User
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- COMPONENTE CARROSSEL ATRATIVO ---
+// --- COMPONENTE CARROSSEL RESPONSIVO ---
 const ModernCarousel = ({ photos, title }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -19,24 +19,20 @@ const ModernCarousel = ({ photos, title }) => {
   if (!photos || photos.length === 0) return null;
 
   const nextSlide = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     setCurrentIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     setCurrentIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   };
 
-  const goToSlide = (index) => {
-    setCurrentIndex(index);
-  };
-
   return (
-    <div className="mb-8 select-none">
+    <div className="mb-6 md:mb-8 select-none">
       {/* Imagem Principal */}
       <div
-        className="relative aspect-video bg-gray-200 rounded-2xl overflow-hidden shadow-md group cursor-zoom-in"
+        className="relative aspect-video bg-gray-200 rounded-xl md:rounded-2xl overflow-hidden shadow-md group cursor-zoom-in"
         onClick={() => setIsLightboxOpen(true)}
       >
         <img
@@ -45,38 +41,40 @@ const ModernCarousel = ({ photos, title }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Setas de Navegação (só aparecem se houver mais de 1 foto) */}
+        {/* Setas de Navegação */}
         {photos.length > 1 && (
           <>
+            {/* Seta Esquerda - Sempre visível no mobile, hover no desktop */}
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-10"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
             </button>
+            {/* Seta Direita */}
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-10"
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
             </button>
           </>
         )}
 
-        {/* Contador */}
-        <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+        {/* Contador Mobile/Desktop */}
+        <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4 bg-black/50 text-white px-2 py-1 md:px-3 md:py-1 rounded-full text-xs md:text-sm font-medium backdrop-blur-sm">
           {currentIndex + 1} / {photos.length}
         </div>
       </div>
 
-      {/* Miniaturas (Thumbnails) */}
+      {/* Miniaturas (Scrollável no mobile) */}
       {photos.length > 1 && (
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-2 snap-x">
+        <div className="flex gap-2 mt-3 md:mt-4 overflow-x-auto pb-2 snap-x scrollbar-hide">
           {photos.map((photo, index) => (
             <button
               key={index}
-              onClick={() => goToSlide(index)}
-              className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all snap-start ${currentIndex === index ? 'border-primary-teal ring-2 ring-primary-teal/30' : 'border-transparent opacity-70 hover:opacity-100'
+              onClick={() => setCurrentIndex(index)}
+              className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all snap-start ${currentIndex === index ? 'border-primary-teal ring-2 ring-primary-teal/30' : 'border-transparent opacity-70 hover:opacity-100'
                 }`}
             >
               <img src={photo} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
@@ -87,12 +85,12 @@ const ModernCarousel = ({ photos, title }) => {
 
       {/* Lightbox (Tela Cheia) */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center" onClick={() => setIsLightboxOpen(false)}>
-          <button className="absolute top-6 right-6 text-white/70 hover:text-white p-2">
-            <X className="h-10 w-10" />
+        <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center" onClick={() => setIsLightboxOpen(false)}>
+          <button className="absolute top-4 right-4 text-white/80 hover:text-white p-2 z-50">
+            <X className="h-8 w-8 md:h-10 md:w-10" />
           </button>
 
-          <div className="relative w-full h-full flex items-center justify-center p-4">
+          <div className="relative w-full h-full flex items-center justify-center p-2 md:p-4">
             <img
               src={photos[currentIndex]}
               alt="Fullscreen"
@@ -101,8 +99,8 @@ const ModernCarousel = ({ photos, title }) => {
             />
             {photos.length > 1 && (
               <>
-                <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4"><ChevronLeft className="h-12 w-12" /></button>
-                <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-4"><ChevronRight className="h-12 w-12" /></button>
+                <button onClick={prevSlide} className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-2 md:p-4"><ChevronLeft className="h-10 w-10 md:h-16 md:w-16" /></button>
+                <button onClick={nextSlide} className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-2 md:p-4"><ChevronRight className="h-10 w-10 md:h-16 md:w-16" /></button>
               </>
             )}
           </div>
@@ -140,61 +138,65 @@ export const ImovelDetalhePage = () => {
   }, [id]);
 
   if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
-  if (!imovel) return <div className="text-center py-20 text-2xl text-gray-400">Imóvel não encontrado</div>;
+  if (!imovel) return <div className="text-center py-20 text-xl md:text-2xl text-gray-400">Imóvel não encontrado</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
-      {/* Cabeçalho Simples */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0">
+    <div className="min-h-screen bg-gray-50/50 pb-10 md:pb-20">
+      {/* Cabeçalho */}
+      <div className="bg-white border-b sticky top-16 z-20 md:relative md:top-0">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0 -ml-2 md:ml-0">
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Título e Localização */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="badge-teal">{imovel.tipo}</Badge>
-                {imovel.destaque && <Badge className="bg-yellow-400 text-yellow-900 hover:bg-yellow-500">Destaque</Badge>}
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-primary-gray">{imovel.titulo}</h1>
-              <div className="flex items-center text-gray-500 mt-2">
-                <MapPin className="h-4 w-4 mr-1" />
-                {imovel.regiao}
-                <span className="mx-2">•</span>
-                <span>{imovel.endereco_completo ? imovel.endereco_completo.split(',')[0] : ''}</span>
-              </div>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        {/* Título e Badges */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="badge-teal text-xs md:text-sm">{imovel.tipo}</Badge>
+              {imovel.destaque && <Badge className="bg-yellow-400 text-yellow-900 hover:bg-yellow-500 text-xs md:text-sm">Destaque</Badge>}
+            </div>
+            <h1 className="text-2xl md:text-4xl font-bold text-primary-gray leading-tight">{imovel.titulo}</h1>
+            <div className="flex items-center text-gray-500 text-sm md:text-base mt-1">
+              <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="truncate">{imovel.regiao}</span>
+              {imovel.endereco_completo && (
+                <>
+                  <span className="mx-2 hidden md:inline">•</span>
+                  <span className="hidden md:inline truncate">{imovel.endereco_completo.split(',')[0]}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-10">
-          {/* COLUNA ESQUERDA (Fotos e Descrição) - Ocupa 2/3 */}
-          <div className="lg:col-span-2">
+        {/* Grid Principal - 1 Coluna no Mobile, 3 no Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
+
+          {/* CONTEÚDO PRINCIPAL (Fotos + Texto) - Ocupa 2 colunas no PC */}
+          <div className="lg:col-span-2 order-1">
             <ModernCarousel photos={imovel.fotos} title={imovel.titulo} />
 
-            {/* Informações Rápidas (Ícones) */}
-            <div className="flex flex-wrap gap-6 py-6 border-y border-gray-100 mb-8 text-gray-600">
-              <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary-teal" /> <span>{imovel.capacidade} Hóspedes</span></div>
-              <div className="flex items-center gap-2"><Bed className="h-5 w-5 text-primary-teal" /> <span>{imovel.num_quartos} Quartos</span></div>
-              <div className="flex items-center gap-2"><Bath className="h-5 w-5 text-primary-teal" /> <span>{imovel.num_banheiros} Banheiros</span></div>
-              {imovel.area_m2 && <div className="flex items-center gap-2"><Maximize className="h-5 w-5 text-primary-teal" /> <span>{imovel.area_m2} m²</span></div>}
+            {/* Ícones de Comodidades Rápidas */}
+            <div className="flex flex-wrap gap-4 md:gap-6 py-4 md:py-6 border-y border-gray-100 mb-6 md:mb-8 text-gray-600 text-sm md:text-base">
+              <div className="flex items-center gap-2"><Users className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /> <span>{imovel.capacidade} Hóspedes</span></div>
+              <div className="flex items-center gap-2"><Bed className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /> <span>{imovel.num_quartos} Quartos</span></div>
+              <div className="flex items-center gap-2"><Bath className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /> <span>{imovel.num_banheiros} Banheiros</span></div>
+              {imovel.area_m2 && <div className="flex items-center gap-2"><Maximize className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /> <span>{imovel.area_m2} m²</span></div>}
             </div>
 
-            <div className="prose max-w-none text-gray-700 leading-relaxed">
-              <h3 className="text-xl font-bold text-primary-gray mb-4">Sobre este lugar</h3>
+            <div className="prose max-w-none text-gray-700 leading-relaxed text-sm md:text-base">
+              <h3 className="text-lg md:text-xl font-bold text-primary-gray mb-3 md:mb-4">Sobre este lugar</h3>
               <ReactMarkdown>{imovel.descricao}</ReactMarkdown>
             </div>
 
             {imovel.video_url && (
-              <div className="mt-10">
-                <h3 className="text-xl font-bold text-primary-gray mb-4">Vídeo do Imóvel</h3>
-                <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-black">
+              <div className="mt-8 md:mt-10">
+                <h3 className="text-lg md:text-xl font-bold text-primary-gray mb-3 md:mb-4">Vídeo do Imóvel</h3>
+                <div className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-lg bg-black">
                   <video src={imovel.video_url} controls className="w-full h-full object-contain" poster={imovel.fotos[0] || ''}>
                     Seu navegador não suporta o player de vídeo.
                   </video>
@@ -203,28 +205,28 @@ export const ImovelDetalhePage = () => {
             )}
           </div>
 
-          {/* COLUNA DIREITA (Sidebar Sticky) - Ocupa 1/3 */}
-          <div className="lg:col-span-1">
+          {/* BARRA LATERAL (Sidebar) - Ocupa 1 coluna no PC, vai para baixo no Mobile */}
+          <div className="lg:col-span-1 order-2">
             <div className="sticky top-24 space-y-6">
 
-              {/* Card de Ação (Reservar) */}
-              <Card className="border-none shadow-lg rounded-2xl overflow-hidden">
-                <CardContent className="p-6 bg-white">
-                  <h3 className="text-lg font-bold text-primary-gray mb-6">Gostou deste imóvel?</h3>
+              {/* Card de Reserva */}
+              <Card className="border-none shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
+                <CardContent className="p-5 md:p-6 bg-white">
+                  <h3 className="text-lg font-bold text-primary-gray mb-4 md:mb-6">Gostou deste imóvel?</h3>
 
                   <div className="flex flex-col gap-3">
                     {imovel.link_booking && (
-                      <Button asChild className="w-full btn-primary py-6 text-lg shadow-md transition-transform hover:scale-[1.02]">
+                      <Button asChild className="w-full btn-primary py-5 md:py-6 text-base md:text-lg shadow-md transition-transform active:scale-95 hover:scale-[1.02]">
                         <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">Reservar no Booking</a>
                       </Button>
                     )}
                     {imovel.link_airbnb && (
-                      <Button asChild variant="outline" className="w-full py-6 text-lg border-2 border-[#FF5A5F] text-[#FF5A5F] hover:bg-[#FF5A5F] hover:text-white transition-all">
+                      <Button asChild variant="outline" className="w-full py-5 md:py-6 text-base md:text-lg border-2 border-[#FF5A5F] text-[#FF5A5F] hover:bg-[#FF5A5F] hover:text-white transition-all active:scale-95">
                         <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">Reservar no Airbnb</a>
                       </Button>
                     )}
                     {!imovel.link_booking && !imovel.link_airbnb && (
-                      <div className="text-center text-gray-500 italic p-4 bg-gray-50 rounded-lg">
+                      <div className="text-center text-gray-500 italic p-4 bg-gray-50 rounded-lg text-sm">
                         Links de reserva não disponíveis.
                       </div>
                     )}
@@ -232,30 +234,30 @@ export const ImovelDetalhePage = () => {
                 </CardContent>
               </Card>
 
-              {/* Card de Comodidades */}
-              <Card className="border shadow-sm rounded-2xl">
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-primary-gray mb-4">O que este lugar oferece</h3>
+              {/* Card de Detalhes Extras */}
+              <Card className="border shadow-sm rounded-xl md:rounded-2xl">
+                <CardContent className="p-5 md:p-6">
+                  <h3 className="font-bold text-primary-gray mb-4">Comodidades</h3>
                   <div className="flex flex-wrap gap-2">
-                    {imovel.possui_piscina && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🏊 Piscina</Badge>}
-                    {imovel.possui_churrasqueira && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🍖 Churrasqueira</Badge>}
-                    {imovel.possui_wifi && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">📶 Wi-Fi</Badge>}
-                    {imovel.permite_pets && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🐾 Pet Friendly</Badge>}
-                    {imovel.tem_vista_mar && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">🌊 Vista Mar</Badge>}
-                    {imovel.tem_ar_condicionado && <Badge variant="outline" className="px-3 py-1 border-primary-teal text-primary-teal">❄️ Ar Condicionado</Badge>}
+                    {imovel.possui_piscina && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">🏊 Piscina</Badge>}
+                    {imovel.possui_churrasqueira && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">🍖 Churrasqueira</Badge>}
+                    {imovel.possui_wifi && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">📶 Wi-Fi</Badge>}
+                    {imovel.permite_pets && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">🐾 Pet Friendly</Badge>}
+                    {imovel.tem_vista_mar && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">🌊 Vista Mar</Badge>}
+                    {imovel.tem_ar_condicionado && <Badge variant="outline" className="px-2 py-1 md:px-3 border-primary-teal text-primary-teal text-xs md:text-sm">❄️ Ar Condicionado</Badge>}
                   </div>
                 </CardContent>
               </Card>
 
               {/* Card do Anfitrião */}
               {anfitriao && (
-                <div className="bg-white rounded-2xl border shadow-sm p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
-                  <div className="h-12 w-12 rounded-full bg-primary-teal/10 flex items-center justify-center text-primary-teal font-bold text-xl">
+                <div className="bg-white rounded-xl md:rounded-2xl border shadow-sm p-4 md:p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary-teal/10 flex items-center justify-center text-primary-teal font-bold text-lg md:text-xl flex-shrink-0">
                     {anfitriao.nome.charAt(0)}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500">Anfitrião</p>
-                    <p className="font-bold text-primary-gray text-lg">{anfitriao.nome}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500">Anfitrião</p>
+                    <p className="font-bold text-primary-gray text-base md:text-lg truncate">{anfitriao.nome}</p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
                 </div>
@@ -269,7 +271,7 @@ export const ImovelDetalhePage = () => {
   );
 };
 
-// --- PÁGINA DE DETALHE DO PARCEIRO (Mesmo estilo visual) ---
+// --- PÁGINA DE DETALHE DO PARCEIRO (RESPONSIVA) ---
 export const ParceiroDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -290,37 +292,37 @@ export const ParceiroDetalhePage = () => {
   }, [id]);
 
   if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
-  if (!parceiro) return <div className="text-center py-20 text-2xl text-gray-400">Parceiro não encontrado</div>;
+  if (!parceiro) return <div className="text-center py-20 text-xl text-gray-400">Parceiro não encontrado</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0">
+    <div className="min-h-screen bg-gray-50/50 pb-10 md:pb-20">
+      <div className="bg-white border-b sticky top-16 z-20 md:relative md:top-0">
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="text-gray-500 hover:text-primary-teal pl-0 -ml-2 md:ml-0">
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Badge className="badge-teal mb-2">{parceiro.categoria}</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-primary-gray">{parceiro.nome_empresa}</h1>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="mb-6 md:mb-8">
+          <Badge className="badge-teal mb-2 text-xs md:text-sm">{parceiro.categoria}</Badge>
+          <h1 className="text-2xl md:text-4xl font-bold text-primary-gray leading-tight">{parceiro.nome_empresa}</h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
+          <div className="lg:col-span-2 order-1">
             <ModernCarousel photos={parceiro.fotos} title={parceiro.nome_empresa} />
 
-            <div className="prose max-w-none text-gray-700 leading-relaxed bg-white p-6 rounded-2xl shadow-sm">
-              <h3 className="text-xl font-bold text-primary-gray mb-4">Sobre</h3>
+            <div className="prose max-w-none text-gray-700 leading-relaxed bg-white p-5 md:p-6 rounded-xl md:rounded-2xl shadow-sm text-sm md:text-base">
+              <h3 className="text-lg md:text-xl font-bold text-primary-gray mb-3 md:mb-4">Sobre</h3>
               <ReactMarkdown>{parceiro.descricao}</ReactMarkdown>
             </div>
 
             {parceiro.video_url && (
               <div className="mt-8">
-                <h3 className="text-xl font-bold text-primary-gray mb-4">Apresentação em Vídeo</h3>
-                <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-black">
+                <h3 className="text-lg md:text-xl font-bold text-primary-gray mb-3 md:mb-4">Apresentação em Vídeo</h3>
+                <div className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-lg bg-black">
                   <video src={parceiro.video_url} controls className="w-full h-full object-contain">
                     Seu navegador não suporta o player de vídeo.
                   </video>
@@ -329,44 +331,44 @@ export const ParceiroDetalhePage = () => {
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2">
             <div className="sticky top-24 space-y-6">
-              <Card className="border-none shadow-lg rounded-2xl overflow-hidden bg-white">
-                <CardContent className="p-6 space-y-6">
-                  <h3 className="text-lg font-bold text-primary-gray border-b pb-2">Contatos e Localização</h3>
+              <Card className="border-none shadow-lg rounded-xl md:rounded-2xl overflow-hidden bg-white">
+                <CardContent className="p-5 md:p-6 space-y-6">
+                  <h3 className="text-lg font-bold text-primary-gray border-byb-2">Contatos e Localização</h3>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 text-sm md:text-base">
                     <div className="flex items-start gap-3">
-                      <div className="bg-teal-50 p-2 rounded-lg"><MapPin className="h-5 w-5 text-primary-teal" /></div>
-                      <div><p className="font-semibold text-sm text-gray-500">Endereço</p><p className="text-gray-800">{parceiro.endereco || "Não informado"}</p></div>
+                      <div className="bg-teal-50 p-2 rounded-lg"><MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /></div>
+                      <div><p className="font-semibold text-xs text-gray-500 uppercase">Endereço</p><p className="text-gray-800">{parceiro.endereco || "Não informado"}</p></div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="bg-teal-50 p-2 rounded-lg"><Users className="h-5 w-5 text-primary-teal" /></div>
-                      <div><p className="font-semibold text-sm text-gray-500">Telefone</p><p className="text-gray-800">{parceiro.telefone}</p></div>
+                      <div className="bg-teal-50 p-2 rounded-lg"><Users className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /></div>
+                      <div><p className="font-semibold text-xs text-gray-500 uppercase">Telefone</p><p className="text-gray-800">{parceiro.telefone}</p></div>
                     </div>
                     {parceiro.horario_funcionamento && (
                       <div className="flex items-start gap-3">
-                        <div className="bg-teal-50 p-2 rounded-lg"><Home className="h-5 w-5 text-primary-teal" /></div>
-                        <div><p className="font-semibold text-sm text-gray-500">Horário</p><p className="text-gray-800">{parceiro.horario_funcionamento}</p></div>
+                        <div className="bg-teal-50 p-2 rounded-lg"><Home className="h-4 w-4 md:h-5 md:w-5 text-primary-teal" /></div>
+                        <div><p className="font-semibold text-xs text-gray-500 uppercase">Horário</p><p className="text-gray-800">{parceiro.horario_funcionamento}</p></div>
                       </div>
                     )}
                   </div>
 
                   <div className="grid gap-3 pt-4">
-                    {parceiro.website && <Button asChild className="w-full btn-primary"><a href={parceiro.website} target="_blank" rel="noopener noreferrer">Visitar Site Oficial</a></Button>}
+                    {parceiro.website && <Button asChild className="w-full btn-primary py-5 md:py-6"><a href={parceiro.website} target="_blank" rel="noopener noreferrer">Visitar Site Oficial</a></Button>}
                     <div className="flex gap-3">
-                      {parceiro.instagram && <Button asChild variant="outline" className="flex-1"><a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
-                      {parceiro.facebook && <Button asChild variant="outline" className="flex-1"><a href={parceiro.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
+                      {parceiro.instagram && <Button asChild variant="outline" className="flex-1 py-5 md:py-6"><a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
+                      {parceiro.facebook && <Button asChild variant="outline" className="flex-1 py-5 md:py-6"><a href={parceiro.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {parceiro.servicos_oferecidos && (
-                <Card className="border-none shadow-sm rounded-2xl bg-teal-50/50">
-                  <CardContent className="p-6">
+                <Card className="border-none shadow-sm rounded-xl md:rounded-2xl bg-teal-50/50">
+                  <CardContent className="p-5 md:p-6">
                     <h3 className="font-bold text-primary-teal mb-2">Serviços</h3>
-                    <p className="text-gray-700 text-sm">{parceiro.servicos_oferecidos}</p>
+                    <p className="text-gray-700 text-sm md:text-base whitespace-pre-line">{parceiro.servicos_oferecidos}</p>
                   </CardContent>
                 </Card>
               )}
