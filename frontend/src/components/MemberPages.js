@@ -162,9 +162,7 @@ export const TodosImoveisPage = () => {
                       <div className="flex items-center gap-1"><Bath className="h-4 w-4" /> {imovel.num_banheiros}</div>
                       <div className="flex items-center gap-1"><Users className="h-4 w-4" /> {imovel.capacidade}</div>
                     </div>
-                    <div className="flex justify-between items-center pt-3 border-t mt-auto">
-                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria}<span className="text-xs font-normal text-gray-500">/dia</span></div>
-                    </div>
+
                   </CardContent>
                 </Card>
               ))
@@ -542,9 +540,6 @@ export const MeusImoveisPage = () => {
     tipo: '',
     regiao: '',
     endereco_completo: '',
-    preco_diaria: '',
-    preco_semanal: '',
-    preco_mensal: '',
     num_quartos: 1,
     num_banheiros: 1,
     capacidade: 2,
@@ -611,7 +606,7 @@ export const MeusImoveisPage = () => {
   const resetForm = () => {
     setFormData({
       titulo: '', descricao: '', tipo: '', regiao: '', endereco_completo: '',
-      preco_diaria: '', preco_semanal: '', preco_mensal: '', num_quartos: 1,
+      num_quartos: 1,
       num_banheiros: 1, capacidade: 2, area_m2: '', possui_piscina: false,
       possui_churrasqueira: false, possui_wifi: true, permite_pets: false,
       tem_vista_mar: false, tem_ar_condicionado: false, link_booking: '',
@@ -627,9 +622,6 @@ export const MeusImoveisPage = () => {
       tipo: imovel.tipo || '',
       regiao: imovel.regiao || '',
       endereco_completo: imovel.endereco_completo || '',
-      preco_diaria: imovel.preco_diaria || '',
-      preco_semanal: imovel.preco_semanal || '',
-      preco_mensal: imovel.preco_mensal || '',
       num_quartos: imovel.num_quartos || 1,
       num_banheiros: imovel.num_banheiros || 1,
       capacidade: imovel.capacidade || 2,
@@ -776,45 +768,6 @@ export const MeusImoveisPage = () => {
                     required
                     placeholder="Rua, número, bairro, CEP..."
                   />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <Label htmlFor="preco_diaria" className="form-label">Preço por Dia (R$) *</Label>
-                    <Input
-                      id="preco_diaria"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_diaria}
-                      onChange={(e) => setFormData({ ...formData, preco_diaria: e.target.value })}
-                      required
-                      placeholder="250.00"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="preco_semanal" className="form-label">Preço por Semana (R$)</Label>
-                    <Input
-                      id="preco_semanal"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_semanal}
-                      onChange={(e) => setFormData({ ...formData, preco_semanal: e.target.value })}
-                      placeholder="1500.00"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="preco_mensal" className="form-label">Preço por Mês (R$)</Label>
-                    <Input
-                      id="preco_mensal"
-                      type="number"
-                      step="0.01"
-                      className="form-input"
-                      value={formData.preco_mensal}
-                      onChange={(e) => setFormData({ ...formData, preco_mensal: e.target.value })}
-                      placeholder="5000.00"
-                    />
-                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
@@ -1021,15 +974,6 @@ export const MeusImoveisPage = () => {
                       <div className="flex items-center gap-1"><Bath className="h-3 w-3" /> {imovel.num_banheiros} banheiros</div>
                       <div className="flex items-center gap-1"><Users className="h-3 w-3" /> {imovel.capacidade} pessoas</div>
                       <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {imovel.visualizacoes} views</div>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <div className="text-lg font-bold text-primary-teal">
-                        R$ {imovel.preco_diaria}
-                      </div>
-                      <Badge variant={imovel.status_aprovacao === 'aprovado' ? 'success' : 'outline'} className={imovel.status_aprovacao === 'aprovado' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'text-yellow-600 border-yellow-200 bg-yellow-50'}>
-                        {imovel.status_aprovacao === 'aprovado' ? 'Online' : 'Pendente'}
-                      </Badge>
                     </div>
                   </CardContent>
                 </Card>
