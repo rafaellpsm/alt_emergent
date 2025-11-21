@@ -9,15 +9,15 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
-import PhotoUpload from './PhotoUpload';
+import { PhotoUpload } from './PhotoUpload';
 import { VideoUpload } from './VideoUpload';
 import PageHeader from './PageHeader';
 import { Checkbox } from './ui/checkbox';
+import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// All Properties View Page (PUBLIC)
 export const TodosImoveisPage = () => {
   const navigate = useNavigate();
   const [imoveis, setImoveis] = useState([]);
@@ -30,14 +30,12 @@ export const TodosImoveisPage = () => {
     permite_pets: false
   });
 
-  // Função que busca os imóveis, agora com base nos filtros
   const fetchTodosImoveis = async () => {
     setLoading(true);
     try {
-      // Cria um objeto de parâmetros apenas com os filtros preenchidos
       const params = {};
       for (const key in filtros) {
-        if (filtros[key]) { // Adiciona apenas valores que não são vazios ou falsos
+        if (filtros[key]) {
           params[key] = filtros[key];
         }
       }
@@ -53,7 +51,6 @@ export const TodosImoveisPage = () => {
     setLoading(false);
   };
 
-  // Busca inicial de imóveis quando a página carrega
   useEffect(() => {
     fetchTodosImoveis();
   }, []);
@@ -68,24 +65,23 @@ export const TodosImoveisPage = () => {
       possui_piscina: false, permite_pets: false
     };
     setFiltros(clearedFilters);
-    // A busca será refeita no próximo ciclo de renderização por causa do useEffect abaixo
   };
 
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <PageHeader title="Todos os Imóveis" showBackButton={false} />
-        <Card className="card-custom mb-8">
-          <CardHeader>
-            <CardTitle className="text-primary-gray">Filtros</CardTitle>
+
+        <Card className="card-custom mb-8 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg text-primary-gray">Filtros de Pesquisa</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <Label className="form-label">Tipo</Label>
+                <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Tipo</Label>
                 <Select value={filtros.tipo} onValueChange={(value) => handleFilterChange('tipo', value)}>
-                  <SelectTrigger className="form-input"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectTrigger className="bg-white"><SelectValue placeholder="Todos" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos</SelectItem>
                     <SelectItem value="casa">Casas</SelectItem>
@@ -96,9 +92,9 @@ export const TodosImoveisPage = () => {
                 </Select>
               </div>
               <div>
-                <Label className="form-label">Região</Label>
+                <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Região</Label>
                 <Select value={filtros.regiao} onValueChange={(value) => handleFilterChange('regiao', value)}>
-                  <SelectTrigger className="form-input"><SelectValue placeholder="Todas" /></SelectTrigger>
+                  <SelectTrigger className="bg-white"><SelectValue placeholder="Todas" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todas">Todas</SelectItem>
                     <SelectItem value="centro">Centro</SelectItem>
@@ -109,56 +105,65 @@ export const TodosImoveisPage = () => {
                 </Select>
               </div>
               <div>
-                <Label className="form-label">Nº de Quartos (mín.)</Label>
-                <Input type="number" className="form-input" placeholder="Ex: 2" value={filtros.num_quartos} onChange={(e) => handleFilterChange('num_quartos', e.target.value)} />
+                <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Quartos (mín.)</Label>
+                <Input type="number" className="bg-white" placeholder="Ex: 2" value={filtros.num_quartos} onChange={(e) => handleFilterChange('num_quartos', e.target.value)} />
               </div>
             </div>
-            <div className="flex items-center space-x-4 mt-4 pt-4 border-t">
-              <div className="flex items-center space-x-2">
+
+            <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
+              <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded border">
                 <Checkbox id="possui_piscina" checked={filtros.possui_piscina} onCheckedChange={(checked) => handleFilterChange('possui_piscina', checked)} />
-                <Label htmlFor="possui_piscina">Com Piscina</Label>
+                <Label htmlFor="possui_piscina" className="cursor-pointer mb-0">Com Piscina</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 bg-white px-3 py-2 rounded border">
                 <Checkbox id="permite_pets" checked={filtros.permite_pets} onCheckedChange={(checked) => handleFilterChange('permite_pets', checked)} />
-                <Label htmlFor="permite_pets">Aceita Pets</Label>
+                <Label htmlFor="permite_pets" className="cursor-pointer mb-0">Aceita Pets</Label>
               </div>
             </div>
-            <div className="flex items-center gap-4 mt-6">
-              <Button onClick={fetchTodosImoveis} className="w-full btn-primary">Aplicar Filtros</Button>
-              <Button onClick={handleClearFilters} className="w-full" variant="outline">Limpar Filtros</Button>
+
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button onClick={fetchTodosImoveis} className="flex-1 btn-primary">Aplicar Filtros</Button>
+              <Button onClick={handleClearFilters} className="flex-1 sm:flex-none" variant="outline">Limpar</Button>
             </div>
           </CardContent>
         </Card>
+
         {loading ? (
-          <div className="flex justify-center items-center py-12"><div className="spinner"></div></div>
+          <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {imoveis.length === 0 ? (
-              <Card className="card-custom col-span-full">
-                <CardContent className="py-12 text-center text-gray-500">Nenhum imóvel encontrado com estes filtros.</CardContent>
-              </Card>
+              <div className="col-span-full text-center py-20 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500">
+                Nenhum imóvel encontrado com estes filtros.
+              </div>
             ) : (
               imoveis.map((imovel) => (
-                <Card key={imovel.id} className="card-custom hover-lift cursor-pointer" onClick={() => navigate(`/imovel/${imovel.id}`)}>
-                  {imovel.fotos && imovel.fotos.length > 0 ? (
-                    <div className="property-image"><img src={imovel.fotos[0]} alt={imovel.titulo} className="w-full h-full object-cover" /></div>
-                  ) : (
-                    <div className="property-image bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center"><span className="text-gray-500">Sem foto</span></div>
-                  )}
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg text-primary-gray">{imovel.titulo}</CardTitle>
-                        <CardDescription>{imovel.tipo} • {imovel.regiao}</CardDescription>
-                      </div>
-                      <Badge className="badge-beige">{imovel.tipo}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">{imovel.descricao}</p>
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="text-xs text-gray-500"><span>{imovel.num_quartos}q • {imovel.num_banheiros}b • {imovel.capacidade}p</span></div>
+                <Card key={imovel.id} className="card-custom hover-lift cursor-pointer overflow-hidden group" onClick={() => navigate(`/imovel/${imovel.id}`)}>
+                  <div className="relative aspect-[4/3] bg-gray-200 overflow-hidden">
+                    {imovel.fotos && imovel.fotos.length > 0 ? (
+                      <img src={imovel.fotos[0]} alt={imovel.titulo} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">Sem foto</div>
+                    )}
+                    <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray backdrop-blur-sm shadow-sm">{imovel.tipo}</Badge>
+                    {imovel.destaque && <Badge className="absolute top-3 right-3 bg-yellow-400 text-yellow-900">Destaque</Badge>}
+                  </div>
 
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="text-xs text-primary-teal font-semibold uppercase tracking-wide flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {imovel.regiao}
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg text-gray-900 leading-tight mb-3 line-clamp-1">{imovel.titulo}</h3>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                      <div className="flex items-center gap-1"><Bed className="h-4 w-4" /> {imovel.num_quartos}</div>
+                      <div className="flex items-center gap-1"><Bath className="h-4 w-4" /> {imovel.num_banheiros}</div>
+                      <div className="flex items-center gap-1"><Users className="h-4 w-4" /> {imovel.capacidade}</div>
+                    </div>
+                    <div className="flex justify-between items-center pt-3 border-t mt-auto">
+                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria}<span className="text-xs font-normal text-gray-500">/dia</span></div>
                     </div>
                   </CardContent>
                 </Card>
@@ -171,8 +176,6 @@ export const TodosImoveisPage = () => {
   );
 };
 
-
-// Partner Profile Management Page
 export const MeuPerfilPage = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -429,7 +432,6 @@ export const MeuPerfilPage = () => {
   );
 };
 
-// Partners Page (PUBLIC)
 export const ParceirosPage = () => {
   const navigate = useNavigate();
   const [parceiros, setParceiros] = useState([]);
@@ -458,35 +460,38 @@ export const ParceirosPage = () => {
   const parceirsFiltrados = categoriaFiltro ? parceiros.filter(p => p.categoria === categoriaFiltro) : parceiros;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <PageHeader title="Nossos Parceiros" showBackButton={false} />
-        {categoriasDisponiveis.length > 1 && (
-          <Card className="card-custom mb-8">
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-4">
-                <Label className="form-label">Filtrar por categoria:</Label>
-                <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
-                  <SelectTrigger className="form-input w-48">
-                    <SelectValue placeholder="Todas as categorias" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Todas</SelectItem>
-                    {categoriasDisponiveis.map(categoria => (
-                      <SelectItem key={categoria} value={categoria}>{categoria}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+
+        {categoriasDisponiveis.length > 0 && (
+          <div className="flex overflow-x-auto gap-2 mb-8 pb-2 scrollbar-hide">
+            <Button
+              variant={categoriaFiltro === '' ? 'default' : 'outline'}
+              onClick={() => setCategoriaFiltro('')}
+              className="rounded-full whitespace-nowrap"
+            >
+              Todos
+            </Button>
+            {categoriasDisponiveis.map(cat => (
+              <Button
+                key={cat}
+                variant={categoriaFiltro === cat ? 'default' : 'outline'}
+                onClick={() => setCategoriaFiltro(cat)}
+                className="rounded-full whitespace-nowrap capitalize"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
         )}
+
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="spinner"></div>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {parceirsFiltrados.length === 0 ? (
               <Card className="card-custom col-span-full">
                 <CardContent className="py-12 text-center text-gray-500">
@@ -497,67 +502,24 @@ export const ParceirosPage = () => {
               parceirsFiltrados.map((parceiro) => (
                 <Card
                   key={parceiro.id}
-                  className="card-custom hover-lift cursor-pointer"
+                  className="card-custom hover-lift cursor-pointer overflow-hidden"
                   onClick={() => navigate(`/parceiro/${parceiro.id}`)}
                 >
-                  {parceiro.fotos && parceiro.fotos.length > 0 && (
-                    <div className="aspect-video bg-gray-200 rounded-t-lg mb-4 overflow-hidden">
+                  <div className="aspect-video bg-gray-100 relative">
+                    {parceiro.fotos && parceiro.fotos.length > 0 && (
                       <img
                         src={parceiro.fotos[0]}
                         alt={parceiro.nome_empresa}
                         className="w-full h-full object-cover"
                       />
-                    </div>
-                  )}
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg text-primary-gray">{parceiro.nome_empresa}</CardTitle>
-                      <Badge className="badge-beige">{parceiro.categoria}</Badge>
-                    </div>
-                    {parceiro.nome_responsavel && (
-                      <CardDescription>Por {parceiro.nome_responsavel}</CardDescription>
                     )}
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
+                    <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
+                  </div>
+                  <CardContent className="p-5">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">{parceiro.nome_empresa}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
                       {parceiro.descricao}
                     </p>
-                    <div className="space-y-2 mb-4 text-sm">
-                      {parceiro.telefone && (
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">Telefone:</span>
-                          <span className="text-gray-600">{parceiro.telefone}</span>
-                        </div>
-                      )}
-                      {parceiro.email && (
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">Email:</span>
-                          <span className="text-gray-600">{parceiro.email}</span>
-                        </div>
-                      )}
-                    </div>
-                    {parceiro.servicos_oferecidos && (
-                      <div className="mb-4">
-                        <span className="font-medium text-sm">Serviços:</span>
-                        <p className="text-gray-600 text-xs mt-1">{parceiro.servicos_oferecidos}</p>
-                      </div>
-                    )}
-                    <div className="flex space-x-2">
-                      {parceiro.website && (
-                        <Button size="sm" variant="outline" className="flex-1" asChild>
-                          <a href={parceiro.website} target="_blank" rel="noopener noreferrer">
-                            Site
-                          </a>
-                        </Button>
-                      )}
-                      {parceiro.instagram && (
-                        <Button size="sm" variant="outline" className="flex-1" asChild>
-                          <a href={parceiro.instagram} target="_blank" rel="noopener noreferrer">
-                            Instagram
-                          </a>
-                        </Button>
-                      )}
-                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -569,7 +531,6 @@ export const ParceirosPage = () => {
   );
 };
 
-// Member Properties Management Page
 export const MeusImoveisPage = () => {
   const [imoveis, setImoveis] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -581,9 +542,13 @@ export const MeusImoveisPage = () => {
     tipo: '',
     regiao: '',
     endereco_completo: '',
+    preco_diaria: '',
+    preco_semanal: '',
+    preco_mensal: '',
     num_quartos: 1,
     num_banheiros: 1,
     capacidade: 2,
+    area_m2: '',
     possui_piscina: false,
     possui_churrasqueira: false,
     possui_wifi: true,
@@ -646,8 +611,8 @@ export const MeusImoveisPage = () => {
   const resetForm = () => {
     setFormData({
       titulo: '', descricao: '', tipo: '', regiao: '', endereco_completo: '',
-      num_quartos: 1,
-      num_banheiros: 1, capacidade: 2, possui_piscina: false,
+      preco_diaria: '', preco_semanal: '', preco_mensal: '', num_quartos: 1,
+      num_banheiros: 1, capacidade: 2, area_m2: '', possui_piscina: false,
       possui_churrasqueira: false, possui_wifi: true, permite_pets: false,
       tem_vista_mar: false, tem_ar_condicionado: false, link_booking: '',
       link_airbnb: '', fotos: [], video_url: ''
@@ -662,9 +627,13 @@ export const MeusImoveisPage = () => {
       tipo: imovel.tipo || '',
       regiao: imovel.regiao || '',
       endereco_completo: imovel.endereco_completo || '',
+      preco_diaria: imovel.preco_diaria || '',
+      preco_semanal: imovel.preco_semanal || '',
+      preco_mensal: imovel.preco_mensal || '',
       num_quartos: imovel.num_quartos || 1,
       num_banheiros: imovel.num_banheiros || 1,
       capacidade: imovel.capacidade || 2,
+      area_m2: imovel.area_m2 || '',
       possui_piscina: imovel.possui_piscina || false,
       possui_churrasqueira: imovel.possui_churrasqueira || false,
       possui_wifi: imovel.possui_wifi !== undefined ? imovel.possui_wifi : true,
@@ -692,24 +661,25 @@ export const MeusImoveisPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
-        <PageHeader title="Meus Imóveis">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h1 className="text-3xl font-bold text-primary-gray">Meus Imóveis</h1>
           {!showForm && (
             <Button
-              className="btn-primary"
+              className="btn-primary w-full sm:w-auto"
               onClick={() => {
                 setEditingImovel(null);
                 resetForm();
                 setShowForm(true);
               }}
             >
-              Cadastrar Novo Imóvel
+              + Cadastrar Novo Imóvel
             </Button>
           )}
-        </PageHeader>
+        </div>
 
-        {showForm && (
+        {showForm ? (
           <Card className="card-custom mb-8">
             <CardHeader>
               <CardTitle className="text-primary-gray">
@@ -718,7 +688,7 @@ export const MeusImoveisPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="titulo" className="form-label">Título do Imóvel *</Label>
                     <Input
@@ -741,9 +711,11 @@ export const MeusImoveisPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="casa">Casa</SelectItem>
+                        <SelectItem value="apartamento">Apartamento</SelectItem>
                         <SelectItem value="pousada">Pousada</SelectItem>
                         <SelectItem value="chale">Chalé</SelectItem>
-                        <SelectItem value="suite">Suíte</SelectItem>
+                        <SelectItem value="studio">Studio</SelectItem>
+                        <SelectItem value="cobertura">Cobertura</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -760,7 +732,7 @@ export const MeusImoveisPage = () => {
                     placeholder="Descreva as características e diferenciais do seu imóvel..."
                   />
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="regiao" className="form-label">Região *</Label>
                     <Select
@@ -782,7 +754,17 @@ export const MeusImoveisPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
+                  <div>
+                    <Label htmlFor="area_m2" className="form-label">Área (m²)</Label>
+                    <Input
+                      id="area_m2"
+                      type="number"
+                      className="form-input"
+                      value={formData.area_m2}
+                      onChange={(e) => setFormData({ ...formData, area_m2: e.target.value })}
+                      placeholder="120"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="endereco_completo" className="form-label">Endereço Completo *</Label>
@@ -795,7 +777,46 @@ export const MeusImoveisPage = () => {
                     placeholder="Rua, número, bairro, CEP..."
                   />
                 </div>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <Label htmlFor="preco_diaria" className="form-label">Preço por Dia (R$) *</Label>
+                    <Input
+                      id="preco_diaria"
+                      type="number"
+                      step="0.01"
+                      className="form-input"
+                      value={formData.preco_diaria}
+                      onChange={(e) => setFormData({ ...formData, preco_diaria: e.target.value })}
+                      required
+                      placeholder="250.00"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="preco_semanal" className="form-label">Preço por Semana (R$)</Label>
+                    <Input
+                      id="preco_semanal"
+                      type="number"
+                      step="0.01"
+                      className="form-input"
+                      value={formData.preco_semanal}
+                      onChange={(e) => setFormData({ ...formData, preco_semanal: e.target.value })}
+                      placeholder="1500.00"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="preco_mensal" className="form-label">Preço por Mês (R$)</Label>
+                    <Input
+                      id="preco_mensal"
+                      type="number"
+                      step="0.01"
+                      className="form-input"
+                      value={formData.preco_mensal}
+                      onChange={(e) => setFormData({ ...formData, preco_mensal: e.target.value })}
+                      placeholder="5000.00"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="num_quartos" className="form-label">Quartos *</Label>
                     <Input
@@ -821,7 +842,7 @@ export const MeusImoveisPage = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="capacidade" className="form-label">Capacidade (pessoas) *</Label>
+                    <Label htmlFor="capacidade" className="form-label">Capacidade *</Label>
                     <Input
                       id="capacidade"
                       type="number"
@@ -835,7 +856,7 @@ export const MeusImoveisPage = () => {
                 </div>
                 <div className="space-y-4">
                   <Label className="form-label">Comodidades</Label>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {[
                       { key: 'possui_piscina', label: 'Piscina' },
                       { key: 'possui_churrasqueira', label: 'Churrasqueira' },
@@ -852,12 +873,12 @@ export const MeusImoveisPage = () => {
                           onChange={(e) => setFormData({ ...formData, [key]: e.target.checked })}
                           className="rounded focus-teal"
                         />
-                        <Label htmlFor={key} className="form-label mb-0">{label}</Label>
+                        <Label htmlFor={key} className="form-label mb-0 cursor-pointer">{label}</Label>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="link_booking" className="form-label">Link Booking.com</Label>
                     <Input
@@ -881,7 +902,7 @@ export const MeusImoveisPage = () => {
                     />
                   </div>
                 </div>
-                <div className="mt-6">
+                <div className="mt-6 pt-6 border-t">
                   <VideoUpload
                     videoUrl={formData.video_url}
                     onVideoChange={(newUrl) => setFormData({ ...formData, video_url: newUrl })}
@@ -901,27 +922,26 @@ export const MeusImoveisPage = () => {
                       <p>• <strong>Proporção recomendada:</strong> 16:9 ou 4:3 (paisagem horizontal)</p>
                       <p>• <strong>Primeira foto:</strong> Será a foto principal do imóvel</p>
                       <p>• <strong>Sequência sugerida:</strong> Fachada → Sala → Quartos → Cozinha → Banheiros → Área externa</p>
-                      <p>• <strong>Qualidade:</strong> Use boa iluminação natural e mantenha o ambiente limpo</p>
                     </div>
                   </div>
                 </div>
                 {formData.fotos.length > 0 && (
                   <div>
                     <Label className="form-label">Fotos para Inserir na Descrição</Label>
-                    <div className="grid grid-cols-3 gap-2 p-3 border rounded-lg bg-gray-50">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-3 border rounded-lg bg-gray-50">
                       {formData.fotos.map((foto, index) => (
                         <div
                           key={index}
-                          className="relative group cursor-pointer border rounded overflow-hidden hover:ring-2 hover:ring-primary-teal"
+                          className="relative group cursor-pointer border rounded overflow-hidden hover:ring-2 hover:ring-primary-teal aspect-video"
                           onClick={() => {
                             const fotoUrl = `![Foto ${index + 1}](${foto})`;
                             const newDescricao = formData.descricao + `\n\n${fotoUrl}\n`;
                             setFormData({ ...formData, descricao: newDescricao });
                           }}
                         >
-                          <img src={foto} alt={`Foto ${index + 1}`} className="w-full h-16 object-cover" />
+                          <img src={foto} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                            <span className="text-white text-xs opacity-0 group-hover:opacity-100">Clique para inserir</span>
+                            <span className="text-white text-xs opacity-0 group-hover:opacity-100">Inserir</span>
                           </div>
                         </div>
                       ))}
@@ -931,13 +951,14 @@ export const MeusImoveisPage = () => {
                     </p>
                   </div>
                 )}
-                <div className="flex space-x-4">
-                  <Button type="submit" className="flex-1 btn-primary">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <Button type="submit" className="flex-1 btn-primary py-6 text-lg">
                     {editingImovel ? 'Atualizar' : 'Cadastrar'} Imóvel
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
+                    className="flex-1 py-6"
                     onClick={() => {
                       setShowForm(false);
                       setEditingImovel(null);
@@ -949,106 +970,67 @@ export const MeusImoveisPage = () => {
               </form>
             </CardContent>
           </Card>
-        )}
-
-        {!showForm && loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="spinner"></div>
-          </div>
-        )}
-
-        {!showForm && !loading && (
-          <div className="grid lg:grid-cols-2 gap-6">
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {imoveis.length === 0 ? (
-              <Card className="card-custom col-span-full">
-                <CardContent className="py-12 text-center">
-                  <p className="text-gray-500 mb-4">Você ainda não cadastrou nenhum imóvel.</p>
-                  <Button
-                    className="btn-primary"
-                    onClick={() => {
-                      setEditingImovel(null);
-                      resetForm();
-                      setShowForm(true);
-                    }}
-                  >
-                    Cadastrar Primeiro Imóvel
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+                <p className="text-gray-500 mb-4">Você ainda não cadastrou nenhum imóvel.</p>
+                <Button
+                  className="btn-primary"
+                  onClick={() => {
+                    setEditingImovel(null);
+                    resetForm();
+                    setShowForm(true);
+                  }}
+                >
+                  Cadastrar Primeiro Imóvel
+                </Button>
+              </div>
             ) : (
               imoveis.map((imovel) => (
-                <Card key={imovel.id} className="card-custom">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="flex items-center gap-2 text-primary-gray">
-                          {imovel.titulo}
-                          {imovel.destaque && <Badge className="badge-teal">Destaque</Badge>}
-                        </CardTitle>
-                        <CardDescription>
-                          {imovel.tipo} • {imovel.regiao}
-                        </CardDescription>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(imovel)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(imovel.id)}
-                        >
-                          Remover
-                        </Button>
-                      </div>
+                <Card key={imovel.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="aspect-video bg-gray-200 relative group">
+                    {imovel.fotos && imovel.fotos.length > 0 ? (
+                      <img src={imovel.fotos[0]} className="w-full h-full object-cover" alt={imovel.titulo} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">Sem foto</div>
+                    )}
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white shadow-sm" onClick={() => handleEdit(imovel)} title="Editar">
+                        <Edit className="h-4 w-4 text-gray-700" />
+                      </Button>
+                      <Button size="icon" variant="destructive" className="h-8 w-8 shadow-sm" onClick={() => handleDelete(imovel.id)} title="Remover">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+                    {imovel.destaque && <Badge className="absolute top-2 left-2 bg-yellow-400 text-yellow-900">Destaque</Badge>}
+                  </div>
+
+                  <CardContent className="p-4">
+                    <div className="mb-2">
+                      <h3 className="font-bold text-gray-800 truncate text-lg">{imovel.titulo}</h3>
+                      <p className="text-sm text-gray-500">{imovel.regiao} • {imovel.tipo}</p>
+                    </div>
+
+                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm h-10">
                       {imovel.descricao}
                     </p>
-                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                      <div>
-                        <span className="font-medium">Quartos:</span> {imovel.num_quartos}
-                      </div>
-                      <div>
-                        <span className="font-medium">Banheiros:</span> {imovel.num_banheiros}
-                      </div>
-                      <div>
-                        <span className="font-medium">Capacidade:</span> {imovel.capacidade}
-                      </div>
-                      <div>
-                        <span className="font-medium">Visualizações:</span> {imovel.visualizacoes}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
 
-                      <div className="text-sm text-gray-500">
-                        {new Date(imovel.created_at).toLocaleDateString('pt-BR')}
-                      </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3 bg-gray-50 p-2 rounded">
+                      <div className="flex items-center gap-1"><Bed className="h-3 w-3" /> {imovel.num_quartos} quartos</div>
+                      <div className="flex items-center gap-1"><Bath className="h-3 w-3" /> {imovel.num_banheiros} banheiros</div>
+                      <div className="flex items-center gap-1"><Users className="h-3 w-3" /> {imovel.capacidade} pessoas</div>
+                      <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {imovel.visualizacoes} views</div>
                     </div>
-                    {(imovel.link_booking || imovel.link_airbnb) && (
-                      <div className="flex space-x-2 mt-4">
-                        {imovel.link_booking && (
-                          <Button size="sm" variant="outline" className="flex-1" asChild>
-                            <a href={imovel.link_booking} target="_blank" rel="noopener noreferrer">
-                              Booking
-                            </a>
-                          </Button>
-                        )}
-                        {imovel.link_airbnb && (
-                          <Button size="sm" variant="outline" className="flex-1" asChild>
-                            <a href={imovel.link_airbnb} target="_blank" rel="noopener noreferrer">
-                              Airbnb
-                            </a>
-                          </Button>
-                        )}
+
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <div className="text-lg font-bold text-primary-teal">
+                        R$ {imovel.preco_diaria}
                       </div>
-                    )}
+                      <Badge variant={imovel.status_aprovacao === 'aprovado' ? 'success' : 'outline'} className={imovel.status_aprovacao === 'aprovado' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'text-yellow-600 border-yellow-200 bg-yellow-50'}>
+                        {imovel.status_aprovacao === 'aprovado' ? 'Online' : 'Pendente'}
+                      </Badge>
+                    </div>
                   </CardContent>
                 </Card>
               ))
