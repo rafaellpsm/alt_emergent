@@ -130,8 +130,6 @@ class CandidaturaMembro(CandidaturaBase):
     num_imoveis: int
     link_imovel: Optional[HttpUrl] = None
     experiencia_locacao: Optional[str] = None
-    renda_mensal_estimada: Optional[float] = None
-    possui_alvara: bool = False
     status: str = Field(default="pendente")
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))

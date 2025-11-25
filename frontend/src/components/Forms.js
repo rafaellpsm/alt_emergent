@@ -22,8 +22,6 @@ export const CandidaturaMembroPage = () => {
     num_imoveis: 1,
     link_imovel: '',
     experiencia_locacao: '',
-    renda_mensal_estimada: '',
-    possui_alvara: false,
     mensagem: ''
   });
   const [loading, setLoading] = useState(false);
@@ -47,8 +45,6 @@ export const CandidaturaMembroPage = () => {
         num_imoveis: 1,
         link_imovel: '',
         experiencia_locacao: '',
-        renda_mensal_estimada: '',
-        possui_alvara: false,
         mensagem: ''
       });
     } catch (error) {
@@ -190,30 +186,7 @@ export const CandidaturaMembroPage = () => {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="renda_mensal_estimada" className="form-label">Renda Mensal Estimada (R$)</Label>
-                    <Input
-                      id="renda_mensal_estimada"
-                      type="number"
-                      className="form-input"
-                      value={formData.renda_mensal_estimada}
-                      onChange={(e) => setFormData({ ...formData, renda_mensal_estimada: e.target.value })}
-                      placeholder="5000"
-                    />
-                  </div>
-                </div>
 
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="possui_alvara"
-                    checked={formData.possui_alvara}
-                    onChange={(e) => setFormData({ ...formData, possui_alvara: e.target.checked })}
-                    className="rounded focus-teal"
-                  />
-                  <Label htmlFor="possui_alvara" className="form-label mb-0">
-                    Possuo alvará de funcionamento para locação por temporada
-                  </Label>
                 </div>
 
                 <div>
