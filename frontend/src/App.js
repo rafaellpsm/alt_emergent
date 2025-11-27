@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet, link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPage } from './components/Forms';
@@ -8,7 +8,7 @@ import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPag
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
 import { Button } from './components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+import { Card, CardContent } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { toast } from './hooks/use-toast';
@@ -16,16 +16,12 @@ import { Toaster } from './components/ui/toaster';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, X } from 'lucide-react';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
-import { SpeedInsights } from "@vercel/speed-insights/react"
-
-
-
 
 // Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
 axios.interceptors.response.use(
@@ -109,39 +105,6 @@ const AuthProvider = ({ children }) => {
 
 const useAuth = () => React.useContext(AuthContext);
 
-// --- Componentes de Layout ---
-
-const DefaultLayout = () => (
-  <>
-    <DefaultHeader />
-    <main className="pt-20 bg-gray-50 min-h-screen">
-      <Outlet />
-    </main>
-  </>
-);
-
-const HomeLayout = () => <Outlet />;
-
-// --- Rota Protegida ---
-const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen"><div className="spinner"></div></div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
-
 // --- Menu de Perfil ---
 const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
   const triggerClass = isHomePage
@@ -162,17 +125,17 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
         <DropdownMenuSeparator />
         {user.role !== 'admin' && (
           <DropdownMenuItem asChild>
-            <a href={user.role === 'parceiro' ? '/meu-perfil' : '/perfil'}>
+            <Link to={user.role === 'parceiro' ? '/meu-perfil' : '/perfil'}>
               <User className="mr-2 h-4 w-4" /> Meu Perfil
-            </a>
+            </Link>
           </DropdownMenuItem>
         )}
 
         {user.role !== 'admin' && (
           <DropdownMenuItem asChild>
-            <a href="/alterar-senha">
+            <Link to="/alterar-senha">
               <Key className="mr-2 h-4 w-4" /> Alterar Senha
-            </a>
+            </Link>
           </DropdownMenuItem>
         )}
 
@@ -186,16 +149,7 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
   );
 };
 
-// --- Componente de Link de Navegação (Refatorado) ---
-const NavLink = ({ href, children, className, icon: Icon, isMobile = false }) => (
-  <a href={href} className={className}>
-    {Icon && isMobile && <Icon className="h-5 w-5 mr-2" />}
-    <span>{children}</span>
-  </a>
-);
-
-
-// --- Navegação ---
+// --- Navegação Melhorada ---
 const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   const { user } = useAuth();
   const location = useLocation();
@@ -234,7 +188,7 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
 
   const adminNavLinks = [
     { href: "/admin/dashboard", text: "Dashboard", icon: Home },
-    { href: "/imoveis", text: "Ver Site (Imóveis)", icon: Eye }
+    { href: "/imoveis", text: "Ver Site", icon: Eye }
   ];
 
   let linksToRender = publicNavLinks;
@@ -261,17 +215,14 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   );
 };
 
-
-// --- Headers ---
-
+// --- Header Padrão ---
 const DefaultHeader = () => {
   const { user, logout } = useAuth();
-  const [isOpen, setIsOpen] = useState(false); // Controle do estado do menu
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header className='bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50 h-20'>
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
-        {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
             <img src="https://img.icons8.com/ios-filled/50/459894/beach.png" alt="Logo" className="h-6 w-6" />
@@ -279,7 +230,6 @@ const DefaultHeader = () => {
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-6">
           <Navigation />
           <div className="h-6 w-px bg-gray-200 mx-2"></div>
@@ -292,7 +242,6 @@ const DefaultHeader = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -301,8 +250,6 @@ const DefaultHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
-
-              {/* Cabeçalho do Menu Mobile */}
               <div className="p-6 bg-gray-50 border-b">
                 {user ? (
                   <div className="flex items-center gap-4">
@@ -322,10 +269,8 @@ const DefaultHeader = () => {
                 )}
               </div>
 
-              {/* Corpo do Menu (Links) */}
               <div className="flex-1 overflow-y-auto py-6 px-2">
                 <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
-
                 {user && user.role !== 'admin' && (
                   <>
                     <div className="my-4 border-t border-gray-100 mx-4"></div>
@@ -341,7 +286,6 @@ const DefaultHeader = () => {
                 )}
               </div>
 
-              {/* Rodapé do Menu */}
               <div className="p-6 border-t bg-gray-50 mt-auto">
                 {user ? (
                   <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
@@ -352,13 +296,9 @@ const DefaultHeader = () => {
                     <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
                       Entrar
                     </Button>
-                    <div className="text-center text-xs text-gray-400 mt-2">
-                      © 2025 ALT Ilhabela
-                    </div>
                   </div>
                 )}
               </div>
-
             </SheetContent>
           </Sheet>
         </div>
@@ -367,6 +307,7 @@ const DefaultHeader = () => {
   );
 };
 
+// --- Header da Home ---
 const HomeHeader = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -395,7 +336,6 @@ const HomeHeader = () => {
           <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center space-x-4">
           <Navigation isHomePage={!isScrolled} />
           {user ? (
@@ -414,7 +354,6 @@ const HomeHeader = () => {
           )}
         </div>
 
-        {/* Mobile Menu (Reutiliza a mesma estrutura bonita do DefaultHeader) */}
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -423,7 +362,6 @@ const HomeHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-l-0">
-              {/* Cabeçalho do Menu Mobile */}
               <div className="p-6 bg-gray-50 border-b">
                 {user ? (
                   <div className="flex items-center gap-4">
@@ -476,15 +414,44 @@ const HomeHeader = () => {
   );
 };
 
-// --- Componentes de Página ---
+// --- Componentes de Layout ---
+const DefaultLayout = () => (
+  <>
+    <DefaultHeader />
+    <main className="pt-20 bg-gray-50 min-h-screen">
+      <Outlet />
+    </main>
+  </>
+);
 
+const HomeLayout = () => <Outlet />;
+
+// --- Rota Protegida ---
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen"><div className="spinner"></div></div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// --- Componentes de Página ---
 const HomePage = () => {
   const navigate = useNavigate();
   const [pageData, setPageData] = useState({ imoveis_destaque: [], parceiros_destaque: [], noticias_destaque: [] });
 
-  // PASSO 2: A NOVA FUNÇÃO DE ROLAGEM
   const handleScrollToDestaques = () => {
-    // CORREÇÃO: O ID da seção de imóveis foi alterado para ser mais específico
     const section = document.getElementById('section-2');
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -497,7 +464,7 @@ const HomePage = () => {
         const response = await axios.get(`${API}/main-page`);
         setPageData(response.data);
       } catch (error) {
-        toast({ title: "Erro ao carregar conteúdo da página", variant: "destructive" });
+        console.error("Erro na home:", error);
       }
     };
     fetchMainPageData();
@@ -525,12 +492,9 @@ const HomePage = () => {
         <div className="relative z-10 p-4">
           <h1 className="text-5xl md:text-7xl font-extrabold mb-4 animate-fade-in-up">ALT Ilhabela</h1>
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-300">Descubra acomodações e experiências únicas, com selo de qualidade ALT.</p>
-
-          {/* PASSO 3: BOTÃO ATUALIZADO */}
           <Button size="lg" className="btn-primary-inverse text-lg px-8 py-6 animate-fade-in-up animation-delay-600" onClick={handleScrollToDestaques}>
             Saiba Mais!
           </Button>
-
         </div>
       </section>
       <main>
@@ -547,56 +511,37 @@ const HomePage = () => {
           <section id="noticias" className="py-20 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Fique por Dentro</h2>
-
-              {(() => {
-                const noticiaPrincipal = pageData.noticias_destaque[0];
-                const outrasNoticias = pageData.noticias_destaque.slice(1, 3);
-
-                return (
-                  <div className="news-highlight-grid">
-                    {/* Card Principal (Grande, à Esquerda) */}
-                    <div className="news-highlight-main" onClick={() => navigate(`/noticia/${noticiaPrincipal.id}`)}>
-                      <img
-                        // CORREÇÃO APLICADA AQUI
-                        src={noticiaPrincipal.fotos && noticiaPrincipal.fotos.length > 0 ? noticiaPrincipal.fotos[0] : 'https://placehold.co/800x600?text=Imagem+Indisponível'}
-                        alt={noticiaPrincipal.titulo}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="news-highlight-overlay">
-                        <Badge className="badge-teal mb-2">{noticiaPrincipal.categoria || 'Geral'}</Badge>
-                        <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{noticiaPrincipal.titulo}</h3>
-                        <p className="text-gray-200 text-sm hidden md:block">{noticiaPrincipal.resumo}</p>
+              <div className="news-highlight-grid">
+                <div className="news-highlight-main" onClick={() => navigate(`/noticia/${pageData.noticias_destaque[0].id}`)}>
+                  <img
+                    src={pageData.noticias_destaque[0].fotos?.[0] || 'https://placehold.co/800x600?text=Imagem'}
+                    alt={pageData.noticias_destaque[0].titulo}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="news-highlight-overlay">
+                    <Badge className="badge-teal mb-2">{pageData.noticias_destaque[0].categoria}</Badge>
+                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{pageData.noticias_destaque[0].titulo}</h3>
+                  </div>
+                </div>
+                <div className="news-highlight-side">
+                  {pageData.noticias_destaque.slice(1, 3).map((noticia) => (
+                    <div key={noticia.id} className="news-side-card" onClick={() => navigate(`/noticia/${noticia.id}`)}>
+                      <div className="news-side-card-image">
+                        <img src={noticia.fotos?.[0] || 'https://placehold.co/400x300'} alt={noticia.titulo} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="news-side-card-content">
+                        <Badge className="badge-beige mb-2 text-xs">{noticia.categoria}</Badge>
+                        <h4 className="font-bold text-primary-gray leading-tight">{noticia.titulo}</h4>
+                        <span className="text-primary-teal text-sm mt-auto">Ler Mais →</span>
                       </div>
                     </div>
-
-                    {/* Container para os Cards Secundários (à Direita) */}
-                    <div className="news-highlight-side">
-                      {outrasNoticias.map((noticia) => (
-                        <div key={noticia.id} className="news-side-card" onClick={() => navigate(`/noticia/${noticia.id}`)}>
-                          <div className="news-side-card-image">
-                            <img
-                              // CORREÇÃO APLICADA AQUI
-                              src={noticia.fotos && noticia.fotos.length > 0 ? noticia.fotos[0] : 'https://placehold.co/400x300?text=Imagem'}
-                              alt={noticia.titulo}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="news-side-card-content">
-                            <Badge className="badge-beige mb-2 text-xs">{noticia.categoria || 'Geral'}</Badge>
-                            <h4 className="font-bold text-primary-gray leading-tight">{noticia.titulo}</h4>
-                            <span className="text-primary-teal text-sm mt-auto">Ler Mais →</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         )}
         {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
-          // PASSO 1: ID ADICIONADO À SECÇÃO
           <section id="imoveis-destaque-section" className="py-20 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
@@ -610,6 +555,7 @@ const HomePage = () => {
                     <div className="p-4">
                       <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
                       <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
+                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria} <span className="text-sm font-normal text-gray-600">/ noite</span></div>
                     </div>
                   </div>
                 ))}
@@ -617,7 +563,6 @@ const HomePage = () => {
             </div>
           </section>
         )}
-        {/* Bloco 1: Adicionar Parceiros em Destaque */}
         {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
           <section className="py-20 bg-gray-50">
             <div className="container mx-auto px-4">
@@ -644,7 +589,6 @@ const HomePage = () => {
             <div>
               <h2 className="text-4xl font-bold mb-6 text-primary-gray">Qualidade e Confiança: O selo ALT Ilhabela</h2>
               <p className="text-gray-600 mb-4 leading-relaxed">A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência.</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">Ao escolher um imóvel ou serviço com o selo ALT, você tem a certeza de encontrar qualidade, segurança e a verdadeira hospitalidade caiçara.</p>
               <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
                 <Button className="btn-primary" onClick={() => navigate('/candidatura/membro')}>Seja um Membro</Button>
                 <Button variant="outline" className="btn-outline-primary" onClick={() => navigate('/candidatura/parceiro')}>Seja um Parceiro</Button>
@@ -659,7 +603,6 @@ const HomePage = () => {
     </div>
   );
 };
-
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -722,7 +665,6 @@ const LoginPage = () => {
   );
 };
 
-// --- Componente Principal (Roteador) ---
 const MainApp = () => (
   <AuthProvider>
     <BrowserRouter>
@@ -730,7 +672,6 @@ const MainApp = () => (
         <Route path="/" element={<HomeLayout />}>
           <Route index element={<HomePage />} />
         </Route>
-
         <Route element={<DefaultLayout />}>
           <Route path="/imoveis" element={<TodosImoveisPage />} />
           <Route path="/parceiros" element={<ParceirosPage />} />
@@ -750,7 +691,6 @@ const MainApp = () => (
           <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
           <Route path="/noticia/:id" element={<NoticiaDetalhePage />} />
         </Route>
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/candidatura/membro" element={<CandidaturaMembroPage />} />
         <Route path="/candidatura/parceiro" element={<CandidaturaParceiroPage />} />
@@ -761,7 +701,5 @@ const MainApp = () => (
     <Toaster />
   </AuthProvider>
 );
-
-<SpeedInsights />
 
 export default MainApp;
