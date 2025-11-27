@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet, link } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { CandidaturaMembroPage, CandidaturaParceiroPage, CandidaturaAssociadoPage } from './components/Forms';
@@ -16,7 +16,7 @@ import { Toaster } from './components/ui/toaster';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils } from 'lucide-react';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, X } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
@@ -196,19 +196,46 @@ const NavLink = ({ href, children, className, icon: Icon, isMobile = false }) =>
 
 
 // --- Navegação ---
-const Navigation = ({ isMobile = false, isHomePage = false }) => {
+const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const getNavLinkClass = (path) =>
-    isMobile
-      ? `flex items-center space-x-2 py-2 px-3 rounded-md ${location.pathname === path ? 'bg-primary-teal text-white' : 'text-gray-700 hover:bg-gray-100'}`
-      : `nav-link-desktop ${isHomePage ? 'text-white hover:text-white/80' : 'text-primary-gray hover:text-primary-teal'}`;
+  const baseMobileClass = "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium";
+  const activeMobileClass = "bg-primary-teal/10 text-primary-teal border-l-4 border-primary-teal";
+  const inactiveMobileClass = "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
 
-  const publicNavLinks = [{ href: "/imoveis", text: "Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
-  const memberNavLinks = [{ href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase }, { href: "/imoveis", text: "Todos os Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
-  const partnerNavLinks = [{ href: "/imoveis", text: "Imóveis", icon: Home }, { href: "/parceiros", text: "Parceiros", icon: Users }];
-  const adminNavLinks = [{ href: "/admin/dashboard", text: "Dashboard", icon: Home }];
+  const baseDesktopClass = "text-sm font-medium transition-colors duration-200 flex items-center gap-2";
+  const homeDesktopClass = "text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md";
+  const defaultDesktopClass = "text-gray-600 hover:text-primary-teal hover:bg-gray-100 px-3 py-2 rounded-md";
+
+  const getNavLinkClass = (path) => {
+    if (isMobile) {
+      return `${baseMobileClass} ${location.pathname === path ? activeMobileClass : inactiveMobileClass}`;
+    }
+    return `${baseDesktopClass} ${isHomePage ? homeDesktopClass : defaultDesktopClass}`;
+  };
+
+  const publicNavLinks = [
+    { href: "/imoveis", text: "Imóveis", icon: Home },
+    { href: "/parceiros", text: "Parceiros", icon: Users }
+  ];
+
+  const memberNavLinks = [
+    { href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase },
+    { href: "/imoveis", text: "Todos os Imóveis", icon: Home },
+    { href: "/parceiros", text: "Parceiros", icon: Users }
+  ];
+
+  const partnerNavLinks = [
+    { href: "/meu-perfil", text: "Meu Negócio", icon: Briefcase },
+    { href: "/imoveis", text: "Imóveis", icon: Home },
+    { href: "/parceiros", text: "Parceiros", icon: Users }
+  ];
+
+  const adminNavLinks = [
+    { href: "/admin/dashboard", text: "Dashboard", icon: Home },
+    { href: "/imoveis", text: "Ver Site (Imóveis)", icon: Eye }
+  ];
 
   let linksToRender = publicNavLinks;
   if (user) {
@@ -218,17 +245,17 @@ const Navigation = ({ isMobile = false, isHomePage = false }) => {
   }
 
   return (
-    <nav className={isMobile ? "flex flex-col space-y-2 pt-4" : "flex items-center space-x-6"}>
+    <nav className={isMobile ? "flex flex-col space-y-2 w-full" : "flex items-center space-x-2"}>
       {linksToRender.map(link => (
-        <NavLink
+        <Link
           key={link.href}
-          href={link.href}
+          to={link.href}
           className={getNavLinkClass(link.href)}
-          icon={link.icon}
-          isMobile={isMobile}
+          onClick={onNavClick}
         >
-          {link.text}
-        </NavLink>
+          {isMobile && link.icon && <link.icon className={`h-5 w-5 ${location.pathname === link.href ? "text-primary-teal" : "text-gray-400"}`} />}
+          <span>{link.text}</span>
+        </Link>
       ))}
     </nav>
   );
@@ -239,54 +266,99 @@ const Navigation = ({ isMobile = false, isHomePage = false }) => {
 
 const DefaultHeader = () => {
   const { user, logout } = useAuth();
-  return (
-    <header className='bg-white shadow-md fixed top-0 left-0 right-0 z-50'>
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center text-primary-gray">
-        <a href="/" className="flex items-center space-x-3">
-          <img src="https://img.icons8.com/ios-filled/50/459894/beach.png" alt="ALT Ilhabela Logo" className="h-8 w-8" />
-          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
-        </a>
+  const [isOpen, setIsOpen] = useState(false); // Controle do estado do menu
 
-        {/* Navegação Desktop */}
-        <div className="hidden sm:flex items-center space-x-4">
+  return (
+    <header className='bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50 h-20'>
+      <div className="container mx-auto px-4 h-full flex justify-between items-center">
+        {/* Logo */}
+        <Link to="/" className="flex items-center space-x-2 group">
+          <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
+            <img src="https://img.icons8.com/ios-filled/50/459894/beach.png" alt="Logo" className="h-6 w-6" />
+          </div>
+          <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
+        </Link>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-6">
           <Navigation />
+          <div className="h-6 w-px bg-gray-200 mx-2"></div>
           {user ? (
             <UserProfileMenu user={user} logout={logout} />
           ) : (
-            <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary">
+            <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary shadow-md hover:shadow-lg transition-all">
               Entrar
             </Button>
           )}
         </div>
 
-        {/* Menu Mobile */}
-        <div className="sm:hidden">
-          <Sheet>
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-primary-gray">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="text-gray-600">
+                <Menu className="h-7 w-7" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="flex flex-col space-y-4 pt-8">
+            <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
+
+              {/* Cabeçalho do Menu Mobile */}
+              <div className="p-6 bg-gray-50 border-b">
                 {user ? (
-                  <>
-                    <h3 className="font-bold text-lg text-primary-teal border-b pb-2">Olá, {user.nome}</h3>
-                    <Navigation isMobile={true} />
-                  </>
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary-teal text-white flex items-center justify-center text-xl font-bold shadow-md">
+                      {user.nome.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{user.nome}</p>
+                      <p className="text-xs text-gray-500 capitalize badge-beige px-2 py-0.5 rounded-full inline-block mt-1">{user.role}</p>
+                    </div>
+                  </div>
                 ) : (
-                  <Navigation isMobile={true} />
+                  <div className="text-center">
+                    <h3 className="font-bold text-lg text-primary-gray">Bem-vindo!</h3>
+                    <p className="text-sm text-gray-500">Faça login para aceder à sua conta.</p>
+                  </div>
                 )}
-              </nav>
-              {user ? (
-                <div className="absolute bottom-4 left-4 right-4">
-                  <Button variant="destructive" className="w-full" onClick={logout}><LogOut className="h-4 w-4 mr-2" />Sair</Button>
-                </div>
-              ) : (
-                <div className="absolute bottom-4 left-4 right-4">
-                  <Button className="w-full btn-primary" onClick={() => window.location.href = '/login'}>Entrar</Button>
-                </div>
-              )}
+              </div>
+
+              {/* Corpo do Menu (Links) */}
+              <div className="flex-1 overflow-y-auto py-6 px-2">
+                <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
+
+                {user && user.role !== 'admin' && (
+                  <>
+                    <div className="my-4 border-t border-gray-100 mx-4"></div>
+                    <Link
+                      to="/alterar-senha"
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Key className="h-5 w-5 text-gray-400" />
+                      <span>Alterar Senha</span>
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              {/* Rodapé do Menu */}
+              <div className="p-6 border-t bg-gray-50 mt-auto">
+                {user ? (
+                  <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sair da Conta
+                  </Button>
+                ) : (
+                  <div className="grid gap-3">
+                    <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
+                      Entrar
+                    </Button>
+                    <div className="text-center text-xs text-gray-400 mt-2">
+                      © 2025 ALT Ilhabela
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </SheetContent>
           </Sheet>
         </div>
@@ -297,6 +369,7 @@ const DefaultHeader = () => {
 
 const HomeHeader = () => {
   const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -305,68 +378,96 @@ const HomeHeader = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-    ? 'bg-white/80 backdrop-blur-sm shadow-md text-primary-gray'
-    : 'bg-transparent text-white'
+  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20 flex items-center ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
     }`;
+
+  const logoSrc = isScrolled
+    ? "https://img.icons8.com/ios-filled/50/459894/beach.png"
+    : "https://img.icons8.com/ios-filled/50/ffffff/beach.png";
+
+  const textColor = isScrolled ? "text-primary-gray" : "text-white";
 
   return (
     <header className={headerClasses}>
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" className="flex items-center space-x-3">
-          <img
-            src={isScrolled ? "https://img.icons8.com/ios-filled/50/459894/beach.png" : "https://img.icons8.com/ios-filled/50/ffffff/beach.png"}
-            alt="ALT Ilhabela Logo"
-            className="h-8 w-8 transition-all"
-          />
-          <h1 className="text-2xl font-bold">ALT Ilhabela</h1>
-        </a>
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        <Link to="/" className="flex items-center space-x-3 group">
+          <img src={logoSrc} alt="Logo" className="h-8 w-8 transition-transform group-hover:scale-110" />
+          <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
+        </Link>
 
-        {/* Navegação Desktop */}
-        <div className="hidden sm:flex items-center space-x-4">
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-4">
           <Navigation isHomePage={!isScrolled} />
           {user ? (
             <UserProfileMenu user={user} logout={logout} isHomePage={!isScrolled} />
           ) : (
             <Button
-              variant="outline"
+              variant={isScrolled ? "default" : "outline"}
               size="sm"
               onClick={() => window.location.href = '/login'}
-              className={isScrolled ? 'text-primary-teal border-primary-teal hover:bg-primary-teal hover:text-white' : 'text-white border-white/50 hover:bg-white hover:text-primary-gray'}
+              className={isScrolled
+                ? 'btn-primary shadow-sm'
+                : 'text-white border-white hover:bg-white hover:text-primary-gray backdrop-blur-sm bg-white/10'}
             >
               Entrar
             </Button>
           )}
         </div>
 
-        {/* Menu Mobile */}
-        <div className="sm:hidden">
-          <Sheet>
+        {/* Mobile Menu (Reutiliza a mesma estrutura bonita do DefaultHeader) */}
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className={isScrolled ? "text-gray-800" : "text-white hover:bg-white/20"}>
+                <Menu className="h-7 w-7" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="flex flex-col space-y-4 pt-8">
+            <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-l-0">
+              {/* Cabeçalho do Menu Mobile */}
+              <div className="p-6 bg-gray-50 border-b">
                 {user ? (
-                  <>
-                    <h3 className="font-bold text-lg text-primary-teal border-b pb-2">Olá, {user.nome}</h3>
-                    <Navigation isMobile={true} />
-                  </>
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary-teal text-white flex items-center justify-center text-xl font-bold shadow-md">
+                      {user.nome.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{user.nome}</p>
+                      <p className="text-xs text-gray-500 capitalize badge-beige px-2 py-0.5 rounded-full inline-block mt-1">{user.role}</p>
+                    </div>
+                  </div>
                 ) : (
-                  <Navigation isMobile={true} />
+                  <div className="text-center">
+                    <h3 className="font-bold text-lg text-primary-gray">Bem-vindo!</h3>
+                    <p className="text-sm text-gray-500">Descubra o melhor de Ilhabela.</p>
+                  </div>
                 )}
-              </nav>
-              {user ? (
-                <div className="absolute bottom-4 left-4 right-4">
-                  <Button variant="destructive" className="w-full" onClick={logout}><LogOut className="h-4 w-4 mr-2" />Sair</Button>
-                </div>
-              ) : (
-                <div className="absolute bottom-4 left-4 right-4">
-                  <Button className="w-full btn-primary" onClick={() => window.location.href = '/login'}>Entrar</Button>
-                </div>
-              )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-6 px-2">
+                <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
+                {user && user.role !== 'admin' && (
+                  <Link
+                    to="/alterar-senha"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium mt-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Key className="h-5 w-5 text-gray-400" />
+                    <span>Alterar Senha</span>
+                  </Link>
+                )}
+              </div>
+
+              <div className="p-6 border-t bg-gray-50 mt-auto">
+                {user ? (
+                  <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sair da Conta
+                  </Button>
+                ) : (
+                  <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
+                    Entrar na Conta
+                  </Button>
+                )}
+              </div>
             </SheetContent>
           </Sheet>
         </div>
