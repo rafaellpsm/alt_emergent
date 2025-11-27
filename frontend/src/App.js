@@ -323,8 +323,8 @@ const HomeHeader = () => {
     }`;
 
   const logoSrc = isScrolled
-    ? "https://img.icons8.com/ios-filled/50/459894/beach.png"
-    : "https://img.icons8.com/ios-filled/50/ffffff/beach.png";
+    ? "./assets/logo.png"
+    : "./assets/logo_cinza.png";
 
   const textColor = isScrolled ? "text-primary-gray" : "text-white";
 
