@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle, Eye, X } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -17,12 +17,75 @@ import { toast } from '../hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import RichTextEditor from './RichTextEditor';
 import { PhotoUpload } from './PhotoUpload';
-import { VideoUpload } from './VideoUpload'; // <-- Adicionar importação
+import { VideoUpload } from './VideoUpload';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR');
+
+// --- COMPONENTE AUXILIAR PARA EXIBIR DETALHES ---
+const DetailRow = ({ label, value }) => {
+    if (!value) return null;
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 border-b border-gray-100 last:border-0">
+            <span className="font-semibold text-gray-600 text-sm">{label}:</span>
+            <span className="sm:col-span-2 text-gray-900 text-sm break-words whitespace-pre-wrap">{value}</span>
+        </div>
+    );
+};
+
+const CandidaturaDetails = ({ candidatura, tipo }) => {
+    // Campos comuns a todos
+    const commonFields = (
+        <>
+            <DetailRow label="Nome" value={candidatura.nome} />
+            <DetailRow label="Email" value={candidatura.email} />
+            <DetailRow label="Telefone" value={candidatura.telefone} />
+            <DetailRow label="Data de Envio" value={formatDate(candidatura.created_at)} />
+            <DetailRow label="Mensagem" value={candidatura.mensagem} />
+        </>
+    );
+
+    return (
+        <div className="space-y-1">
+            {commonFields}
+
+            {tipo === 'membro' && (
+                <>
+                    <DetailRow label="Endereço dos Imóveis" value={candidatura.endereco} />
+                    <DetailRow label="Nº de Imóveis" value={candidatura.num_imoveis} />
+                    <DetailRow label="Experiência" value={candidatura.experiencia_locacao} />
+                    <DetailRow label="Link do Imóvel" value={candidatura.link_imovel} />
+                </>
+            )}
+
+            {tipo === 'parceiro' && (
+                <>
+                    <DetailRow label="Nome da Empresa" value={candidatura.nome_empresa} />
+                    <DetailRow label="CNPJ" value={candidatura.cnpj} />
+                    <DetailRow label="Categoria" value={candidatura.categoria} />
+                    <DetailRow label="Tempo de Operação" value={candidatura.tempo_operacao} />
+                    <DetailRow label="Website" value={candidatura.website} />
+                    <DetailRow label="Link Extra" value={candidatura.link_empresa} />
+                    <DetailRow label="Serviços Oferecidos" value={candidatura.servicos_oferecidos} />
+                    <DetailRow label="Capacidade" value={candidatura.capacidade_atendimento} />
+                </>
+            )}
+
+            {tipo === 'associado' && (
+                <>
+                    <DetailRow label="Ocupação" value={candidatura.ocupacao} />
+                    <DetailRow label="Empresa Atual" value={candidatura.empresa_trabalho} />
+                    <DetailRow label="LinkedIn" value={candidatura.linkedin} />
+                    <DetailRow label="Motivo do Interesse" value={candidatura.motivo_interesse} />
+                    <DetailRow label="Contribuição Pretendida" value={candidatura.contribuicao_pretendida} />
+                    <DetailRow label="Disponibilidade" value={candidatura.disponibilidade} />
+                </>
+            )}
+        </div>
+    );
+};
 
 // Formulário para Criar/Editar Notícia
 const NoticiaForm = ({ noticia, onSave, onCancel }) => {
@@ -86,8 +149,6 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                             <Label htmlFor="resumo">Resumo (para a página principal)</Label>
                             <Textarea id="resumo" name="resumo" value={formData.resumo} onChange={handleChange} rows={3} placeholder="Escreva uma chamada curta e atrativa..." />
                         </div>
-
-                        {/* CAMPO PARA FOTO DE DESTAQUE (CAPA) */}
                         <div>
                             <PhotoUpload
                                 photos={formData.fotos}
@@ -96,8 +157,6 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                                 label="Foto de Destaque (para o card e topo da página)"
                             />
                         </div>
-
-                        {/* MELHORIA: Usar o componente VideoUpload */}
                         <div>
                             <VideoUpload
                                 videoUrl={formData.video_url}
@@ -105,8 +164,6 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                                 label="Vídeo de Destaque (Opcional)"
                             />
                         </div>
-
-                        {/* EDITOR DE TEXTO COM UPLOAD DE IMAGEM EMBUTIDO */}
                         <div>
                             <Label>Conteúdo Completo (insira fotos e vídeos da matéria aqui)</Label>
                             <RichTextEditor
@@ -114,7 +171,6 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
                                 onChange={handleContentChange}
                             />
                         </div>
-
                         <div>
                             <Label htmlFor="categoria">Categoria</Label>
                             <Input id="categoria" name="categoria" value={formData.categoria} onChange={handleChange} />
@@ -134,10 +190,7 @@ const NoticiaForm = ({ noticia, onSave, onCancel }) => {
     );
 };
 
-// --- O RESTANTE DO FICHEIRO CONTINUA IGUAL ---
-// (Copy and paste the rest of your AdminPages.js file here)
-
-export const AdminConteudoPage = ({ /* ... as props ... */ }) => {
+export const AdminConteudoPage = () => {
     const [noticias, setNoticias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -223,15 +276,30 @@ export const AdminConteudoPage = ({ /* ... as props ... */ }) => {
     );
 };
 
-const CandidaturaCard = ({ candidatura, tipo, onAction }) => (
+// CARD DE CANDIDATURA ATUALIZADO
+const CandidaturaCard = ({ candidatura, tipo, onAction, onView }) => (
     <Card className="card-custom mb-4">
-        <CardHeader>
-            <CardTitle>{candidatura.nome}</CardTitle>
-            <CardDescription>{candidatura.email} • Enviado em: {formatDate(candidatura.created_at)}</CardDescription>
+        <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="text-lg">{candidatura.nome}</CardTitle>
+                    <CardDescription>{candidatura.email}</CardDescription>
+                </div>
+                <Badge variant="outline" className="uppercase text-xs font-bold">{tipo}</Badge>
+            </div>
+            <CardDescription className="text-xs mt-1">
+                Enviado em: {formatDate(candidatura.created_at)}
+            </CardDescription>
         </CardHeader>
         <CardContent>
-            {/* Detalhes da candidatura aqui */}
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+                {/* Botão VER MAIS */}
+                <Button size="sm" variant="outline" className="text-primary-teal border-primary-teal hover:bg-primary-teal hover:text-white" onClick={() => onView(candidatura, tipo)}>
+                    <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
+                </Button>
+
+                <div className="flex-1"></div>
+
                 <Button size="sm" className="btn-primary" onClick={() => onAction(tipo, candidatura.id, 'aprovar')}>Aprovar</Button>
                 <Button size="sm" variant="destructive" onClick={() => onAction(tipo, candidatura.id, 'recusar')}>Recusar</Button>
             </div>
@@ -242,6 +310,9 @@ const CandidaturaCard = ({ candidatura, tipo, onAction }) => (
 export const AdminCandidaturasPage = () => {
     const [candidaturas, setCandidaturas] = useState({ membros: [], parceiros: [], associados: [] });
     const [loading, setLoading] = useState(true);
+
+    // Estado para controlar o modal de detalhes
+    const [viewingCandidatura, setViewingCandidatura] = useState(null);
 
     const fetchCandidaturas = async () => {
         setLoading(true);
@@ -276,26 +347,77 @@ export const AdminCandidaturasPage = () => {
         }
     };
 
+    // Função para abrir o modal
+    const handleView = (candidatura, tipo) => {
+        setViewingCandidatura({ data: candidatura, tipo });
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Candidaturas</h1>
             {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
-                <Tabs defaultValue="membros">
-                    <TabsList>
-                        <TabsTrigger value="membros">Membros ({candidaturas.membros.length})</TabsTrigger>
-                        <TabsTrigger value="parceiros">Parceiros ({candidaturas.parceiros.length})</TabsTrigger>
-                        <TabsTrigger value="associados">Associados ({candidaturas.associados.length})</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="membros">
-                        {candidaturas.membros.length > 0 ? candidaturas.membros.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="membro" onAction={handleAction} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
-                    </TabsContent>
-                    <TabsContent value="parceiros">
-                        {candidaturas.parceiros.length > 0 ? candidaturas.parceiros.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="parceiro" onAction={handleAction} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
-                    </TabsContent>
-                    <TabsContent value="associados">
-                        {candidaturas.associados.length > 0 ? candidaturas.associados.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="associado" onAction={handleAction} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
-                    </TabsContent>
-                </Tabs>
+                <>
+                    <Tabs defaultValue="membros">
+                        <TabsList className="w-full sm:w-auto">
+                            <TabsTrigger value="membros">Membros ({candidaturas.membros.length})</TabsTrigger>
+                            <TabsTrigger value="parceiros">Parceiros ({candidaturas.parceiros.length})</TabsTrigger>
+                            <TabsTrigger value="associados">Associados ({candidaturas.associados.length})</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="membros">
+                            {candidaturas.membros.length > 0 ? candidaturas.membros.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="membro" onAction={handleAction} onView={handleView} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
+                        </TabsContent>
+                        <TabsContent value="parceiros">
+                            {candidaturas.parceiros.length > 0 ? candidaturas.parceiros.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="parceiro" onAction={handleAction} onView={handleView} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
+                        </TabsContent>
+                        <TabsContent value="associados">
+                            {candidaturas.associados.length > 0 ? candidaturas.associados.map(c => <CandidaturaCard key={c.id} candidatura={c} tipo="associado" onAction={handleAction} onView={handleView} />) : <p className="text-gray-500 mt-4">Nenhuma candidatura pendente.</p>}
+                        </TabsContent>
+                    </Tabs>
+
+                    {/* MODAL DE DETALHES */}
+                    <Dialog open={!!viewingCandidatura} onOpenChange={(open) => !open && setViewingCandidatura(null)}>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl text-primary-gray border-b pb-2">
+                                    Detalhes da Candidatura
+                                </DialogTitle>
+                            </DialogHeader>
+
+                            {viewingCandidatura && (
+                                <div className="py-2">
+                                    <Badge className="badge-teal mb-4 capitalize">{viewingCandidatura.tipo}</Badge>
+                                    <CandidaturaDetails candidatura={viewingCandidatura.data} tipo={viewingCandidatura.tipo} />
+                                </div>
+                            )}
+
+                            <DialogFooter className="gap-2 sm:gap-0">
+                                <Button variant="outline" onClick={() => setViewingCandidatura(null)}>Fechar</Button>
+                                {viewingCandidatura && (
+                                    <>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() => {
+                                                handleAction(viewingCandidatura.tipo, viewingCandidatura.data.id, 'recusar');
+                                                setViewingCandidatura(null);
+                                            }}
+                                        >
+                                            Recusar
+                                        </Button>
+                                        <Button
+                                            className="btn-primary"
+                                            onClick={() => {
+                                                handleAction(viewingCandidatura.tipo, viewingCandidatura.data.id, 'aprovar');
+                                                setViewingCandidatura(null);
+                                            }}
+                                        >
+                                            Aprovar
+                                        </Button>
+                                    </>
+                                )}
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </>
             )}
         </div>
     );
