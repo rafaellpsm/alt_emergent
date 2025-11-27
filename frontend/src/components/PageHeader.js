@@ -14,7 +14,6 @@ const PageHeader = ({ title, showBackButton = true, children }) => {
     const navigate = useNavigate();
 
     return (
-        // A CORREÇÃO ESTÁ NESTA LINHA: adicionámos "gap-4" para garantir um espaçamento
         <div className="flex justify-between items-center gap-4 mb-8">
             <div className="flex items-center space-x-4">
                 {showBackButton && (
@@ -24,7 +23,6 @@ const PageHeader = ({ title, showBackButton = true, children }) => {
                 )}
                 <h1 className="text-3xl font-bold text-primary-gray truncate">{title}</h1>
             </div>
-            {/* Espaço para botões de ação, se houver */}
             <div className="flex items-center space-x-2">
                 {children}
             </div>
