@@ -225,7 +225,7 @@ const DefaultHeader = () => {
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
-            <img src="/assets/logo.png" alt="Logo" className="h-6 w-6" />
+            <img src="./assets/logo.png" alt="Logo" className="h-6 w-6" />
           </div>
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
