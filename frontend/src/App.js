@@ -22,6 +22,8 @@ import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteu
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
+import logoTeal from './assets/logo.png';
+import logoGray from './assets/logo_cinza.png';
 
 // Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
 axios.interceptors.response.use(
@@ -225,7 +227,7 @@ const DefaultHeader = () => {
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
-            <img src="./assets/logo.png" alt="Logo" className="h-6 w-6" />
+            <img src={logoTeal} alt="Logo" className="h-6 w-6" />
           </div>
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
@@ -322,9 +324,7 @@ const HomeHeader = () => {
   const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20 flex items-center ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
     }`;
 
-  const logoSrc = isScrolled
-    ? "./assets/logo.png"
-    : "./assets/logo_cinza.png";
+  const logoSrc = isScrolled ? logoTeal : logoGray;
 
   const textColor = isScrolled ? "text-primary-gray" : "text-white";
 
