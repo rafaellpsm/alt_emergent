@@ -225,7 +225,7 @@ const DefaultHeader = () => {
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
-            <img src="https://img.icons8.com/ios-filled/50/459894/beach.png" alt="Logo" className="h-6 w-6" />
+            <img src="/assets/logo.png" alt="Logo" className="h-6 w-6" />
           </div>
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
@@ -551,11 +551,6 @@ const HomePage = () => {
                     <div className="relative">
                       <img src={imovel.fotos[0] || 'https://via.placeholder.com/400x300'} alt={imovel.titulo} className="w-full h-64 object-cover" />
                       <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{imovel.regiao}</Badge>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
-                      <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
-                      <div className="text-lg font-bold text-primary-teal">R$ {imovel.preco_diaria} <span className="text-sm font-normal text-gray-600">/ noite</span></div>
                     </div>
                   </div>
                 ))}
