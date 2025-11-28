@@ -16,7 +16,7 @@ import { Toaster } from './components/ui/toaster';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye } from 'lucide-react';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye, MapPin, Calendar } from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
@@ -227,7 +227,7 @@ const DefaultHeader = () => {
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2 group">
           <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
-            <img src={logoTeal} alt="Logo" className="h-12 w-auto" />
+            <img src={logoTeal} alt="Logo" className="h-10 w-auto" />
           </div>
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
@@ -325,14 +325,13 @@ const HomeHeader = () => {
     }`;
 
   const logoSrc = isScrolled ? logoTeal : logoGray;
-
   const textColor = isScrolled ? "text-primary-gray" : "text-white";
 
   return (
     <header className={headerClasses}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-3 group">
-          <img src={logoSrc} alt="Logo" className="h-8 w-8 transition-transform group-hover:scale-110" />
+          <img src={logoSrc} alt="Logo" className="h-12 w-auto transition-transform group-hover:scale-110" />
           <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
         </Link>
 
@@ -507,42 +506,93 @@ const HomePage = () => {
             </div>
           </div>
         </section>
-        {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
-          <section id="noticias" className="py-20 bg-white">
-            <div className="container mx-auto px-4">
-              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Fique por Dentro</h2>
-              <div className="news-highlight-grid">
-                <div className="news-highlight-main" onClick={() => navigate(`/noticia/${pageData.noticias_destaque[0].id}`)}>
-                  <img
-                    src={pageData.noticias_destaque[0].fotos?.[0] || 'https://placehold.co/800x600?text=Imagem'}
-                    alt={pageData.noticias_destaque[0].titulo}
-                    className="w-full h-full object-cover"
+
+        {/* --- NOVA SECÇÃO: TURISMO E EXPERIÊNCIAS --- */}
+        <section className="py-20 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Lado do Vídeo */}
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
+                  <video
+                    src="https://videos.pexels.com/video-files/4552029/4552029-hd_1920_1080_30fps.mp4"
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                    controls
+                    poster="https://images.pexels.com/photos/237272/pexels-photo-237272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                   />
-                  <div className="news-highlight-overlay">
-                    <Badge className="badge-teal mb-2">{pageData.noticias_destaque[0].categoria}</Badge>
-                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{pageData.noticias_destaque[0].titulo}</h3>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <h3 className="text-white text-2xl md:text-3xl font-bold drop-shadow-md text-center px-4">Viva a Experiência Ilhabela</h3>
                   </div>
                 </div>
-                <div className="news-highlight-side">
-                  {pageData.noticias_destaque.slice(1, 3).map((noticia) => (
-                    <div key={noticia.id} className="news-side-card" onClick={() => navigate(`/noticia/${noticia.id}`)}>
-                      <div className="news-side-card-image">
-                        <img src={noticia.fotos?.[0] || 'https://placehold.co/400x300'} alt={noticia.titulo} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="news-side-card-content">
-                        <Badge className="badge-beige mb-2 text-xs">{noticia.categoria}</Badge>
-                        <h4 className="font-bold text-primary-gray leading-tight">{noticia.titulo}</h4>
-                        <span className="text-primary-teal text-sm mt-auto">Ler Mais →</span>
-                      </div>
-                    </div>
-                  ))}
+              </div>
+
+              {/* Lado das Notícias/Turismo */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <Badge className="badge-teal mb-2">Novidades</Badge>
+                    <h2 className="text-3xl font-bold text-primary-gray leading-tight">Descubra o Paraíso</h2>
+                    <p className="text-gray-600 mt-2">Fique por dentro das melhores atrações e eventos.</p>
+                  </div>
+                  <Button variant="outline" className="hidden sm:flex border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white" asChild>
+                    <a href="https://turismoilhabela.com" target="_blank" rel="noopener noreferrer">
+                      + Turismo
+                    </a>
+                  </Button>
                 </div>
+
+                <div className="space-y-4">
+                  {/* Se não houver notícias, mostra placeholders bonitos */}
+                  {pageData.noticias_destaque.length === 0 ? (
+                    <>
+                      <div className="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100">
+                        <div className="h-20 w-20 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+                          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=300" className="w-full h-full object-cover" alt="Cachoeira" />
+                        </div>
+                        <div>
+                          <Badge variant="outline" className="text-[10px] mb-1 border-gray-300 text-gray-500">Natureza</Badge>
+                          <h4 className="font-bold text-gray-800 leading-tight">As 5 melhores cachoeiras para visitar este mês</h4>
+                          <p className="text-xs text-gray-500 mt-1 flex items-center"><Calendar className="h-3 w-3 mr-1" /> Há 2 dias</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100">
+                        <div className="h-20 w-20 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+                          <img src="https://images.pexels.com/photos/237272/pexels-photo-237272.jpeg?auto=compress&cs=tinysrgb&w=300" className="w-full h-full object-cover" alt="Praia" />
+                        </div>
+                        <div>
+                          <Badge variant="outline" className="text-[10px] mb-1 border-gray-300 text-gray-500">Gastronomia</Badge>
+                          <h4 className="font-bold text-gray-800 leading-tight">Festival do Camarão: Confira a programação completa</h4>
+                          <p className="text-xs text-gray-500 mt-1 flex items-center"><Calendar className="h-3 w-3 mr-1" /> Hoje</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    pageData.noticias_destaque.slice(0, 3).map(noticia => (
+                      <div key={noticia.id} className="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100" onClick={() => navigate(`/noticia/${noticia.id}`)}>
+                        <div className="h-20 w-20 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+                          {noticia.fotos?.[0] && <img src={noticia.fotos[0]} className="w-full h-full object-cover" alt={noticia.titulo} />}
+                        </div>
+                        <div>
+                          <Badge variant="outline" className="text-[10px] mb-1 border-gray-300 text-gray-500">{noticia.categoria}</Badge>
+                          <h4 className="font-bold text-gray-800 leading-tight line-clamp-2">{noticia.titulo}</h4>
+                          <p className="text-xs text-gray-500 mt-1 flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(noticia.created_at).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <Button className="w-full sm:hidden border-primary-teal text-primary-teal" variant="outline" asChild>
+                  <a href="https://turismoilhabela.com" target="_blank" rel="noopener noreferrer">+ Notícias de Turismo</a>
+                </Button>
               </div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+
         {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
-          <section id="imoveis-destaque-section" className="py-20 bg-white">
+          <section id="imoveis-destaque-section" className="py-20 bg-gray-50">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -552,6 +602,14 @@ const HomePage = () => {
                       <img src={imovel.fotos[0] || 'https://via.placeholder.com/400x300'} alt={imovel.titulo} className="w-full h-64 object-cover" />
                       <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{imovel.regiao}</Badge>
                     </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
+                      {/* REMOVIDO PREÇO DAQUI TAMBÉM */}
+                      <div className="text-sm text-primary-teal font-medium flex items-center gap-1">
+                        <Home className="h-4 w-4" /> Ver detalhes
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -559,7 +617,7 @@ const HomePage = () => {
           </section>
         )}
         {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
-          <section className="py-20 bg-gray-50">
+          <section className="py-20 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Parceiros em Destaque</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -579,7 +637,7 @@ const HomePage = () => {
             </div>
           </section>
         )}
-        <section id="sobre" className="py-20">
+        <section id="sobre" className="py-20 bg-gray-50">
           <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold mb-6 text-primary-gray">Qualidade e Confiança: O selo ALT Ilhabela</h2>
