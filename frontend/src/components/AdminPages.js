@@ -455,6 +455,7 @@ export const AdminImoveisPage = () => {
         }
     };
 
+    // Função para Ativar/Desativar (Imóveis da Lista)
     const handleToggleStatus = async (imovel) => {
         const novoStatus = !imovel.ativo;
         const texto = novoStatus ? "ativar" : "desativar";
@@ -462,10 +463,13 @@ export const AdminImoveisPage = () => {
         if (!window.confirm(`Tem a certeza que deseja ${texto} o imóvel "${imovel.titulo}"?`)) return;
 
         try {
-            await axios.put(`${API}/imoveis/${imovel.id}`, { ativo: novoStatus });
+            // --- CORREÇÃO: Agora aponta para a rota /admin/.../status ---
+            await axios.put(`${API}/admin/imoveis/${imovel.id}/status`, { ativo: novoStatus });
+
             toast({ title: `Imóvel ${novoStatus ? 'ativado' : 'desativado'} com sucesso!` });
             fetchImoveis();
         } catch (error) {
+            console.error(error);
             toast({ title: `Erro ao ${texto} imóvel`, variant: "destructive" });
         }
     };
