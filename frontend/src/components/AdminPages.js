@@ -432,6 +432,9 @@ const getStatusBadge = (status) => {
     }
 };
 
+// Certifica-te de ter estes imports no topo do ficheiro:
+// import { MoreHorizontal, Trash2, Ban, CheckCircle } from 'lucide-react';
+
 export const AdminImoveisPage = () => {
     const [imoveis, setImoveis] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -441,12 +444,16 @@ export const AdminImoveisPage = () => {
         try {
             const response = await axios.get(`${API}/admin/imoveis`);
             setImoveis(response.data);
-        } catch (error) { toast({ title: "Erro ao carregar imóveis", variant: "destructive" }); }
-        finally { setLoading(false); }
+        } catch (error) {
+            toast({ title: "Erro ao carregar imóveis", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => { fetchImoveis(); }, []);
 
+    // Função para Aprovar/Recusar (Candidaturas Pendentes)
     const handleAction = async (id, action) => {
         let motivo = '';
         if (action === 'recusar') {
@@ -457,7 +464,41 @@ export const AdminImoveisPage = () => {
             await axios.post(`${API}/admin/imoveis/${id}/${action}`, { motivo });
             toast({ title: `Imóvel ${action === 'aprovar' ? 'aprovado' : 'recusado'}!` });
             fetchImoveis();
-        } catch (error) { toast({ title: `Erro ao ${action} imóvel`, variant: "destructive" }); }
+        } catch (error) {
+            toast({ title: `Erro ao ${action} imóvel`, variant: "destructive" });
+        }
+    };
+
+    // Função para Ativar/Desativar (Imóveis da Lista)
+    const handleToggleStatus = async (imovel) => {
+        const novoStatus = !imovel.ativo;
+        const texto = novoStatus ? "ativar" : "desativar";
+
+        if (!window.confirm(`Tem a certeza que deseja ${texto} o imóvel "${imovel.titulo}"?`)) return;
+
+        try {
+            // Nota: Estamos a usar a rota de update genérica. 
+            // Se der erro 403/404, teremos de criar uma rota específica no backend.
+            await axios.put(`${API}/admin/imoveis/${imovel.id}/status`, { ativo: novoStatus });
+            toast({ title: `Imóvel ${novoStatus ? 'ativado' : 'desativado'} com sucesso!` });
+            fetchImoveis();
+        } catch (error) {
+            console.error(error);
+            toast({ title: `Erro ao ${texto} imóvel`, description: "Verifique se tem permissão.", variant: "destructive" });
+        }
+    };
+
+    // Função para Excluir (Imóveis da Lista)
+    const handleDelete = async (id) => {
+        if (!window.confirm('ATENÇÃO: Tem a certeza que deseja apagar este imóvel permanentemente?')) return;
+
+        try {
+            await axios.delete(`${API}/admin/imoveis/${id}`);
+            toast({ title: "Imóvel apagado com sucesso!" });
+            fetchImoveis();
+        } catch (error) {
+            toast({ title: "Erro ao apagar imóvel", variant: "destructive" });
+        }
     };
 
     const imoveisPendentes = imoveis.filter(i => i.status_aprovacao === 'pendente');
@@ -471,6 +512,7 @@ export const AdminImoveisPage = () => {
                         <TabsTrigger value="pendentes">Pendentes ({imoveisPendentes.length})</TabsTrigger>
                         <TabsTrigger value="todos">Todos ({imoveis.length})</TabsTrigger>
                     </TabsList>
+
                     <TabsContent value="pendentes">
                         {imoveisPendentes.length > 0 ? imoveisPendentes.map(imovel => (
                             <Card key={imovel.id} className="card-custom mb-4">
@@ -487,16 +529,54 @@ export const AdminImoveisPage = () => {
                             </Card>
                         )) : <p className="text-gray-500 mt-4">Nenhum imóvel pendente.</p>}
                     </TabsContent>
+
                     <TabsContent value="todos">
-                        <Card><Table>
-                            <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
-                            <TableBody>{imoveis.map(imovel => (
-                                <TableRow key={imovel.id}>
-                                    <TableCell>{imovel.titulo}</TableCell>
-                                    <TableCell>{getStatusBadge(imovel.status_aprovacao)}</TableCell>
-                                </TableRow>
-                            ))}</TableBody>
-                        </Table></Card>
+                        <Card>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Título</TableHead>
+                                        <TableHead>Região</TableHead>
+                                        <TableHead>Status Aprov.</TableHead>
+                                        <TableHead>Visibilidade</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {imoveis.map(imovel => (
+                                        <TableRow key={imovel.id}>
+                                            <TableCell className="font-medium">{imovel.titulo}</TableCell>
+                                            <TableCell>{imovel.regiao}</TableCell>
+                                            <TableCell>{getStatusBadge(imovel.status_aprovacao)}</TableCell>
+                                            <TableCell>
+                                                {imovel.ativo
+                                                    ? <Badge className="badge-teal">Ativo no Site</Badge>
+                                                    : <Badge variant="secondary">Oculto</Badge>
+                                                }
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => handleToggleActive(imovel)}>
+                                                            {imovel.ativo
+                                                                ? <><Ban className="mr-2 h-4 w-4" /> Ocultar do Site</>
+                                                                : <><CheckCircle className="mr-2 h-4 w-4" /> Mostrar no Site</>
+                                                            }
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(imovel.id)}>
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Apagar
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             )}

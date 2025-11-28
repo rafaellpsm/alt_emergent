@@ -16,7 +16,7 @@ import { Toaster } from './components/ui/toaster';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye, MapPin, Calendar, ExternalLink } from 'lucide-react';
+import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye, MapPin, Calendar, ExternalLink, Compass } from 'lucide-react'; // Adicionado Compass
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
@@ -445,89 +445,72 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   return children;
 };
 
-// --- COMPONENTE DE NOTÍCIAS EXTERNAS ---
-const ExternalNewsSection = () => {
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchExternalNews = async () => {
-      try {
-        // Usa o rss2json para converter o RSS do Turismo Ilhabela em JSON
-        const response = await axios.get('https://api.rss2json.com/v1/api.json?rss_url=https://turismoilhabela.com/feed/');
-        // Pega apenas os 3 primeiros itens
-        if (response.data && response.data.items) {
-          setNews(response.data.items.slice(0, 3));
-        }
-      } catch (error) {
-        console.error("Erro ao buscar notícias externas:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchExternalNews();
-  }, []);
-
-  if (loading || news.length === 0) return null; // Não mostra nada se estiver carregando ou falhar
+// --- NOVA SECÇÃO: EXPLORE ILHABELA (Vídeo + Regiões) ---
+const ExploreIlhabelaSection = () => {
+  const regions = [
+    { name: 'Centro', link: 'https://turismoilhabela.com/centro-2/' },
+    { name: 'Norte', link: 'https://turismoilhabela.com/norte/' },
+    { name: 'Leste', link: 'https://turismoilhabela.com/leste/' },
+    { name: 'Sul', link: 'https://turismoilhabela.com/sul/' }
+  ];
 
   return (
     <section className="py-20 bg-white border-t border-gray-100">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div>
-            <Badge className="badge-teal mb-2">Blog de Turismo</Badge>
-            <h2 className="text-3xl font-bold text-primary-gray leading-tight">Giro de Notícias de Ilhabela</h2>
-            <p className="text-gray-600 mt-2">As últimas atualizações do portal Turismo Ilhabela.</p>
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Lado do Vídeo */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
+              <video
+                src="https://videos.pexels.com/video-files/4552029/4552029-hd_1920_1080_30fps.mp4"
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                controls
+                poster="https://images.pexels.com/photos/237272/pexels-photo-237272.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <h3 className="text-white text-2xl md:text-3xl font-bold drop-shadow-md text-center px-4">Viva a Experiência Ilhabela</h3>
+              </div>
+            </div>
           </div>
-          <Button variant="outline" className="border-primary-teal text-primary-teal hover:bg-primary-teal hover:text-white hidden md:flex" asChild>
-            <a href="https://turismoilhabela.com" target="_blank" rel="noopener noreferrer">
-              Ver Mais Notícias <ExternalLink className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {news.map((item, index) => (
-            <a
-              key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block h-full"
-            >
-              <Card className="h-full border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
-                <div className="aspect-video relative overflow-hidden bg-gray-200">
-                  {/* O RSS do turismoilhabela às vezes põe a imagem no 'enclosure' ou 'thumbnail' */}
-                  <img
-                    src={item.thumbnail || item.enclosure?.link || 'https://turismoilhabela.com/wp-content/uploads/2021/07/Ilhabela-Capital-da-Vela.jpg'}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => { e.target.src = 'https://turismoilhabela.com/wp-content/uploads/2021/07/Ilhabela-Capital-da-Vela.jpg' }} // Fallback
-                  />
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-gray-700 shadow-sm">
-                    {new Date(item.pubDate).toLocaleDateString('pt-BR')}
+          {/* Lado das Regiões */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-end">
+              <div>
+                <Badge className="badge-teal mb-2">Explore</Badge>
+                <h2 className="text-3xl font-bold text-primary-gray leading-tight">Descubra cada Canto</h2>
+                <p className="text-gray-600 mt-2">A ilha é dividida em regiões únicas. Escolha o seu destino.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {regions.map((region, index) => (
+                <a
+                  key={index}
+                  href={region.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative h-24 rounded-xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-center"
+                >
+                  {/* Fundo com cor suave */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+
+                  <div className="relative z-10 flex items-center gap-2 text-white font-bold text-lg">
+                    <Compass className="h-5 w-5" /> {region.name}
                   </div>
-                </div>
-                <CardContent className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2 group-hover:text-primary-teal transition-colors">
-                    {item.title}
-                  </h3>
-                  {/* Removemos tags HTML da descrição (o RSS vem com HTML) */}
-                  <p className="text-sm text-gray-500 line-clamp-3 mb-4 flex-1">
-                    {item.description.replace(/<[^>]*>?/gm, '').substring(0, 120)}...
-                  </p>
-                  <div className="text-primary-teal text-sm font-medium flex items-center mt-auto">
-                    Ler matéria completa <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </CardContent>
-              </Card>
-            </a>
-          ))}
+                </a>
+              ))}
+            </div>
+
+            <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
+              <p className="text-sm text-teal-800 flex items-start gap-2">
+                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                Quer saber mais sobre praias, trilhas e atrações turísticas de cada região? Clique nos botões acima para visitar o guia oficial.
+              </p>
+            </div>
+          </div>
         </div>
-        <Button className="w-full md:hidden mt-8 border-primary-teal text-primary-teal" variant="outline" asChild>
-          <a href="https://turismoilhabela.com" target="_blank" rel="noopener noreferrer">+ Notícias de Turismo</a>
-        </Button>
       </div>
     </section>
   );
@@ -595,8 +578,8 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* --- NOVA SECÇÃO: TURISMO (EXTERNA) --- */}
-        <ExternalNewsSection />
+        {/* --- NOVA SECÇÃO: EXPLORE ILHABELA --- */}
+        <ExploreIlhabelaSection />
 
         {/* --- SECÇÃO: NOTÍCIAS INTERNAS (ADMIN) --- */}
         {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
