@@ -1,5 +1,3 @@
-// src/components/AdminPages.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from './ui/button';
@@ -8,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle, Eye, X } from 'lucide-react';
+import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle, Eye, X, Ban, CheckCircle } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -24,7 +22,6 @@ const API = `${BACKEND_URL}/api`;
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR');
 
-// --- COMPONENTE AUXILIAR PARA EXIBIR DETALHES ---
 const DetailRow = ({ label, value }) => {
     if (!value) return null;
     return (
@@ -36,7 +33,6 @@ const DetailRow = ({ label, value }) => {
 };
 
 const CandidaturaDetails = ({ candidatura, tipo }) => {
-    // Campos comuns a todos
     const commonFields = (
         <>
             <DetailRow label="Nome" value={candidatura.nome} />
@@ -87,7 +83,6 @@ const CandidaturaDetails = ({ candidatura, tipo }) => {
     );
 };
 
-// Formulário para Criar/Editar Notícia
 const NoticiaForm = ({ noticia, onSave, onCancel }) => {
     const [formData, setFormData] = useState({
         titulo: '',
@@ -276,7 +271,6 @@ export const AdminConteudoPage = () => {
     );
 };
 
-// CARD DE CANDIDATURA ATUALIZADO
 const CandidaturaCard = ({ candidatura, tipo, onAction, onView }) => (
     <Card className="card-custom mb-4">
         <CardHeader className="pb-3">
@@ -293,7 +287,6 @@ const CandidaturaCard = ({ candidatura, tipo, onAction, onView }) => (
         </CardHeader>
         <CardContent>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-                {/* Botão VER MAIS */}
                 <Button size="sm" variant="outline" className="text-primary-teal border-primary-teal hover:bg-primary-teal hover:text-white" onClick={() => onView(candidatura, tipo)}>
                     <Eye className="mr-2 h-4 w-4" /> Ver Detalhes
                 </Button>
@@ -311,7 +304,6 @@ export const AdminCandidaturasPage = () => {
     const [candidaturas, setCandidaturas] = useState({ membros: [], parceiros: [], associados: [] });
     const [loading, setLoading] = useState(true);
 
-    // Estado para controlar o modal de detalhes
     const [viewingCandidatura, setViewingCandidatura] = useState(null);
 
     const fetchCandidaturas = async () => {
@@ -347,7 +339,6 @@ export const AdminCandidaturasPage = () => {
         }
     };
 
-    // Função para abrir o modal
     const handleView = (candidatura, tipo) => {
         setViewingCandidatura({ data: candidatura, tipo });
     };
@@ -374,7 +365,6 @@ export const AdminCandidaturasPage = () => {
                         </TabsContent>
                     </Tabs>
 
-                    {/* MODAL DE DETALHES */}
                     <Dialog open={!!viewingCandidatura} onOpenChange={(open) => !open && setViewingCandidatura(null)}>
                         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
@@ -432,9 +422,6 @@ const getStatusBadge = (status) => {
     }
 };
 
-// Certifica-te de ter estes imports no topo do ficheiro:
-// import { MoreHorizontal, Trash2, Ban, CheckCircle } from 'lucide-react';
-
 export const AdminImoveisPage = () => {
     const [imoveis, setImoveis] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -453,7 +440,6 @@ export const AdminImoveisPage = () => {
 
     useEffect(() => { fetchImoveis(); }, []);
 
-    // Função para Aprovar/Recusar (Candidaturas Pendentes)
     const handleAction = async (id, action) => {
         let motivo = '';
         if (action === 'recusar') {
@@ -469,7 +455,6 @@ export const AdminImoveisPage = () => {
         }
     };
 
-    // Função para Ativar/Desativar (Imóveis da Lista)
     const handleToggleStatus = async (imovel) => {
         const novoStatus = !imovel.ativo;
         const texto = novoStatus ? "ativar" : "desativar";
@@ -477,23 +462,19 @@ export const AdminImoveisPage = () => {
         if (!window.confirm(`Tem a certeza que deseja ${texto} o imóvel "${imovel.titulo}"?`)) return;
 
         try {
-            // Nota: Estamos a usar a rota de update genérica. 
-            // Se der erro 403/404, teremos de criar uma rota específica no backend.
-            await axios.put(`${API}/admin/imoveis/${imovel.id}/status`, { ativo: novoStatus });
+            await axios.put(`${API}/imoveis/${imovel.id}`, { ativo: novoStatus });
             toast({ title: `Imóvel ${novoStatus ? 'ativado' : 'desativado'} com sucesso!` });
             fetchImoveis();
         } catch (error) {
-            console.error(error);
-            toast({ title: `Erro ao ${texto} imóvel`, description: "Verifique se tem permissão.", variant: "destructive" });
+            toast({ title: `Erro ao ${texto} imóvel`, variant: "destructive" });
         }
     };
 
-    // Função para Excluir (Imóveis da Lista)
     const handleDelete = async (id) => {
         if (!window.confirm('ATENÇÃO: Tem a certeza que deseja apagar este imóvel permanentemente?')) return;
 
         try {
-            await axios.delete(`${API}/admin/imoveis/${id}`);
+            await axios.delete(`${API}/imoveis/${id}`);
             toast({ title: "Imóvel apagado com sucesso!" });
             fetchImoveis();
         } catch (error) {
@@ -560,7 +541,7 @@ export const AdminImoveisPage = () => {
                                                         <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => handleToggleActive(imovel)}>
+                                                        <DropdownMenuItem onClick={() => handleToggleStatus(imovel)}>
                                                             {imovel.ativo
                                                                 ? <><Ban className="mr-2 h-4 w-4" /> Ocultar do Site</>
                                                                 : <><CheckCircle className="mr-2 h-4 w-4" /> Mostrar no Site</>
