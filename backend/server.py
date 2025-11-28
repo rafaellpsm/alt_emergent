@@ -1553,6 +1553,31 @@ async def toggle_parceiro_destaque(
     return {"message": f"Parceiro {'adicionado ao' if destaque else 'removido do'} destaque"}
 
 
+@api_router.put("/admin/imoveis/{imovel_id}/status")
+async def admin_toggle_imovel_status(
+    imovel_id: str,
+    status_data: dict = Body(...),
+    current_user: User = Depends(get_admin_user)
+):
+    """
+    Permite ao Admin ativar/desativar qualquer imóvel.
+    """
+    novo_status = status_data.get("ativo")
+    if novo_status is None:
+        raise HTTPException(status_code=400, detail="Status não fornecido")
+
+    result = await db.imoveis.update_one(
+        {"id": imovel_id},
+        {"$set": {"ativo": novo_status,
+                  "updated_at": datetime.now(timezone.utc)}}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+
+    return {"message": f"Imóvel {'ativado' if novo_status else 'desativado'} com sucesso"}
+
+
 # ==============================================================================
 # App Finalization (Middleware, Router, etc.)
 # ==============================================================================
