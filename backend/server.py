@@ -1578,6 +1578,19 @@ async def admin_toggle_imovel_status(
     return {"message": f"Imóvel {'ativado' if novo_status else 'desativado'} com sucesso"}
 
 
+@api_router.delete("/admin/imoveis/{imovel_id}")
+async def admin_delete_imovel(
+    imovel_id: str,
+    current_user: User = Depends(get_admin_user)
+):
+    result = await db.imoveis.delete_one({"id": imovel_id})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+
+    return {"message": "Imóvel removido permanentemente pelo administrador"}
+
+
 # ==============================================================================
 # App Finalization (Middleware, Router, etc.)
 # ==============================================================================

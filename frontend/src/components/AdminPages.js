@@ -478,7 +478,7 @@ export const AdminImoveisPage = () => {
         if (!window.confirm('ATENÇÃO: Tem a certeza que deseja apagar este imóvel permanentemente?')) return;
 
         try {
-            await axios.delete(`${API}/imoveis/${id}`);
+            await axios.delete(`${API}/admin/imoveis/${id}`);
             toast({ title: "Imóvel apagado com sucesso!" });
             fetchImoveis();
         } catch (error) {
