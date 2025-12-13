@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
@@ -8,7 +8,7 @@ import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPag
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
 import { Button } from './components/ui/button';
-import { Card, CardContent } from './components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { toast } from './hooks/use-toast';
@@ -16,7 +16,12 @@ import { Toaster } from './components/ui/toaster';
 import { Badge } from './components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from './components/ui/sheet';
-import { Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight, Utensils, Eye, MapPin, Calendar, ExternalLink, Compass } from 'lucide-react'; // Adicionado Compass
+import {
+  Menu, LogOut, Key, User, Home, FileText, Users, Briefcase, ArrowRight,
+  Utensils, Eye, MapPin, Calendar, ExternalLink, Compass, Ticket, Phone,
+  Siren, Shield, Stethoscope, Clock, Truck, Megaphone, Leaf, Heart, BookOpen,
+  VolumeX, LifeBuoy, Building2
+} from 'lucide-react';
 import AdminDashboard from './components/AdminDashboard';
 import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteudoPage, AdminComunicacaoPage, AdminDestaquesPage } from './components/AdminPages';
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
@@ -25,33 +30,51 @@ import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo.png';
 import logoGray from './assets/logo_cinza.png';
 
-// Interceptador do Axios para lidar com respostas 401 (Não Autorizado)
+// --- CONFIGURAÇÃO E HOOKS ---
 axios.interceptors.response.use(
   response => response,
   error => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
-      toast({
-        title: "Sessão Expirada",
-        description: "Por favor, faça o login novamente para continuar.",
-        variant: "destructive",
-      });
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      toast({ title: "Sessão Expirada", description: "Faça login novamente.", variant: "destructive" });
+      if (window.location.pathname !== '/login') window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-// Configuração da URL da API
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Contexto de Autenticação para gerenciar o estado do usuário
 const AuthContext = React.createContext();
 
+// --- ANIMAÇÃO CLEAN (Fade In) ---
+const FadeInSection = ({ children, delay = 0 }) => {
+  const [isVisible, setVisible] = useState(false);
+  const domRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => setVisible(entry.isIntersecting));
+    });
+    const currentElement = domRef.current;
+    if (currentElement) observer.observe(currentElement);
+    return () => { if (currentElement) observer.unobserve(currentElement); };
+  }, []);
+
+  return (
+    <div
+      ref={domRef}
+      className={`transition-all duration-1000 ease-out transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// --- AUTH PROVIDER ---
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,9 +84,7 @@ const AuthProvider = ({ children }) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchUserInfo();
-    } else {
-      setLoading(false);
-    }
+    } else { setLoading(false); }
   }, []);
 
   const fetchUserInfo = async () => {
@@ -73,9 +94,7 @@ const AuthProvider = ({ children }) => {
     } catch (error) {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const login = async (email, password) => {
@@ -86,9 +105,7 @@ const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       setUser(userData);
       return { success: true };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.detail || 'Erro ao fazer login' };
-    }
+    } catch (error) { return { success: false, error: error.response?.data?.detail || 'Erro ao fazer login' }; }
   };
 
   const logout = () => {
@@ -98,117 +115,44 @@ const AuthProvider = ({ children }) => {
     window.location.href = '/login';
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout, loading }}>{children}</AuthContext.Provider>;
 };
-
 const useAuth = () => React.useContext(AuthContext);
 
-// --- Menu de Perfil ---
+// --- COMPONENTES DE UI ---
 const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
-  const triggerClass = isHomePage
-    ? 'text-white hover:bg-white/10'
-    : 'text-gray-700 hover:bg-gray-100';
-
+  const triggerClass = isHomePage ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100';
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className={triggerClass}>
-          <User className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">{user.nome}</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className={triggerClass}><User className="h-4 w-4 mr-2" /><span className="hidden sm:inline">{user.nome}</span></Button></DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>{user.nome} <Badge className="ml-2 badge-teal">{user.role}</Badge></DropdownMenuLabel>
-
         <DropdownMenuSeparator />
-        {user.role !== 'admin' && (
-          <DropdownMenuItem asChild>
-            <Link to={user.role === 'parceiro' ? '/meu-perfil' : '/perfil'}>
-              <User className="mr-2 h-4 w-4" /> Meu Perfil
-            </Link>
-          </DropdownMenuItem>
-        )}
-
-        {user.role !== 'admin' && (
-          <DropdownMenuItem asChild>
-            <Link to="/alterar-senha">
-              <Key className="mr-2 h-4 w-4" /> Alterar Senha
-            </Link>
-          </DropdownMenuItem>
-        )}
-
+        {user.role !== 'admin' && <DropdownMenuItem asChild><Link to={user.role === 'parceiro' ? '/meu-perfil' : '/perfil'}><User className="mr-2 h-4 w-4" /> Meu Perfil</Link></DropdownMenuItem>}
+        {user.role !== 'admin' && <DropdownMenuItem asChild><Link to="/alterar-senha"><Key className="mr-2 h-4 w-4" /> Alterar Senha</Link></DropdownMenuItem>}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" /> Sair
-        </DropdownMenuItem>
-
+        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer"><LogOut className="mr-2 h-4 w-4" /> Sair</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
-// --- Navegação Melhorada ---
 const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   const { user } = useAuth();
   const location = useLocation();
+  const baseClass = isMobile ? "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium" : "text-sm font-medium transition-colors flex items-center gap-2";
+  const activeClass = isMobile ? "bg-primary-teal/10 text-primary-teal border-l-4 border-primary-teal" : "";
+  const inactiveClass = isMobile ? "text-gray-600 hover:bg-gray-50" : (isHomePage ? "text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md" : "text-gray-600 hover:text-primary-teal hover:bg-gray-100 px-3 py-2 rounded-md");
 
-  const baseMobileClass = "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium";
-  const activeMobileClass = "bg-primary-teal/10 text-primary-teal border-l-4 border-primary-teal";
-  const inactiveMobileClass = "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
-
-  const baseDesktopClass = "text-sm font-medium transition-colors duration-200 flex items-center gap-2";
-  const homeDesktopClass = "text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md";
-  const defaultDesktopClass = "text-gray-600 hover:text-primary-teal hover:bg-gray-100 px-3 py-2 rounded-md";
-
-  const getNavLinkClass = (path) => {
-    if (isMobile) {
-      return `${baseMobileClass} ${location.pathname === path ? activeMobileClass : inactiveMobileClass}`;
-    }
-    return `${baseDesktopClass} ${isHomePage ? homeDesktopClass : defaultDesktopClass}`;
-  };
-
-  const publicNavLinks = [
-    { href: "/imoveis", text: "Imóveis", icon: Home },
+  const links = [
+    { href: "/imoveis", text: isMobile ? "Imóveis" : "Imóveis", icon: Home },
     { href: "/parceiros", text: "Parceiros", icon: Users }
   ];
-
-  const memberNavLinks = [
-    { href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase },
-    { href: "/imoveis", text: "Todos os Imóveis", icon: Home },
-    { href: "/parceiros", text: "Parceiros", icon: Users }
-  ];
-
-  const partnerNavLinks = [
-    { href: "/meu-perfil", text: "Meu Negócio", icon: Briefcase },
-    { href: "/imoveis", text: "Imóveis", icon: Home },
-    { href: "/parceiros", text: "Parceiros", icon: Users }
-  ];
-
-  const adminNavLinks = [
-    { href: "/admin/dashboard", text: "Dashboard", icon: Home },
-    { href: "/imoveis", text: "Ver Site", icon: Eye }
-  ];
-
-  let linksToRender = publicNavLinks;
-  if (user) {
-    if (user.role === 'admin') linksToRender = adminNavLinks;
-    else if (user.role === 'membro') linksToRender = memberNavLinks;
-    else if (user.role === 'parceiro') linksToRender = partnerNavLinks;
-  }
 
   return (
     <nav className={isMobile ? "flex flex-col space-y-2 w-full" : "flex items-center space-x-2"}>
-      {linksToRender.map(link => (
-        <Link
-          key={link.href}
-          to={link.href}
-          className={getNavLinkClass(link.href)}
-          onClick={onNavClick}
-        >
+      {links.map(link => (
+        <Link key={link.href} to={link.href} className={`${baseClass} ${location.pathname === link.href ? activeClass : inactiveClass}`} onClick={onNavClick}>
           {isMobile && link.icon && <link.icon className={`h-5 w-5 ${location.pathname === link.href ? "text-primary-teal" : "text-gray-400"}`} />}
           <span>{link.text}</span>
         </Link>
@@ -217,113 +161,37 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   );
 };
 
-// --- Header Padrão ---
 const DefaultHeader = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-
   return (
     <header className='bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50 h-20'>
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-2 group">
-          <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors">
-            <img src={logoTeal} alt="Logo" className="h-10 w-auto" />
-          </div>
+          <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors"><img src={logoTeal} alt="Logo" className="h-10 w-auto" /></div>
           <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
         </Link>
-
         <div className="hidden md:flex items-center space-x-6">
           <Navigation />
           <div className="h-6 w-px bg-gray-200 mx-2"></div>
-          {user ? (
-            <UserProfileMenu user={user} logout={logout} />
-          ) : (
-            <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary shadow-md hover:shadow-lg transition-all">
-              Entrar
-            </Button>
-          )}
+          {user ? <UserProfileMenu user={user} logout={logout} /> : <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary shadow-md">Entrar</Button>}
         </div>
-
-        <div className="md:hidden">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-gray-600">
-                <Menu className="h-7 w-7" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
-              <div className="p-6 bg-gray-50 border-b">
-                {user ? (
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary-teal text-white flex items-center justify-center text-xl font-bold shadow-md">
-                      {user.nome.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 truncate">{user.nome}</p>
-                      <p className="text-xs text-gray-500 capitalize badge-beige px-2 py-0.5 rounded-full inline-block mt-1">{user.role}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <h3 className="font-bold text-lg text-primary-gray">Bem-vindo!</h3>
-                    <p className="text-sm text-gray-500">Faça login para aceder à sua conta.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 overflow-y-auto py-6 px-2">
-                <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
-                {user && user.role !== 'admin' && (
-                  <>
-                    <div className="my-4 border-t border-gray-100 mx-4"></div>
-                    <Link
-                      to="/alterar-senha"
-                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Key className="h-5 w-5 text-gray-400" />
-                      <span>Alterar Senha</span>
-                    </Link>
-                  </>
-                )}
-              </div>
-
-              <div className="p-6 border-t bg-gray-50 mt-auto">
-                {user ? (
-                  <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
-                    <LogOut className="h-4 w-4 mr-2" /> Sair da Conta
-                  </Button>
-                ) : (
-                  <div className="grid gap-3">
-                    <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
-                      Entrar
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        <div className="md:hidden"><Sheet open={isOpen} onOpenChange={setIsOpen}><SheetTrigger asChild><Button variant="ghost" size="icon"><Menu className="h-7 w-7" /></Button></SheetTrigger><SheetContent side="right" className="w-[300px]"><Navigation isMobile={true} onNavClick={() => setIsOpen(false)} /></SheetContent></Sheet></div>
       </div>
     </header>
   );
 };
 
-// --- Header da Home ---
 const HomeHeader = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20 flex items-center ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'
-    }`;
-
+  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-20 flex items-center ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-2' : 'bg-transparent py-4'}`;
   const logoSrc = isScrolled ? logoTeal : logoGray;
   const textColor = isScrolled ? "text-primary-gray" : "text-white";
 
@@ -334,118 +202,154 @@ const HomeHeader = () => {
           <img src={logoSrc} alt="Logo" className="h-14 w-auto transition-transform group-hover:scale-110" />
           <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
         </Link>
-
         <div className="hidden md:flex items-center space-x-4">
           <Navigation isHomePage={!isScrolled} />
-          {user ? (
-            <UserProfileMenu user={user} logout={logout} isHomePage={!isScrolled} />
-          ) : (
-            <Button
-              variant={isScrolled ? "default" : "outline"}
-              size="sm"
-              onClick={() => window.location.href = '/login'}
-              className={isScrolled
-                ? 'btn-primary shadow-sm'
-                : 'text-white border-white hover:bg-white hover:text-primary-gray backdrop-blur-sm bg-white/10'}
-            >
-              Entrar
-            </Button>
-          )}
+          {user ? <UserProfileMenu user={user} logout={logout} isHomePage={!isScrolled} /> : <Button variant={isScrolled ? "default" : "outline"} size="sm" onClick={() => window.location.href = '/login'} className={isScrolled ? 'btn-primary' : 'text-white border-white hover:bg-white hover:text-primary-gray'}>Entrar</Button>}
         </div>
-
-        <div className="md:hidden">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className={isScrolled ? "text-gray-800" : "text-white hover:bg-white/20"}>
-                <Menu className="h-7 w-7" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-l-0">
-              <div className="p-6 bg-gray-50 border-b">
-                {user ? (
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary-teal text-white flex items-center justify-center text-xl font-bold shadow-md">
-                      {user.nome.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 truncate">{user.nome}</p>
-                      <p className="text-xs text-gray-500 capitalize badge-beige px-2 py-0.5 rounded-full inline-block mt-1">{user.role}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <h3 className="font-bold text-lg text-primary-gray">Bem-vindo!</h3>
-                    <p className="text-sm text-gray-500">Descubra o melhor de Ilhabela.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 overflow-y-auto py-6 px-2">
-                <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
-                {user && user.role !== 'admin' && (
-                  <Link
-                    to="/alterar-senha"
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium mt-2"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Key className="h-5 w-5 text-gray-400" />
-                    <span>Alterar Senha</span>
-                  </Link>
-                )}
-              </div>
-
-              <div className="p-6 border-t bg-gray-50 mt-auto">
-                {user ? (
-                  <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
-                    <LogOut className="h-4 w-4 mr-2" /> Sair da Conta
-                  </Button>
-                ) : (
-                  <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
-                    Entrar na Conta
-                  </Button>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+        <div className="md:hidden"><Sheet open={isOpen} onOpenChange={setIsOpen}><SheetTrigger asChild><Button variant="ghost" size="icon" className={isScrolled ? "text-gray-800" : "text-white"}><Menu className="h-7 w-7" /></Button></SheetTrigger><SheetContent side="right"><Navigation isMobile={true} onNavClick={() => setIsOpen(false)} /></SheetContent></Sheet></div>
       </div>
     </header>
   );
 };
 
-// --- Componentes de Layout ---
-const DefaultLayout = () => (
-  <>
-    <DefaultHeader />
-    <main className="pt-20 bg-gray-50 min-h-screen">
-      <Outlet />
-    </main>
-  </>
-);
+// --- NOVAS SEÇÕES DA HOME ---
 
-const HomeLayout = () => <Outlet />;
+const TelefonesUteisSection = () => {
+  const phones = [
+    { title: "Prefeitura de Ilhabela", number: "(12) 3895-8400", desc: "Informações gerais e serviços públicos", icon: Building2 },
+    { title: "Emergência", number: "193 (Bombeiros) / 192 (SAMU)", desc: "Atendimento emergencial 24 horas", icon: Siren },
+    { title: "Hospital", number: "(12) 3896-1234", desc: "Hospital Municipal de Ilhabela", icon: Stethoscope },
+    { title: "Fila Hora Marcada", number: "(12) 3896-5000", desc: "Agendamento de travessia de balsa", icon: Clock },
+    { title: "Polícia Militar", number: "190", desc: "Emergências policiais", icon: Shield },
+    { title: "Táxi / Transporte", number: "(12) 3896-1500", desc: "Serviço de táxi local", icon: Truck },
+    { title: "Lei do Silêncio", number: "(12) 3895-8400", desc: "Denúncias de perturbação sonora", icon: VolumeX },
+    { title: "Defesa Civil", number: "199", desc: "Ocorrências ambientais e climáticas", icon: LifeBuoy },
+  ];
 
-// --- Rota Protegida ---
-const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { user, loading } = useAuth();
-  const location = useLocation();
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen"><div className="spinner"></div></div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+  return (
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <FadeInSection>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-primary-gray mb-4">Telefones Úteis</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Principais contatos e serviços de Ilhabela para sua segurança e comodidade</p>
+          </div>
+        </FadeInSection>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {phones.map((p, idx) => (
+            <FadeInSection key={idx} delay={idx * 50}>
+              <Card className="hover:shadow-lg transition-shadow border-none shadow h-full bg-white">
+                <CardContent className="p-6 flex flex-col items-start">
+                  <div className="bg-teal-600 text-white p-3 rounded-lg mb-4">
+                    <p.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-bold text-lg text-primary-gray mb-1">{p.title}</h3>
+                  <p className="text-teal-600 font-medium mb-2">{p.number}</p>
+                  <p className="text-xs text-gray-500">{p.desc}</p>
+                </CardContent>
+              </Card>
+            </FadeInSection>
+          ))}
+        </div>
+        <FadeInSection delay={400}>
+          <div className="mt-10 bg-teal-50 border border-teal-200 rounded-xl p-6 text-center">
+            <Siren className="h-8 w-8 text-primary-teal mx-auto mb-2" />
+            <h4 className="font-bold text-lg text-teal-900">Em caso de emergência</h4>
+            <p className="text-teal-800">Ligue 193 (Bombeiros), 192 (SAMU) ou 190 (Polícia)</p>
+          </div>
+        </FadeInSection>
+      </div>
+    </section>
+  );
 };
 
-// --- NOVA SECÇÃO: EXPLORE ILHABELA (Vídeo + Regiões) ---
+const SobreSection = () => {
+  return (
+    <section className="bg-white">
+      {/* Bloco 1: Megafone */}
+      <div className="grid md:grid-cols-2">
+        <div className="h-64 md:h-auto overflow-hidden">
+          <img src="https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Megafone" />
+        </div>
+        <div className="p-12 flex flex-col justify-center bg-gray-50">
+          <FadeInSection>
+            <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
+            </p>
+          </FadeInSection>
+        </div>
+      </div>
+
+      {/* Bloco 2: Sustentabilidade */}
+      <div className="grid md:grid-cols-2">
+        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+          <FadeInSection>
+            <Leaf className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
+            </p>
+          </FadeInSection>
+        </div>
+        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src="https://images.pexels.com/photos/957024/beach-pollution-plastic-waste-957024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Sustentabilidade" />
+        </div>
+      </div>
+
+      {/* Bloco 3: Parceiros Locais */}
+      <div className="grid md:grid-cols-2">
+        <div className="h-64 md:h-auto overflow-hidden">
+          <img src="https://images.pexels.com/photos/347139/pexels-photo-347139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Parceiros" />
+        </div>
+        <div className="p-12 flex flex-col justify-center bg-gray-50">
+          <FadeInSection>
+            <Heart className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local.
+            </p>
+          </FadeInSection>
+        </div>
+      </div>
+
+      {/* Bloco 4: Comunidade */}
+      <div className="grid md:grid-cols-2">
+        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+          <FadeInSection>
+            <Users className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
+            </p>
+          </FadeInSection>
+        </div>
+        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src="https://images.pexels.com/photos/4669141/pexels-photo-4669141.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Comunidade" />
+        </div>
+      </div>
+
+      {/* Bloco 5: Guia Local */}
+      <div className="grid md:grid-cols-2">
+        <div className="h-64 md:h-auto overflow-hidden">
+          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
+        </div>
+        <div className="p-12 flex flex-col justify-center bg-gray-50">
+          <FadeInSection>
+            <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
+            </p>
+          </FadeInSection>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- NOVAS SEÇÕES DA HOME ---
 const ExploreIlhabelaSection = () => {
   const regions = [
     { name: 'Centro', link: 'https://turismoilhabela.com/centro-2/' },
@@ -458,7 +362,6 @@ const ExploreIlhabelaSection = () => {
     <section className="py-20 bg-white border-t border-gray-100">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Lado do Vídeo */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
             <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
@@ -473,8 +376,6 @@ const ExploreIlhabelaSection = () => {
               </div>
             </div>
           </div>
-
-          {/* Lado das Regiões */}
           <div className="space-y-6">
             <div className="flex justify-between items-end">
               <div>
@@ -483,31 +384,16 @@ const ExploreIlhabelaSection = () => {
                 <p className="text-gray-600 mt-2">A ilha é dividida em regiões únicas. Escolha o seu destino.</p>
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               {regions.map((region, index) => (
-                <a
-                  key={index}
-                  href={region.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative h-24 rounded-xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-center"
-                >
-                  {/* Fundo com cor suave */}
+                <a key={index} href={region.link} target="_blank" rel="noopener noreferrer" className="group relative h-24 rounded-xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-center">
                   <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity"></div>
-
-                  <div className="relative z-10 flex items-center gap-2 text-white font-bold text-lg">
-                    <Compass className="h-5 w-5" /> {region.name}
-                  </div>
+                  <div className="relative z-10 flex items-center gap-2 text-white font-bold text-lg"><Compass className="h-5 w-5" /> {region.name}</div>
                 </a>
               ))}
             </div>
-
             <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
-              <p className="text-sm text-teal-800 flex items-start gap-2">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                Quer saber mais sobre praias, trilhas e atrações turísticas de cada região? Clique nos botões acima para visitar o guia oficial.
-              </p>
+              <p className="text-sm text-teal-800 flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" /> Quer saber mais sobre praias, trilhas e atrações turísticas de cada região? Clique nos botões acima para visitar o guia oficial.</p>
             </div>
           </div>
         </div>
@@ -578,47 +464,67 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* --- NOVA SECÇÃO: EXPLORE ILHABELA --- */}
+        {/* --- EXPLORE ILHABELA --- */}
         <ExploreIlhabelaSection />
 
-        {/* --- SECÇÃO: NOTÍCIAS INTERNAS (ADMIN) --- */}
-        {pageData.noticias_destaque && pageData.noticias_destaque.length > 0 && (
-          <section id="noticias" className="py-20 bg-gray-50 border-t border-gray-100">
+        {/* --- PARCEIROS EM DESTAQUE COM BANNER VERDE --- */}
+        {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
+          <section className="py-20 bg-gray-50">
             <div className="container mx-auto px-4">
-              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Destaques da Associação</h2>
-              <div className="news-highlight-grid">
-                <div className="news-highlight-main" onClick={() => navigate(`/noticia/${pageData.noticias_destaque[0].id}`)}>
-                  <img
-                    src={pageData.noticias_destaque[0].fotos?.[0] || 'https://placehold.co/800x600?text=Imagem'}
-                    alt={pageData.noticias_destaque[0].titulo}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="news-highlight-overlay">
-                    <Badge className="badge-teal mb-2">{pageData.noticias_destaque[0].categoria}</Badge>
-                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{pageData.noticias_destaque[0].titulo}</h3>
+              {/* Banner de Descontos - Igual à imagem */}
+              <FadeInSection>
+                <div className="bg-[#0e7490] rounded-xl shadow-xl p-8 mb-12 text-white flex flex-col md:flex-row items-center gap-6 max-w-4xl mx-auto text-center md:text-left">
+                  <div className="bg-white/10 p-4 rounded-full">
+                    <Ticket className="h-10 w-10 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">Descontos Exclusivos para Hóspedes ALT!</h2>
+                    <p className="text-teal-50">Apresente seu voucher de hospedagem em qualquer parceiro ALT e aproveite descontos especiais em restaurantes, passeios, lojas e muito mais.</p>
                   </div>
                 </div>
-                <div className="news-highlight-side">
-                  {pageData.noticias_destaque.slice(1, 3).map((noticia) => (
-                    <div key={noticia.id} className="news-side-card" onClick={() => navigate(`/noticia/${noticia.id}`)}>
-                      <div className="news-side-card-image">
-                        <img src={noticia.fotos?.[0] || 'https://placehold.co/400x300'} alt={noticia.titulo} className="w-full h-full object-cover" />
+              </FadeInSection>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {pageData.parceiros_destaque.map((parceiro, idx) => (
+                  <FadeInSection key={parceiro.id} delay={idx * 100}>
+                    <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full group border border-gray-100" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
+                      <div className="relative h-56 overflow-hidden">
+                        <img src={parceiro.fotos[0] || 'https://via.placeholder.com/400x300'} alt={parceiro.nome_empresa} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <Badge className="absolute top-4 right-4 bg-[#0e7490] hover:bg-[#155e75] text-white shadow-sm">{parceiro.categoria}</Badge>
                       </div>
-                      <div className="news-side-card-content">
-                        <Badge className="badge-beige mb-2 text-xs">{noticia.categoria}</Badge>
-                        <h4 className="font-bold text-primary-gray leading-tight">{noticia.titulo}</h4>
-                        <span className="text-primary-teal text-sm mt-auto">Ler Mais →</span>
+                      <div className="p-6 flex flex-col flex-1">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{parceiro.nome_empresa}</h3>
+                        <p className="text-gray-600 mb-6 text-sm line-clamp-3 flex-1">{parceiro.descricao}</p>
+
+                        {/* BOX DO DESCONTO ESTILIZADA */}
+                        {parceiro.desconto_alt ? (
+                          <div className="bg-teal-50 border border-teal-100 rounded-lg p-3 flex items-center gap-3 mb-6">
+                            <Ticket className="h-5 w-5 text-[#0e7490]" />
+                            <span className="text-sm font-medium text-teal-900">{parceiro.desconto_alt}</span>
+                          </div>
+                        ) : (
+                          <div className="mb-6 h-[46px]"></div> // Espaço vazio para alinhar os cards
+                        )}
+
+                        <Button className="w-full bg-[#0e7490] hover:bg-[#155e75] text-white font-medium h-10 rounded-md">Ver Detalhes</Button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </FadeInSection>
+                ))}
               </div>
             </div>
           </section>
         )}
 
+        {/* --- TELEFONES ÚTEIS --- */}
+        <TelefonesUteisSection />
+
+        {/* --- SOBRE NÓS --- */}
+        <SobreSection />
+
+        {/* --- IMÓVEIS EM DESTAQUE --- */}
         {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
-          <section id="imoveis-destaque-section" className="py-20 bg-white">
+          <section id="imoveis-destaque-section" className="py-20 bg-white border-t border-gray-100">
             <div className="container mx-auto px-4">
               <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -641,42 +547,6 @@ const HomePage = () => {
             </div>
           </section>
         )}
-        {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
-          <section className="py-20 bg-gray-50">
-            <div className="container mx-auto px-4">
-              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Parceiros em Destaque</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {pageData.parceiros_destaque.map((parceiro) => (
-                  <div key={parceiro.id} className="property-card-v2" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
-                    <div className="relative">
-                      <img src={parceiro.fotos[0] || 'https://via.placeholder.com/400x300'} alt={parceiro.nome_empresa} className="w-full h-64 object-cover" />
-                      <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{parceiro.nome_empresa}</h3>
-                      <p className="text-sm text-gray-500 mb-4 line-clamp-2">{parceiro.descricao}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-        <section id="sobre" className="py-20">
-          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold mb-6 text-primary-gray">Qualidade e Confiança: O selo ALT Ilhabela</h2>
-              <p className="text-gray-600 mb-4 leading-relaxed">A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência.</p>
-              <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                <Button className="btn-primary" onClick={() => navigate('/candidatura/membro')}>Seja um Membro</Button>
-                <Button variant="outline" className="btn-outline-primary" onClick={() => navigate('/candidatura/parceiro')}>Seja um Parceiro</Button>
-              </div>
-            </div>
-            <div className="rounded-lg overflow-hidden shadow-2xl">
-              <img src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Pessoas na praia de Ilhabela" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );

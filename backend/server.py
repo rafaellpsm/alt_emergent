@@ -256,10 +256,7 @@ class ImovelUpdate(BaseModel):
 
 # Enhanced Partner Profile Models
 
-
-class PerfilParceiro(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
+class ParceiroBase(BaseModel):
     nome_empresa: str
     descricao: str
     categoria: str
@@ -269,10 +266,20 @@ class PerfilParceiro(BaseModel):
     instagram: Optional[str] = None
     facebook: Optional[str] = None
     whatsapp: Optional[str] = None
-    fotos: List[str] = []
-    video_url: Optional[str] = None
     horario_funcionamento: Optional[str] = None
     servicos_oferecidos: Optional[str] = None
+    video_url: Optional[str] = None
+    desconto_alt: Optional[str] = None  # <--- NOVO CAMPO AQUI
+
+
+class PerfilParceiroCreate(ParceiroBase):
+    fotos: List[str] = []
+
+
+class PerfilParceiro(ParceiroBase):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    fotos: List[str] = []
     aceita_cartao: bool = True
     delivery: bool = False
     destaque: bool = False
@@ -281,22 +288,6 @@ class PerfilParceiro(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
-
-
-class PerfilParceiroCreate(BaseModel):
-    nome_empresa: str
-    descricao: str
-    categoria: str
-    telefone: str
-    endereco: Optional[str] = None
-    website: Optional[HttpUrl] = None
-    instagram: Optional[str] = None
-    facebook: Optional[str] = None
-    whatsapp: Optional[str] = None
-    horario_funcionamento: Optional[str] = None
-    servicos_oferecidos: Optional[str] = None
-    fotos: List[str] = []
-    video_url: Optional[str] = None
 
 # Enhanced Content Models
 

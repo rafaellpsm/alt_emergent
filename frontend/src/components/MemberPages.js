@@ -191,7 +191,8 @@ export const MeuPerfilPage = () => {
     horario_funcionamento: '',
     servicos_oferecidos: '',
     fotos: [],
-    video_url: ''
+    video_url: '',
+    desconto_alt: ''
   });
 
   useEffect(() => {
@@ -216,7 +217,8 @@ export const MeuPerfilPage = () => {
           horario_funcionamento: response.data.horario_funcionamento || '',
           servicos_oferecidos: response.data.servicos_oferecidos || '',
           fotos: response.data.fotos || [],
-          video_url: response.data.video_url || ''
+          video_url: response.data.video_url || '',
+          desconto_alt: response.data.desconto_alt || ''
         });
       }
     } catch (error) {
@@ -303,6 +305,19 @@ export const MeuPerfilPage = () => {
                     <Label htmlFor="categoria" className="form-label">Categoria *</Label>
                     <Input id="categoria" className="form-input" value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required />
                   </div>
+                </div>
+                <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TicketPercent className="h-5 w-5 text-primary-teal" />
+                    <Label className="text-primary-teal font-bold">Desconto Exclusivo para Hóspedes ALT</Label>
+                  </div>
+                  <Input
+                    placeholder="Ex: 15% de desconto em todo o cardápio ou Drink de cortesia"
+                    value={formData.desconto_alt}
+                    onChange={e => setFormData({ ...formData, desconto_alt: e.target.value })}
+                    className="bg-white"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Isso aparecerá em destaque no site principal.</p>
                 </div>
                 <div>
                   <Label htmlFor="descricao" className="form-label">Descrição *</Label>
