@@ -13,7 +13,7 @@ import { PhotoUpload } from './PhotoUpload';
 import { VideoUpload } from './VideoUpload';
 import PageHeader from './PageHeader';
 import { Checkbox } from './ui/checkbox';
-import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users } from 'lucide-react';
+import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users, TicketPercent, Phone, Globe, Instagram, Facebook } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
