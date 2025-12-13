@@ -8,7 +8,7 @@ import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPag
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
 import { Button } from './components/ui/button';
-import { Card, CardContent } from './components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { toast } from './hooks/use-toast';
@@ -224,7 +224,7 @@ const DefaultLayout = () => (
 
 const HomeLayout = () => <Outlet />;
 
-// --- ROTA PROTEGIDA (RECUPERADA) ---
+// --- ROTA PROTEGIDA ---
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -244,8 +244,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   return children;
 };
 
-// --- NOVAS SEÇÕES DA HOME ---
-
+// --- SECÇÃO: TELEFONES ÚTEIS ---
 const TelefonesUteisSection = () => {
   const phones = [
     { title: "Prefeitura de Ilhabela", number: "(12) 3895-8400", desc: "Informações gerais e serviços públicos", icon: Building2 },
@@ -259,7 +258,7 @@ const TelefonesUteisSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-white border-t border-gray-100">
       <div className="container mx-auto px-4">
         <FadeInSection>
           <div className="text-center mb-12">
@@ -270,7 +269,7 @@ const TelefonesUteisSection = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {phones.map((p, idx) => (
             <FadeInSection key={idx} delay={idx * 50}>
-              <Card className="hover:shadow-lg transition-shadow border-none shadow h-full bg-white">
+              <Card className="hover:shadow-lg transition-shadow border-none shadow h-full bg-gray-50">
                 <CardContent className="p-6 flex flex-col items-start">
                   <div className="bg-teal-600 text-white p-3 rounded-lg mb-4">
                     <p.icon className="h-6 w-6" />
@@ -295,20 +294,21 @@ const TelefonesUteisSection = () => {
   );
 };
 
+// --- SECÇÃO: SOBRE (5 BLOCOS) ---
 const SobreSection = () => {
   return (
-    <section className="bg-white">
+    <section className="bg-gray-50">
       {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
+        <div className="h-48 md:h-auto overflow-hidden">
           <img src="https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Megafone" />
         </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
+        <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
             <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca. Juntos, elevamos o padrão de hospedagem em Ilhabela.
             </p>
           </FadeInSection>
         </div>
@@ -316,31 +316,31 @@ const SobreSection = () => {
 
       {/* Bloco 2: Sustentabilidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="p-10 flex flex-col justify-center bg-gray-50 order-2 md:order-1">
           <FadeInSection>
             <Leaf className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
               Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
           <img src="https://images.pexels.com/photos/957024/beach-pollution-plastic-waste-957024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
+        <div className="h-48 md:h-auto overflow-hidden">
           <img src="https://images.pexels.com/photos/347139/pexels-photo-347139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Parceiros" />
         </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
+        <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
             <Heart className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local.
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+              Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local conectando hóspedes a negócios de qualidade.
             </p>
           </FadeInSection>
         </div>
@@ -348,30 +348,30 @@ const SobreSection = () => {
 
       {/* Bloco 4: Comunidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="p-10 flex flex-col justify-center bg-gray-50 order-2 md:order-1">
           <FadeInSection>
             <Users className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
               Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
           <img src="https://images.pexels.com/photos/4669141/pexels-photo-4669141.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
+        <div className="h-48 md:h-auto overflow-hidden">
           <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
         </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
+        <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
             <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
+            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
               Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
             </p>
           </FadeInSection>
@@ -381,7 +381,7 @@ const SobreSection = () => {
   );
 };
 
-// --- NOVAS SEÇÕES DA HOME ---
+// --- SECÇÃO: EXPLORE ILHABELA ---
 const ExploreIlhabelaSection = () => {
   const regions = [
     { name: 'Centro', link: 'https://turismoilhabela.com/centro-2/' },
@@ -428,6 +428,27 @@ const ExploreIlhabelaSection = () => {
               <p className="text-sm text-teal-800 flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" /> Quer saber mais sobre praias, trilhas e atrações turísticas de cada região? Clique nos botões acima para visitar o guia oficial.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- SECÇÃO: CTA (SEJA MEMBRO/PARCEIRO) ---
+const CTASection = ({ navigate }) => {
+  return (
+    <section className="py-20 bg-primary-teal text-white">
+      <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 className="text-4xl font-bold mb-6">Qualidade e Confiança: O selo ALT Ilhabela</h2>
+          <p className="text-teal-50 mb-8 leading-relaxed text-lg">A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência.</p>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <Button className="bg-white text-primary-teal hover:bg-gray-100 border-none font-bold text-lg px-8 py-6 h-auto" onClick={() => navigate('/candidatura/membro')}>Seja um Membro</Button>
+            <Button variant="outline" className="text-white border-white hover:bg-white/20 hover:text-white font-bold text-lg px-8 py-6 h-auto" onClick={() => navigate('/candidatura/parceiro')}>Seja um Parceiro</Button>
+          </div>
+        </div>
+        <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
+          <img src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Pessoas na praia de Ilhabela" className="w-full h-full object-cover" />
         </div>
       </div>
     </section>
@@ -496,14 +517,37 @@ const HomePage = () => {
           </div>
         </section>
 
-        {/* --- EXPLORE ILHABELA --- */}
-        <ExploreIlhabelaSection />
+        {/* --- IMÓVEIS EM DESTAQUE --- */}
+        {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
+          <section id="imoveis-destaque-section" className="py-20 bg-white border-t border-gray-100">
+            <div className="container mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {pageData.imoveis_destaque.map((imovel) => (
+                  <div key={imovel.id} className="property-card-v2" onClick={() => navigate(`/imovel/${imovel.id}`)}>
+                    <div className="relative">
+                      <img src={imovel.fotos[0] || 'https://via.placeholder.com/400x300'} alt={imovel.titulo} className="w-full h-56 object-cover" />
+                      <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{imovel.regiao}</Badge>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
+                      <div className="text-sm text-primary-teal font-medium flex items-center gap-1">
+                        <Home className="h-4 w-4" /> Ver detalhes
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* --- PARCEIROS EM DESTAQUE COM BANNER VERDE --- */}
         {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
           <section className="py-20 bg-gray-50">
             <div className="container mx-auto px-4">
-              {/* Banner de Descontos - Igual à imagem */}
+              {/* Banner de Descontos */}
               <FadeInSection>
                 <div className="bg-[#0e7490] rounded-xl shadow-xl p-8 mb-12 text-white flex flex-col md:flex-row items-center gap-6 max-w-4xl mx-auto text-center md:text-left">
                   <div className="bg-white/10 p-4 rounded-full">
@@ -535,7 +579,7 @@ const HomePage = () => {
                             <span className="text-sm font-medium text-teal-900">{parceiro.desconto_alt}</span>
                           </div>
                         ) : (
-                          <div className="mb-6 h-[46px]"></div> // Espaço vazio para alinhar os cards
+                          <div className="mb-6 h-[46px]"></div> // Espaço vazio
                         )}
 
                         <Button className="w-full bg-[#0e7490] hover:bg-[#155e75] text-white font-medium h-10 rounded-md">Ver Detalhes</Button>
@@ -548,37 +592,18 @@ const HomePage = () => {
           </section>
         )}
 
-        {/* --- TELEFONES ÚTEIS --- */}
-        <TelefonesUteisSection />
+        {/* --- EXPLORE ILHABELA --- */}
+        <ExploreIlhabelaSection />
+
+        {/* --- CTA: SEJA MEMBRO --- */}
+        <CTASection navigate={navigate} />
 
         {/* --- SOBRE NÓS --- */}
         <SobreSection />
 
-        {/* --- IMÓVEIS EM DESTAQUE --- */}
-        {pageData.imoveis_destaque && pageData.imoveis_destaque.length > 0 && (
-          <section id="imoveis-destaque-section" className="py-20 bg-white border-t border-gray-100">
-            <div className="container mx-auto px-4">
-              <h2 className="text-4xl font-bold mb-10 text-center text-primary-gray">Imóveis em Destaque</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {pageData.imoveis_destaque.map((imovel) => (
-                  <div key={imovel.id} className="property-card-v2" onClick={() => navigate(`/imovel/${imovel.id}`)}>
-                    <div className="relative">
-                      <img src={imovel.fotos[0] || 'https://via.placeholder.com/400x300'} alt={imovel.titulo} className="w-full h-64 object-cover" />
-                      <Badge className="absolute top-4 left-4 bg-white/90 text-primary-gray">{imovel.regiao}</Badge>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold text-primary-gray mb-2">{imovel.titulo}</h3>
-                      <p className="text-sm text-gray-500 mb-4">{imovel.capacidade} hóspedes · {imovel.num_quartos} quartos</p>
-                      <div className="text-sm text-primary-teal font-medium flex items-center gap-1">
-                        <Home className="h-4 w-4" /> Ver detalhes
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* --- TELEFONES ÚTEIS --- */}
+        <TelefonesUteisSection />
+
       </main>
     </div>
   );
