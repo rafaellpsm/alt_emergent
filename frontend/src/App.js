@@ -165,19 +165,92 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
 const DefaultHeader = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <header className='bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50 h-20'>
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2 group">
-          <div className="bg-primary-teal/10 p-2 rounded-lg group-hover:bg-primary-teal/20 transition-colors"><img src={logoTeal} alt="Logo" className="h-10 w-auto" /></div>
-          <span className="text-xl font-bold text-primary-gray tracking-tight">ALT<span className="text-primary-teal">Ilhabela</span></span>
+        {/* LOGO ATUALIZADA: Igual à Home, Maior e Texto Unicolor */}
+        <Link to="/" className="flex items-center space-x-3 group">
+          <img
+            src={logoTeal}
+            alt="Logo"
+            className="h-14 w-auto transition-transform group-hover:scale-110"
+          />
+          <span className="text-2xl font-bold text-primary-gray tracking-tight">ALT Ilhabela</span>
         </Link>
+
         <div className="hidden md:flex items-center space-x-6">
           <Navigation />
           <div className="h-6 w-px bg-gray-200 mx-2"></div>
-          {user ? <UserProfileMenu user={user} logout={logout} /> : <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary shadow-md">Entrar</Button>}
+          {user ? (
+            <UserProfileMenu user={user} logout={logout} />
+          ) : (
+            <Button size="sm" onClick={() => window.location.href = '/login'} className="btn-primary shadow-md hover:shadow-lg transition-all">
+              Entrar
+            </Button>
+          )}
         </div>
-        <div className="md:hidden"><Sheet open={isOpen} onOpenChange={setIsOpen}><SheetTrigger asChild><Button variant="ghost" size="icon"><Menu className="h-7 w-7" /></Button></SheetTrigger><SheetContent side="right" className="w-[300px]"><Navigation isMobile={true} onNavClick={() => setIsOpen(false)} /></SheetContent></Sheet></div>
+
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-gray-600">
+                <Menu className="h-7 w-7" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[350px] p-0 flex flex-col border-l-0">
+              <div className="p-6 bg-gray-50 border-b">
+                {user ? (
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-primary-teal text-white flex items-center justify-center text-xl font-bold shadow-md">
+                      {user.nome.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{user.nome}</p>
+                      <p className="text-xs text-gray-500 capitalize badge-beige px-2 py-0.5 rounded-full inline-block mt-1">{user.role}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <h3 className="font-bold text-lg text-primary-gray">Bem-vindo!</h3>
+                    <p className="text-sm text-gray-500">Faça login para aceder à sua conta.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-6 px-2">
+                <Navigation isMobile={true} onNavClick={() => setIsOpen(false)} />
+                {user && user.role !== 'admin' && (
+                  <>
+                    <div className="my-4 border-t border-gray-100 mx-4"></div>
+                    <Link
+                      to="/alterar-senha"
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Key className="h-5 w-5 text-gray-400" />
+                      <span>Alterar Senha</span>
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              <div className="p-6 border-t bg-gray-50 mt-auto">
+                {user ? (
+                  <Button variant="destructive" className="w-full justify-start" onClick={() => { logout(); setIsOpen(false); }}>
+                    <LogOut className="h-4 w-4 mr-2" /> Sair da Conta
+                  </Button>
+                ) : (
+                  <div className="grid gap-3">
+                    <Button className="w-full btn-primary" onClick={() => { window.location.href = '/login'; setIsOpen(false); }}>
+                      Entrar
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
