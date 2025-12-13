@@ -437,19 +437,62 @@ const ExploreIlhabelaSection = () => {
 // --- SECÇÃO: CTA (SEJA MEMBRO/PARCEIRO) ---
 const CTASection = ({ navigate }) => {
   return (
-    <section className="py-20 bg-primary-teal text-white">
-      <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <h2 className="text-4xl font-bold mb-6">Qualidade e Confiança: O selo ALT Ilhabela</h2>
-          <p className="text-teal-50 mb-8 leading-relaxed text-lg">A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência.</p>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button className="bg-white text-primary-teal hover:bg-gray-100 border-none font-bold text-lg px-8 py-6 h-auto" onClick={() => navigate('/candidatura/membro')}>Seja um Membro</Button>
-            <Button variant="outline" className="text-white border-white hover:bg-white/20 hover:text-white font-bold text-lg px-8 py-6 h-auto" onClick={() => navigate('/candidatura/parceiro')}>Seja um Parceiro</Button>
+    <section className="py-24 relative overflow-hidden bg-[#f8f9fa]"> {/* Fundo claro suave */}
+      <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+
+        {/* Lado do Texto */}
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              Qualidade e Confiança: <br />
+              <span className="text-primary-teal">O selo ALT Ilhabela</span>
+            </h2>
+            <p className="text-gray-600 text-lg leading-relaxed max-w-xl">
+              A Associação de Locação por Temporada (ALT) de Ilhabela reúne os melhores anfitriões e parceiros da ilha, comprometidos com um turismo de excelência, segurança e sustentabilidade.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Button
+              className="bg-primary-teal hover:bg-teal-700 text-white font-bold text-lg px-8 py-7 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+              onClick={() => navigate('/candidatura/membro')}
+            >
+              Seja um Membro
+            </Button>
+            <Button
+              variant="outline"
+              className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
+              onClick={() => navigate('/candidatura/parceiro')}
+            >
+              Seja um Parceiro
+            </Button>
           </div>
         </div>
-        <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-          <img src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Pessoas na praia de Ilhabela" className="w-full h-full object-cover" />
+
+        {/* Lado da Imagem (Visual Clean) */}
+        <div className="relative">
+          <div className="absolute -inset-4 bg-primary-teal/10 rounded-[2rem] transform rotate-3 transition-transform group-hover:rotate-6"></div>
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border-8 border-white">
+            <img
+              src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+              alt="Pessoas na praia de Ilhabela"
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+            />
+          </div>
+          {/* Elemento Decorativo Flutuante */}
+          <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl border border-gray-100 hidden md:block">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-100 p-2 rounded-full">
+                <Shield className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-semibold uppercase">Confiança</p>
+                <p className="font-bold text-gray-900">Selo Verificado</p>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
     </section>
   );
