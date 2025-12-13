@@ -413,27 +413,25 @@ async def get_admin_user(current_user: User = Depends(get_current_user)):
 
 
 async def get_membro_user(current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.MEMBRO:
+    if current_user.role != UserRole.MEMBRO and current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Apenas membros podem acessar esta funcionalidade"
+            detail="Apenas membros (ou administradores) podem acessar esta funcionalidade"
         )
     return current_user
 
 
 async def get_parceiro_user(current_user: User = Depends(get_current_user)):
-    if current_user.role != UserRole.PARCEIRO:
+    if current_user.role != UserRole.PARCEIRO and current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Apenas parceiros podem acessar esta funcionalidade"
+            detail="Apenas parceiros (ou administradores) podem acessar esta funcionalidade"
         )
     return current_user
 
 # ==============================================================================
 # Email Service
 # ==============================================================================
-# (Nenhuma alteração aqui)
-# ... (todo o teu código do Email Service vai aqui) ...
 
 
 def create_praia_email_html(titulo: str, pre_cabecalho: str, nome_usuario: str, corpo_mensagem: str, texto_botao: Optional[str] = None, url_botao: Optional[str] = None) -> str:

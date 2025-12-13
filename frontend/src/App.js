@@ -186,8 +186,15 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
 
   // Lógica de Decisão
   let linksToRender = publicNavLinks;
+
   if (user) {
-    if (user.role === 'admin') linksToRender = adminNavLinks;
+    if (user.role === 'admin') {
+      linksToRender = [
+        ...adminNavLinks,
+        { href: "/meus-imoveis", text: "Gerir Meus Imóveis", icon: Briefcase },
+        { href: "/meu-perfil", text: "Meu Negócio (Parceiro)", icon: Briefcase }
+      ];
+    }
     else if (user.role === 'membro') linksToRender = memberNavLinks;
     else if (user.role === 'parceiro') linksToRender = partnerNavLinks;
   }
@@ -847,8 +854,8 @@ const MainApp = () => (
           <Route path="/parceiros" element={<ParceirosPage />} />
           <Route path="/imovel/:id" element={<ImovelDetalhePage />} />
           <Route path="/parceiro/:id" element={<ParceiroDetalhePage />} />
-          <Route path="/meus-imoveis" element={<ProtectedRoute allowedRoles={['membro']}><MeusImoveisPage /></ProtectedRoute>} />
-          <Route path="/meu-perfil" element={<ProtectedRoute allowedRoles={['parceiro']}><MeuPerfilPage /></ProtectedRoute>} />
+          <Route path="/meus-imoveis" element={<ProtectedRoute allowedRoles={['membro', 'admin']}><MeusImoveisPage /></ProtectedRoute>} />
+          <Route path="/meu-perfil" element={<ProtectedRoute allowedRoles={['parceiro', 'admin']}><MeuPerfilPage /></ProtectedRoute>} />
           <Route path="/anfitriao/:id" element={<AnfitriaoPerfilPage />} />
           <Route path="/alterar-senha" element={<ProtectedRoute><AlterarSenhaPage /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
