@@ -29,6 +29,7 @@ import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo.png';
 import logoGray from './assets/logo_cinza.png';
+import logoPraia from './assets/logo_praia.png';
 
 // --- CONFIGURAÇÃO E HOOKS ---
 axios.interceptors.response.use(
@@ -454,7 +455,7 @@ const CTASection = ({ navigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
-              className="bg-primary-teal hover:bg-teal-700 text-white font-bold text-lg px-8 py-7 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+              className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
               onClick={() => navigate('/candidatura/membro')}
             >
               Seja um Membro
@@ -474,8 +475,8 @@ const CTASection = ({ navigate }) => {
           <div className="absolute -inset-4 bg-primary-teal/10 rounded-[2rem] transform rotate-3 transition-transform group-hover:rotate-6"></div>
           <div className="relative rounded-2xl overflow-hidden shadow-2xl border-8 border-white">
             <img
-              src="https://images.pexels.com/photos/1032646/pexels-photo-1032646.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-              alt="Pessoas na praia de Ilhabela"
+              src={logoPraia}
+              alt="Logo na praia de Ilhabela"
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
             />
           </div>
