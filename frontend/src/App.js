@@ -138,22 +138,69 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
   );
 };
 
+// --- Navegação Inteligente (Mostra links certos para cada pessoa) ---
 const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   const { user } = useAuth();
   const location = useLocation();
-  const baseClass = isMobile ? "flex items-center space-x-3 px-4 py-3 rounded-lg font-medium" : "text-sm font-medium transition-colors flex items-center gap-2";
-  const activeClass = isMobile ? "bg-primary-teal/10 text-primary-teal border-l-4 border-primary-teal" : "";
-  const inactiveClass = isMobile ? "text-gray-600 hover:bg-gray-50" : (isHomePage ? "text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md" : "text-gray-600 hover:text-primary-teal hover:bg-gray-100 px-3 py-2 rounded-md");
 
-  const links = [
-    { href: "/imoveis", text: isMobile ? "Imóveis" : "Imóveis", icon: Home },
+  const baseMobileClass = "flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium";
+  const activeMobileClass = "bg-primary-teal/10 text-primary-teal border-l-4 border-primary-teal";
+  const inactiveMobileClass = "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
+
+  const baseDesktopClass = "text-sm font-medium transition-colors duration-200 flex items-center gap-2";
+  const homeDesktopClass = "text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md";
+  const defaultDesktopClass = "text-gray-600 hover:text-primary-teal hover:bg-gray-100 px-3 py-2 rounded-md";
+
+  const getNavLinkClass = (path) => {
+    if (isMobile) {
+      return `${baseMobileClass} ${location.pathname === path ? activeMobileClass : inactiveMobileClass}`;
+    }
+    return `${baseDesktopClass} ${isHomePage ? homeDesktopClass : defaultDesktopClass}`;
+  };
+
+  // 1. Links para quem NÃO está logado (Público)
+  const publicNavLinks = [
+    { href: "/imoveis", text: "Imóveis", icon: Home },
     { href: "/parceiros", text: "Parceiros", icon: Users }
   ];
 
+  // 2. Links para MEMBROS (Donos de imóveis)
+  const memberNavLinks = [
+    { href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase },
+    { href: "/imoveis", text: "Todos os Imóveis", icon: Home },
+    { href: "/parceiros", text: "Parceiros", icon: Users }
+  ];
+
+  // 3. Links para PARCEIROS (Comércio)
+  const partnerNavLinks = [
+    { href: "/meu-perfil", text: "Meu Negócio", icon: Briefcase },
+    { href: "/imoveis", text: "Imóveis", icon: Home },
+    { href: "/parceiros", text: "Parceiros", icon: Users }
+  ];
+
+  // 4. Links para ADMIN
+  const adminNavLinks = [
+    { href: "/admin/dashboard", text: "Dashboard", icon: Home },
+    { href: "/imoveis", text: "Ver Site", icon: Eye }
+  ];
+
+  // Lógica de Decisão
+  let linksToRender = publicNavLinks;
+  if (user) {
+    if (user.role === 'admin') linksToRender = adminNavLinks;
+    else if (user.role === 'membro') linksToRender = memberNavLinks;
+    else if (user.role === 'parceiro') linksToRender = partnerNavLinks;
+  }
+
   return (
     <nav className={isMobile ? "flex flex-col space-y-2 w-full" : "flex items-center space-x-2"}>
-      {links.map(link => (
-        <Link key={link.href} to={link.href} className={`${baseClass} ${location.pathname === link.href ? activeClass : inactiveClass}`} onClick={onNavClick}>
+      {linksToRender.map(link => (
+        <Link
+          key={link.href}
+          to={link.href}
+          className={getNavLinkClass(link.href)}
+          onClick={onNavClick}
+        >
           {isMobile && link.icon && <link.icon className={`h-5 w-5 ${location.pathname === link.href ? "text-primary-teal" : "text-gray-400"}`} />}
           <span>{link.text}</span>
         </Link>
