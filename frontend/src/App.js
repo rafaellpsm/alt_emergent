@@ -455,6 +455,7 @@ const CTASection = ({ navigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
+              variant="outline"
               className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
               onClick={() => navigate('/candidatura/membro')}
             >
