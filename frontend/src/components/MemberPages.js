@@ -177,7 +177,7 @@ export const TodosImoveisPage = () => {
 export const MeuPerfilPage = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false); // Controla se está no modo edição
+  const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     nome_empresa: '',
     descricao: '',
@@ -192,7 +192,7 @@ export const MeuPerfilPage = () => {
     servicos_oferecidos: '',
     fotos: [],
     video_url: '',
-    desconto_alt: '' // O campo importante
+    desconto_alt: ''
   });
 
   useEffect(() => {
@@ -204,7 +204,6 @@ export const MeuPerfilPage = () => {
       const response = await axios.get(`${API}/meu-perfil-parceiro`);
       setPerfil(response.data);
       if (response.data) {
-        // Se existe perfil, preenche o formulário
         setFormData({
           nome_empresa: response.data.nome_empresa || '',
           descricao: response.data.descricao || '',
@@ -226,7 +225,6 @@ export const MeuPerfilPage = () => {
       if (error.response?.status !== 404) {
         toast({ title: "Erro ao carregar perfil", variant: "destructive" });
       }
-      // Se for 404, apenas significa que ainda não criou o perfil, o que é normal.
     }
     setLoading(false);
   };
@@ -235,18 +233,16 @@ export const MeuPerfilPage = () => {
     e.preventDefault();
     try {
       if (perfil) {
-        // Atualizar
         await axios.put(`${API}/perfil-parceiro/${perfil.id}`, formData);
         toast({ title: "Perfil atualizado com sucesso!" });
       } else {
-        // Criar Novo
         await axios.post(`${API}/perfil-parceiro`, formData);
         toast({ title: "Perfil criado com sucesso!" });
       }
-      setEditing(false); // Sai do modo edição
-      fetchPerfil(); // Recarrega os dados
+      setEditing(false);
+      fetchPerfil();
     } catch (error) {
-      toast({ title: "Erro ao salvar perfil", description: "Verifique os dados e tente novamente.", variant: "destructive" });
+      toast({ title: "Erro ao salvar perfil", description: "Verifique os dados.", variant: "destructive" });
     }
   };
 
@@ -256,7 +252,6 @@ export const MeuPerfilPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
         <PageHeader title="Meu Negócio">
-          {/* BOTÃO MÁGICO: Se tem perfil e não está editando, mostra o botão Editar */}
           {perfil && !editing && (
             <Button onClick={() => setEditing(true)} className="btn-primary gap-2">
               <Edit className="h-4 w-4" /> Editar Informações
@@ -264,7 +259,6 @@ export const MeuPerfilPage = () => {
           )}
         </PageHeader>
 
-        {/* --- MODO EDIÇÃO OU CRIAÇÃO --- */}
         {(editing || !perfil) ? (
           <Card className="card-custom max-w-4xl mx-auto">
             <CardHeader>
@@ -274,7 +268,6 @@ export const MeuPerfilPage = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* Dados Básicos */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="nome_empresa">Nome da Empresa *</Label>
@@ -286,7 +279,6 @@ export const MeuPerfilPage = () => {
                   </div>
                 </div>
 
-                {/* CAMPO DE DESCONTO EM DESTAQUE */}
                 <div className="bg-teal-50 p-5 rounded-lg border border-teal-200">
                   <div className="flex items-center gap-2 mb-2">
                     <TicketPercent className="h-5 w-5 text-primary-teal" />
@@ -324,7 +316,6 @@ export const MeuPerfilPage = () => {
                   <div><Label>Serviços Oferecidos</Label><Input value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} /></div>
                 </div>
 
-                {/* Uploads */}
                 <div className="grid md:grid-cols-2 gap-6 pt-6 border-t">
                   <PhotoUpload photos={formData.fotos} onPhotosChange={(f) => setFormData({ ...formData, fotos: f })} maxPhotos={10} label="Fotos do Negócio" />
                   <VideoUpload videoUrl={formData.video_url} onVideoChange={(v) => setFormData({ ...formData, video_url: v })} label="Vídeo de Apresentação" />
@@ -338,7 +329,6 @@ export const MeuPerfilPage = () => {
             </CardContent>
           </Card>
         ) : (
-          /* --- MODO VISUALIZAÇÃO --- */
           <Card className="card-custom max-w-4xl mx-auto overflow-hidden">
             <div className="relative h-64 bg-gray-200">
               {perfil.fotos && perfil.fotos.length > 0 ? (
@@ -353,7 +343,6 @@ export const MeuPerfilPage = () => {
             </div>
 
             <CardContent className="p-8">
-              {/* Box de Desconto na Visualização */}
               {perfil.desconto_alt && (
                 <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
                   <div className="bg-white p-3 rounded-full shadow-md text-primary-teal">
