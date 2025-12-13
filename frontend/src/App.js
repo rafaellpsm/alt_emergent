@@ -302,7 +302,7 @@ const SobreSection = () => {
       {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
         <div className="h-48 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Megafone" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Megafone" />
         </div>
         <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
@@ -327,14 +327,14 @@ const SobreSection = () => {
           </FadeInSection>
         </div>
         <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src="https://images.pexels.com/photos/957024/beach-pollution-plastic-waste-957024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Sustentabilidade" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
         <div className="h-48 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/347139/pexels-photo-347139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Parceiros" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Parceiros" />
         </div>
         <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
@@ -359,14 +359,14 @@ const SobreSection = () => {
           </FadeInSection>
         </div>
         <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src="https://images.pexels.com/photos/4669141/pexels-photo-4669141.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Comunidade" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
         <div className="h-48 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Guia" />
         </div>
         <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
