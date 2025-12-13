@@ -177,7 +177,7 @@ export const TodosImoveisPage = () => {
 export const MeuPerfilPage = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false); // Controla se está no modo edição
   const [formData, setFormData] = useState({
     nome_empresa: '',
     descricao: '',
@@ -192,7 +192,7 @@ export const MeuPerfilPage = () => {
     servicos_oferecidos: '',
     fotos: [],
     video_url: '',
-    desconto_alt: ''
+    desconto_alt: '' // O campo importante
   });
 
   useEffect(() => {
@@ -204,6 +204,7 @@ export const MeuPerfilPage = () => {
       const response = await axios.get(`${API}/meu-perfil-parceiro`);
       setPerfil(response.data);
       if (response.data) {
+        // Se existe perfil, preenche o formulário
         setFormData({
           nome_empresa: response.data.nome_empresa || '',
           descricao: response.data.descricao || '',
@@ -223,12 +224,9 @@ export const MeuPerfilPage = () => {
       }
     } catch (error) {
       if (error.response?.status !== 404) {
-        toast({
-          title: "Erro ao carregar perfil",
-          description: "Tente recarregar a página.",
-          variant: "destructive",
-        });
+        toast({ title: "Erro ao carregar perfil", variant: "destructive" });
       }
+      // Se for 404, apenas significa que ainda não criou o perfil, o que é normal.
     }
     setLoading(false);
   };
@@ -237,203 +235,178 @@ export const MeuPerfilPage = () => {
     e.preventDefault();
     try {
       if (perfil) {
+        // Atualizar
         await axios.put(`${API}/perfil-parceiro/${perfil.id}`, formData);
         toast({ title: "Perfil atualizado com sucesso!" });
       } else {
+        // Criar Novo
         await axios.post(`${API}/perfil-parceiro`, formData);
         toast({ title: "Perfil criado com sucesso!" });
       }
-      setEditing(false);
-      fetchPerfil();
+      setEditing(false); // Sai do modo edição
+      fetchPerfil(); // Recarrega os dados
     } catch (error) {
-      let errorMessage = "Tente novamente mais tarde.";
-      if (error.response?.data?.detail) {
-        const errorDetail = error.response.data.detail;
-        if (Array.isArray(errorDetail)) {
-          errorMessage = errorDetail.map(err => `${err.loc[1]}: ${err.msg}`).join('; ');
-        } else if (typeof errorDetail === 'string') {
-          errorMessage = errorDetail;
-        }
-      }
-      toast({
-        title: "Erro ao salvar perfil",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast({ title: "Erro ao salvar perfil", description: "Verifique os dados e tente novamente.", variant: "destructive" });
     }
   };
+
+  if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-12">
-        <PageHeader title="Meu Perfil de Parceiro">
+        <PageHeader title="Meu Negócio">
+          {/* BOTÃO MÁGICO: Se tem perfil e não está editando, mostra o botão Editar */}
           {perfil && !editing && (
-            <Button onClick={() => setEditing(true)} className="btn-primary">
-              Editar Perfil
+            <Button onClick={() => setEditing(true)} className="btn-primary gap-2">
+              <Edit className="h-4 w-4" /> Editar Informações
             </Button>
           )}
         </PageHeader>
-        {loading ? (
-          <div className="flex justify-center items-center py-12"><div className="spinner"></div></div>
-        ) : (!perfil && !editing) ? (
-          <Card className="card-custom max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-primary-gray">Criar Perfil de Parceiro</CardTitle>
-              <CardDescription>
-                Você ainda não tem um perfil de parceiro. Crie um para começar.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => setEditing(true)} className="btn-primary">
-                Criar Perfil
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (editing) ? (
+
+        {/* --- MODO EDIÇÃO OU CRIAÇÃO --- */}
+        {(editing || !perfil) ? (
           <Card className="card-custom max-w-4xl mx-auto">
             <CardHeader>
               <CardTitle className="text-primary-gray">{perfil ? 'Editar Perfil' : 'Criar Perfil de Parceiro'}</CardTitle>
+              <CardDescription>Mantenha as informações do seu negócio sempre atualizadas.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* Dados Básicos */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="nome_empresa" className="form-label">Nome da Empresa *</Label>
-                    <Input id="nome_empresa" className="form-input" value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} required />
+                    <Label htmlFor="nome_empresa">Nome da Empresa *</Label>
+                    <Input id="nome_empresa" value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} required />
                   </div>
                   <div>
-                    <Label htmlFor="categoria" className="form-label">Categoria *</Label>
-                    <Input id="categoria" className="form-input" value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required />
+                    <Label htmlFor="categoria">Categoria *</Label>
+                    <Input id="categoria" placeholder="Ex: Restaurante, Passeios..." value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required />
                   </div>
                 </div>
-                <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+
+                {/* CAMPO DE DESCONTO EM DESTAQUE */}
+                <div className="bg-teal-50 p-5 rounded-lg border border-teal-200">
                   <div className="flex items-center gap-2 mb-2">
                     <TicketPercent className="h-5 w-5 text-primary-teal" />
-                    <Label className="text-primary-teal font-bold">Desconto Exclusivo para Hóspedes ALT</Label>
+                    <Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT</Label>
                   </div>
                   <Input
                     placeholder="Ex: 15% de desconto em todo o cardápio ou Drink de cortesia"
                     value={formData.desconto_alt}
-                    onChange={e => setFormData({ ...formData, desconto_alt: e.target.value })}
-                    className="bg-white"
+                    onChange={(e) => setFormData({ ...formData, desconto_alt: e.target.value })}
+                    className="bg-white border-teal-200 focus:border-teal-500"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Isso aparecerá em destaque no site principal.</p>
+                  <p className="text-xs text-teal-700 mt-2">✨ Este benefício aparecerá em destaque no cartão do seu negócio na página inicial.</p>
                 </div>
+
                 <div>
-                  <Label htmlFor="descricao" className="form-label">Descrição *</Label>
-                  <Textarea id="descricao" className="form-input" value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required />
+                  <Label htmlFor="descricao">Descrição *</Label>
+                  <Textarea id="descricao" rows={4} value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required />
                 </div>
+
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="telefone" className="form-label">Telefone *</Label>
-                    <Input id="telefone" className="form-input" value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="endereco" className="form-label">Endereço</Label>
-                    <Input id="endereco" className="form-input" value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} />
-                  </div>
+                  <div><Label>Telefone *</Label><Input value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} required /></div>
+                  <div><Label>WhatsApp</Label><Input value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} /></div>
                 </div>
+
+                <div><Label>Endereço</Label><Input value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} /></div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div><Label>Instagram</Label><Input value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="@seu_insta" /></div>
+                  <div><Label>Facebook</Label><Input value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} /></div>
+                  <div><Label>Website</Label><Input value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} /></div>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="website" className="form-label">Website</Label>
-                    <Input id="website" type="url" className="form-input" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label htmlFor="instagram" className="form-label">Instagram</Label>
-                    <Input id="instagram" type="url" className="form-input" value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} />
-                  </div>
+                  <div><Label>Horário de Funcionamento</Label><Input value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} /></div>
+                  <div><Label>Serviços Oferecidos</Label><Input value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} /></div>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="facebook" className="form-label">Facebook</Label>
-                    <Input id="facebook" type="url" className="form-input" value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label htmlFor="whatsapp" className="form-label">WhatsApp</Label>
-                    <Input id="whatsapp" className="form-input" value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} />
-                  </div>
+
+                {/* Uploads */}
+                <div className="grid md:grid-cols-2 gap-6 pt-6 border-t">
+                  <PhotoUpload photos={formData.fotos} onPhotosChange={(f) => setFormData({ ...formData, fotos: f })} maxPhotos={10} label="Fotos do Negócio" />
+                  <VideoUpload videoUrl={formData.video_url} onVideoChange={(v) => setFormData({ ...formData, video_url: v })} label="Vídeo de Apresentação" />
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="horario_funcionamento" className="form-label">Horário de Funcionamento</Label>
-                    <Input id="horario_funcionamento" className="form-input" value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label htmlFor="servicos_oferecidos" className="form-label">Serviços Oferecidos</Label>
-                    <Input id="servicos_oferecidos" className="form-input" value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} />
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t">
-                  <div>
-                    <PhotoUpload
-                      photos={formData.fotos}
-                      onPhotosChange={(newPhotos) => setFormData({ ...formData, fotos: newPhotos })}
-                      maxPhotos={10}
-                      label="Fotos do Negócio"
-                    />
-                  </div>
-                  <div>
-                    <VideoUpload
-                      videoUrl={formData.video_url}
-                      onVideoChange={(newUrl) => setFormData({ ...formData, video_url: newUrl })}
-                      label="Vídeo de Apresentação"
-                    />
-                  </div>
-                </div>
+
                 <div className="flex space-x-4 pt-6 border-t">
-                  <Button type="submit" className="flex-1 btn-primary">
-                    {perfil ? 'Atualizar' : 'Criar'} Perfil
-                  </Button>
-                  {editing && (
-                    <Button type="button" variant="outline" onClick={() => setEditing(false)}>
-                      Cancelar
-                    </Button>
-                  )}
+                  <Button type="submit" className="flex-1 btn-primary py-6 text-lg">{perfil ? 'Salvar Alterações' : 'Criar Perfil'}</Button>
+                  {editing && <Button type="button" variant="outline" className="flex-1 py-6" onClick={() => setEditing(false)}>Cancelar</Button>}
                 </div>
               </form>
             </CardContent>
           </Card>
         ) : (
-          <Card className="card-custom max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl text-primary-gray">{perfil.nome_empresa}</CardTitle>
-              <CardDescription>
-                <Badge className="badge-teal">{perfil.categoria}</Badge>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  {perfil.fotos && perfil.fotos.length > 0 && (
-                    <div className="mb-6">
-                      <img src={perfil.fotos[0]} alt={perfil.nome_empresa} className="rounded-lg shadow-md" />
+          /* --- MODO VISUALIZAÇÃO --- */
+          <Card className="card-custom max-w-4xl mx-auto overflow-hidden">
+            <div className="relative h-64 bg-gray-200">
+              {perfil.fotos && perfil.fotos.length > 0 ? (
+                <img src={perfil.fotos[0]} alt={perfil.nome_empresa} className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">Sem capa</div>
+              )}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-20">
+                <h2 className="text-3xl font-bold text-white">{perfil.nome_empresa}</h2>
+                <Badge className="badge-teal mt-2">{perfil.categoria}</Badge>
+              </div>
+            </div>
+
+            <CardContent className="p-8">
+              {/* Box de Desconto na Visualização */}
+              {perfil.desconto_alt && (
+                <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
+                  <div className="bg-white p-3 rounded-full shadow-md text-primary-teal">
+                    <TicketPercent className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-teal-800 uppercase tracking-wide mb-1">Benefício Exclusivo Hóspede ALT</p>
+                    <p className="text-xl text-gray-800 font-bold">{perfil.desconto_alt}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="md:col-span-2 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-primary-gray mb-2">Sobre</h3>
+                    <p className="text-gray-600 whitespace-pre-line leading-relaxed">{perfil.descricao}</p>
+                  </div>
+                  {perfil.fotos.length > 1 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-gray mb-4">Galeria</h3>
+                      <div className="grid grid-cols-4 gap-2">
+                        {perfil.fotos.slice(1).map((foto, i) => (
+                          <img key={i} src={foto} alt="" className="rounded-lg h-20 w-full object-cover cursor-pointer hover:opacity-80" />
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <h3 className="font-semibold mb-2 text-primary-gray">Sobre</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{perfil.descricao}</p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-primary-gray">Contato</h3>
-                    <p className="text-gray-700">{perfil.telefone}</p>
-                    {perfil.whatsapp && <p className="text-gray-700">WhatsApp: {perfil.whatsapp}</p>}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary-gray">Endereço</h3>
-                    <p className="text-gray-700">{perfil.endereco}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary-gray">Horário de Funcionamento</h3>
-                    <p className="text-gray-700">{perfil.horario_funcionamento}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-primary-gray">Serviços</h3>
-                    <p className="text-gray-700">{perfil.servicos_oferecidos}</p>
-                  </div>
-                  <div className="flex space-x-2 pt-4 border-t">
-                    {perfil.website && <Button asChild variant="outline"><a href={perfil.website} target="_blank" rel="noopener noreferrer">Website</a></Button>}
-                    {perfil.instagram && <Button asChild variant="outline"><a href={perfil.instagram} target="_blank" rel="noopener noreferrer">Instagram</a></Button>}
-                    {perfil.facebook && <Button asChild variant="outline"><a href={perfil.facebook} target="_blank" rel="noopener noreferrer">Facebook</a></Button>}
+
+                <div className="space-y-6">
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 space-y-4">
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Phone className="h-5 w-5 text-primary-teal" />
+                      <span>{perfil.telefone}</span>
+                    </div>
+                    {perfil.whatsapp && (
+                      <div className="flex items-center gap-3 text-gray-700">
+                        <span className="font-bold text-green-600">WhatsApp:</span>
+                        <span>{perfil.whatsapp}</span>
+                      </div>
+                    )}
+                    {perfil.endereco && (
+                      <div className="flex items-start gap-3 text-gray-700">
+                        <MapPin className="h-5 w-5 text-primary-teal shrink-0" />
+                        <span>{perfil.endereco}</span>
+                      </div>
+                    )}
+                    <div className="flex gap-2 pt-2">
+                      {perfil.instagram && <Button size="icon" variant="outline" asChild><a href={perfil.instagram} target="_blank" rel="noreferrer"><Instagram className="h-4 w-4" /></a></Button>}
+                      {perfil.facebook && <Button size="icon" variant="outline" asChild><a href={perfil.facebook} target="_blank" rel="noreferrer"><Facebook className="h-4 w-4" /></a></Button>}
+                      {perfil.website && <Button size="icon" variant="outline" asChild><a href={perfil.website} target="_blank" rel="noreferrer"><Globe className="h-4 w-4" /></a></Button>}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -460,11 +433,7 @@ export const ParceirosPage = () => {
       const response = await axios.get(`${API}/parceiros`);
       setParceiros(response.data);
     } catch (error) {
-      toast({
-        title: "Erro ao carregar parceiros",
-        description: "Tente recarregar a página.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro ao carregar parceiros", variant: "destructive" });
     }
     setLoading(false);
   };
@@ -473,70 +442,42 @@ export const ParceirosPage = () => {
   const parceirsFiltrados = categoriaFiltro ? parceiros.filter(p => p.categoria === categoriaFiltro) : parceiros;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <div className="container mx-auto px-4 py-8 md:py-12">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-12">
         <PageHeader title="Nossos Parceiros" showBackButton={false} />
 
         {categoriasDisponiveis.length > 0 && (
           <div className="flex overflow-x-auto gap-2 mb-8 pb-2 scrollbar-hide">
-            <Button
-              variant={categoriaFiltro === '' ? 'default' : 'outline'}
-              onClick={() => setCategoriaFiltro('')}
-              className="rounded-full whitespace-nowrap"
-            >
-              Todos
-            </Button>
+            <Button variant={categoriaFiltro === '' ? 'default' : 'outline'} onClick={() => setCategoriaFiltro('')} className="rounded-full whitespace-nowrap">Todos</Button>
             {categoriasDisponiveis.map(cat => (
-              <Button
-                key={cat}
-                variant={categoriaFiltro === cat ? 'default' : 'outline'}
-                onClick={() => setCategoriaFiltro(cat)}
-                className="rounded-full whitespace-nowrap capitalize"
-              >
-                {cat}
-              </Button>
+              <Button key={cat} variant={categoriaFiltro === cat ? 'default' : 'outline'} onClick={() => setCategoriaFiltro(cat)} className="rounded-full whitespace-nowrap capitalize">{cat}</Button>
             ))}
           </div>
         )}
 
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="spinner"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {parceirsFiltrados.length === 0 ? (
-              <Card className="card-custom col-span-full">
-                <CardContent className="py-12 text-center text-gray-500">
-                  Nenhum parceiro encontrado
+        {loading ? <div className="flex justify-center py-12"><div className="spinner"></div></div> : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {parceirsFiltrados.map((parceiro) => (
+              <Card key={parceiro.id} className="card-custom hover-lift cursor-pointer overflow-hidden flex flex-col h-full" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
+                <div className="aspect-video bg-gray-200 relative">
+                  {parceiro.fotos && parceiro.fotos.length > 0 && (
+                    <img src={parceiro.fotos[0]} alt={parceiro.nome_empresa} className="w-full h-full object-cover" />
+                  )}
+                  <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
+                </div>
+                <CardContent className="p-5 flex-1 flex flex-col">
+                  <h3 className="font-bold text-lg text-primary-gray mb-2">{parceiro.nome_empresa}</h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">{parceiro.descricao}</p>
+
+                  {parceiro.desconto_alt && (
+                    <div className="mt-auto bg-teal-50 border border-teal-100 rounded p-2 flex items-center gap-2">
+                      <TicketPercent className="h-4 w-4 text-primary-teal" />
+                      <span className="text-xs font-bold text-teal-800">{parceiro.desconto_alt}</span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ) : (
-              parceirsFiltrados.map((parceiro) => (
-                <Card
-                  key={parceiro.id}
-                  className="card-custom hover-lift cursor-pointer overflow-hidden"
-                  onClick={() => navigate(`/parceiro/${parceiro.id}`)}
-                >
-                  <div className="aspect-video bg-gray-100 relative">
-                    {parceiro.fotos && parceiro.fotos.length > 0 && (
-                      <img
-                        src={parceiro.fotos[0]}
-                        alt={parceiro.nome_empresa}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                    <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
-                  </div>
-                  <CardContent className="p-5">
-                    <h3 className="font-bold text-lg text-gray-900 mb-2">{parceiro.nome_empresa}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {parceiro.descricao}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+            ))}
           </div>
         )}
       </div>
