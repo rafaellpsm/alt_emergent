@@ -8,7 +8,7 @@ import { ImovelDetalhePage, ParceiroDetalhePage } from './components/DetalhesPag
 import { AlterarSenhaPage } from './components/AlterarSenhaPage';
 import RecuperarSenhaModal from './components/RecuperarSenhaModal';
 import { Button } from './components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Card, CardContent } from './components/ui/card';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { toast } from './hooks/use-toast';
@@ -212,7 +212,7 @@ const HomeHeader = () => {
   );
 };
 
-// --- LAYOUTS (Re-adicionados aqui!) ---
+// --- LAYOUTS ---
 const DefaultLayout = () => (
   <>
     <DefaultHeader />
@@ -223,6 +223,26 @@ const DefaultLayout = () => (
 );
 
 const HomeLayout = () => <Outlet />;
+
+// --- ROTA PROTEGIDA (RECUPERADA) ---
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen"><div className="spinner"></div></div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 
 // --- NOVAS SEÇÕES DA HOME ---
 
