@@ -212,6 +212,18 @@ const HomeHeader = () => {
   );
 };
 
+// --- LAYOUTS (Re-adicionados aqui!) ---
+const DefaultLayout = () => (
+  <>
+    <DefaultHeader />
+    <main className="pt-20 bg-gray-50 min-h-screen">
+      <Outlet />
+    </main>
+  </>
+);
+
+const HomeLayout = () => <Outlet />;
+
 // --- NOVAS SEÇÕES DA HOME ---
 
 const TelefonesUteisSection = () => {
