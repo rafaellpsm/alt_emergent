@@ -27,7 +27,7 @@ import { AdminCandidaturasPage, AdminImoveisPage, AdminUsuariosPage, AdminConteu
 import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
-import logoTeal from './assets/logo.png';
+import logoTeal from './assets/logo_horiz.png';
 import logoGray from './assets/logo_cinza.png';
 import logoPraia from './assets/logo_praia.png';
 
@@ -230,7 +230,6 @@ const DefaultHeader = () => {
             alt="Logo"
             className="h-14 w-auto transition-transform group-hover:scale-110"
           />
-          <span className="text-2xl font-bold text-primary-gray tracking-tight">ALT Ilhabela</span>
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
@@ -328,7 +327,6 @@ const HomeHeader = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-3 group">
           <img src={logoSrc} alt="Logo" className="h-14 w-auto transition-transform group-hover:scale-110" />
-          <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
         </Link>
         <div className="hidden md:flex items-center space-x-4">
           <Navigation isHomePage={!isScrolled} />
