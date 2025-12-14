@@ -28,7 +28,7 @@ import { AnfitriaoPerfilPage } from "./components/AnfitriaoPerfilPage";
 import { PerfilPage } from "./components/PerfilPage";
 import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo_horiz.png';
-import logoGray from './assets/logo_cinza.png';
+import logoGray from './assets/logo_horiz.png';
 import logoPraia from './assets/logo_praia.png';
 
 // --- CONFIGURAÇÃO E HOOKS ---
