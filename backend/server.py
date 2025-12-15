@@ -269,7 +269,15 @@ class ParceiroBase(BaseModel):
     horario_funcionamento: Optional[str] = None
     servicos_oferecidos: Optional[str] = None
     video_url: Optional[str] = None
-    desconto_alt: Optional[str] = None  # <--- NOVO CAMPO AQUI
+    desconto_alt: Optional[str] = None
+
+    # --- CORREÇÃO: Este validador transforma "" em None antes de validar ---
+    @field_validator('website', mode='before')
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == '' or v is None:
+            return None
+        return v
 
 
 class PerfilParceiroCreate(ParceiroBase):
