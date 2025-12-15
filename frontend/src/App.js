@@ -414,89 +414,56 @@ const TelefonesUteisSection = () => {
   );
 };
 
-// --- SECÇÃO: SOBRE (5 BLOCOS) ---
+// --- NOVA SECÇÃO: SOBRE (MOSAICO DE FOTOS) ---
 const SobreSection = () => {
   return (
-    <section className="bg-gray-50">
-      {/* Bloco 1: Megafone */}
-      <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Megafone" />
+    <section className="bg-white w-full">
+      {/* 1ª Fileira: 4 Imagens (Peixe, Placa, Cachoeira, Praia) */}
+      <FadeInSection>
+        <div className="grid grid-cols-2 md:grid-cols-4 h-48 md:h-64">
+          {/* Peixe */}
+          <div className="w-full h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/1796730/pexels-photo-1796730.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
+          </div>
+          {/* Placa Parque (Usando natureza similar) */}
+          <div className="w-full h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/1572973/pexels-photo-1572973.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
+          </div>
+          {/* Cachoeira */}
+          <div className="w-full h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/3576246/pexels-photo-3576246.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
+          </div>
+          {/* Praia/Barco */}
+          <div className="w-full h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/3608063/pexels-photo-3608063.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
+          </div>
         </div>
-        <div className="p-10 flex flex-col justify-center bg-white">
-          <FadeInSection>
-            <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
-            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca. Juntos, elevamos o padrão de hospedagem em Ilhabela.
-            </p>
-          </FadeInSection>
-        </div>
-      </div>
+      </FadeInSection>
 
-      {/* Bloco 2: Sustentabilidade */}
-      <div className="grid md:grid-cols-2">
-        <div className="p-10 flex flex-col justify-center bg-gray-50 order-2 md:order-1">
-          <FadeInSection>
-            <Leaf className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
-            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-              Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
-            </p>
-          </FadeInSection>
+      {/* 2ª Fileira: Logo Centralizada */}
+      <FadeInSection delay={200}>
+        <div className="flex items-center justify-center py-16 md:py-24 bg-white">
+          <img src={logoTeal} className="h-20 md:h-32 w-auto animate-fade-in-up" alt="Logo ALT" />
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Sustentabilidade" />
-        </div>
-      </div>
+      </FadeInSection>
 
-      {/* Bloco 3: Parceiros Locais */}
-      <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Parceiros" />
+      {/* 3ª Fileira: 3 Imagens (Letreiro, Farol, Pescador) */}
+      <FadeInSection delay={400}>
+        <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-80">
+          {/* Letreiro Ilhabela (Usando visual praia colorida) */}
+          <div className="w-full h-64 md:h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/2086622/pexels-photo-2086622.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
+          </div>
+          {/* Farol */}
+          <div className="w-full h-64 md:h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/2555285/pexels-photo-2555285.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
+          </div>
+          {/* Pescador/Rede */}
+          <div className="w-full h-64 md:h-full overflow-hidden">
+            <img src="https://images.pexels.com/photos/2131849/pexels-photo-2131849.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
+          </div>
         </div>
-        <div className="p-10 flex flex-col justify-center bg-white">
-          <FadeInSection>
-            <Heart className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
-            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-              Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local conectando hóspedes a negócios de qualidade.
-            </p>
-          </FadeInSection>
-        </div>
-      </div>
-
-      {/* Bloco 4: Comunidade */}
-      <div className="grid md:grid-cols-2">
-        <div className="p-10 flex flex-col justify-center bg-gray-50 order-2 md:order-1">
-          <FadeInSection>
-            <Users className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
-            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
-            </p>
-          </FadeInSection>
-        </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Comunidade" />
-        </div>
-      </div>
-
-      {/* Bloco 5: Guia Local */}
-      <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Guia" />
-        </div>
-        <div className="p-10 flex flex-col justify-center bg-white">
-          <FadeInSection>
-            <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
-            <p className="text-gray-600 leading-relaxed text-sm md:text-base">
-              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
-            </p>
-          </FadeInSection>
-        </div>
-      </div>
+      </FadeInSection>
     </section>
   );
 };
@@ -762,7 +729,7 @@ const HomePage = () => {
         {/* --- CTA: SEJA MEMBRO --- */}
         <CTASection navigate={navigate} />
 
-        {/* --- SOBRE NÓS --- */}
+        {/* --- SOBRE NÓS (MOSAICO DE FOTOS) --- */}
         <SobreSection />
 
         {/* --- TELEFONES ÚTEIS --- */}
