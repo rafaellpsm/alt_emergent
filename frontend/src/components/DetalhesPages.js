@@ -8,20 +8,58 @@ import { toast } from '../hooks/use-toast';
 import {
   MapPin, Bed, Bath, Users, Check, ArrowRight, Share2,
   Phone, Instagram, Facebook, Globe, TicketPercent, MessageCircle,
-  Star, ShieldCheck, ChevronLeft, Heart
+  ShieldCheck, Heart
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- COMPONENTE: DETALHE DO IMÓVEL (MODERN UI/UX) ---
+// --- FUNÇÃO AUXILIAR: Converte texto com Markdown de imagem em HTML real ---
+const renderDescriptionWithImages = (text) => {
+  if (!text) return null;
+
+  // Divide o texto sempre que encontrar o padrão ![Alt](Url)
+  // A Regex captura o padrão inteiro para não o perdermos
+  const parts = text.split(/(!\[.*?\]\(.*?\))/g);
+
+  return parts.map((part, index) => {
+    // Verifica se esta parte é uma imagem
+    const imageMatch = part.match(/!\[(.*?)\]\((.*?)\)/);
+
+    if (imageMatch) {
+      // Se for imagem, renderiza a tag <img>
+      return (
+        <div key={index} className="my-6 rounded-xl overflow-hidden shadow-sm">
+          <img
+            src={imageMatch[2]}
+            alt={imageMatch[1] || "Foto do imóvel"}
+            className="w-full h-auto object-cover"
+            loading="lazy"
+          />
+        </div>
+      );
+    }
+
+    // Se for texto normal, renderiza mantendo as quebras de linha
+    return (
+      <span key={index} className="whitespace-pre-line text-gray-600 leading-relaxed text-base">
+        {part}
+      </span>
+    );
+  });
+};
+
+// --- COMPONENTE: DETALHE DO IMÓVEL ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [imovel, setImovel] = useState(null);
   const [anfitriao, setAnfitriao] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [me, setMe] = useState(null); // Estado para utilizador logado
+  const [me, setMe] = useState(null);
+
+  // Estado para controlar qual imagem está grande
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +71,7 @@ export const ImovelDetalhePage = () => {
         try {
           const anfitriaoRes = await axios.get(`${API}/imoveis/${id}/proprietario`);
           setAnfitriao(anfitriaoRes.data);
-        } catch (err) { console.error("Erro anfitrião", err); }
+        } catch (err) { console.error(err); }
 
         try {
           const meRes = await axios.get(`${API}/auth/me`);
@@ -41,7 +79,6 @@ export const ImovelDetalhePage = () => {
         } catch (err) { setMe(null); }
 
       } catch (error) {
-        toast({ title: "Erro", description: "Imóvel não encontrado.", variant: "destructive" });
         navigate('/imoveis');
       } finally { setLoading(false); }
     };
@@ -58,8 +95,8 @@ export const ImovelDetalhePage = () => {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* 1. Breadcrumb e Navegação (UX: Orientação) */}
-      <div className="border-b">
+      {/* Navegação Breadcrumb */}
+      <div className="border-b bg-gray-50">
         <div className="container mx-auto px-4 h-14 flex items-center text-sm text-gray-500">
           <Link to="/" className="hover:text-primary-teal transition-colors">Home</Link>
           <span className="mx-2">/</span>
@@ -69,82 +106,73 @@ export const ImovelDetalhePage = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pt-6">
+      <div className="container mx-auto px-4 pt-8">
 
-        {/* 2. Cabeçalho de Impacto (Marketing: Título e Localização) */}
+        {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
               {imovel.titulo}
             </h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 font-medium">
-              <span className="flex items-center gap-1 hover:text-primary-teal cursor-pointer transition-colors">
+              <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4 text-primary-teal" /> {imovel.endereco_completo}
               </span>
               <span className="hidden md:inline text-gray-300">|</span>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="border-primary-teal text-primary-teal bg-teal-50">
-                  {imovel.tipo}
-                </Badge>
-                <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                  {imovel.regiao}
-                </Badge>
-              </div>
+              <Badge variant="secondary" className="bg-teal-50 text-primary-teal hover:bg-teal-100">{imovel.tipo}</Badge>
+              <Badge variant="outline" className="border-gray-200 text-gray-600">{imovel.regiao}</Badge>
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full hover:bg-gray-50 border-gray-300">
               <Share2 className="h-4 w-4 mr-2" /> Compartilhar
             </Button>
-            {/* Botão Salvar (Exemplo visual para UX) */}
-            <Button variant="outline" size="sm" className="rounded-full hover:bg-gray-50 border-gray-300">
-              <Heart className="h-4 w-4 mr-2" /> Salvar
-            </Button>
           </div>
         </div>
 
-        {/* 3. Galeria "Bento Grid" (UX: Imersão Visual) */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden shadow-sm relative group">
-          {/* Foto Principal */}
-          <div className="md:col-span-2 md:row-span-2 relative h-full">
-            {imovel.fotos?.[0] ? (
-              <img src={imovel.fotos[0]} className="w-full h-full object-cover hover:brightness-105 transition-all duration-500 cursor-pointer" alt="Principal" />
-            ) : <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">Sem foto</div>}
+        {/* GALERIA INTERATIVA (CORRIGIDA) */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 h-[450px] md:h-[550px] mb-10 rounded-2xl overflow-hidden shadow-sm">
+          {/* Foto Principal (Selecionada) */}
+          <div className="lg:col-span-3 h-full relative group">
+            {imovel.fotos && imovel.fotos.length > 0 ? (
+              <img
+                src={imovel.fotos[selectedImageIndex]}
+                className="w-full h-full object-cover transition-all duration-300"
+                alt="Principal"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">Sem foto</div>
+            )}
           </div>
-          {/* Fotos Secundárias */}
-          <div className="hidden md:block relative h-full">
-            {imovel.fotos?.[1] && <img src={imovel.fotos[1]} className="w-full h-full object-cover hover:brightness-105 transition-all cursor-pointer" alt="2" />}
-          </div>
-          <div className="hidden md:block relative h-full">
-            {imovel.fotos?.[2] && <img src={imovel.fotos[2]} className="w-full h-full object-cover hover:brightness-105 transition-all cursor-pointer" alt="3" />}
-          </div>
-          <div className="hidden md:block relative h-full">
-            {imovel.fotos?.[3] && <img src={imovel.fotos[3]} className="w-full h-full object-cover hover:brightness-105 transition-all cursor-pointer" alt="4" />}
-          </div>
-          <div className="hidden md:block relative h-full">
-            {imovel.fotos?.[4] ? (
-              <div className="relative w-full h-full cursor-pointer group-hover/btn">
-                <img src={imovel.fotos[4]} className="w-full h-full object-cover hover:brightness-105 transition-all" alt="5" />
-                {imovel.fotos.length > 5 && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">+{imovel.fotos.length - 5} fotos</span>
-                  </div>
-                )}
+
+          {/* Lista Lateral de Miniaturas */}
+          <div className="hidden lg:grid grid-rows-4 gap-2 h-full">
+            {imovel.fotos && imovel.fotos.slice(0, 4).map((foto, idx) => (
+              <div
+                key={idx}
+                className={`relative h-full cursor-pointer overflow-hidden rounded-lg ${selectedImageIndex === idx ? 'ring-2 ring-primary-teal' : 'opacity-70 hover:opacity-100'}`}
+                onClick={() => setSelectedImageIndex(idx)} // AQUI: Clicar muda a foto principal
+              >
+                <img src={foto} className="w-full h-full object-cover" alt={`Thumb ${idx}`} />
               </div>
-            ) : <div className="bg-gray-100 w-full h-full"></div>}
+            ))}
+            {/* Botão para ver mais se houver muitas fotos (Visual apenas) */}
+            {imovel.fotos && imovel.fotos.length > 4 && (
+              <div className="relative h-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg" onClick={() => setSelectedImageIndex(4)}>
+                <span className="text-gray-500 font-bold text-sm">+{imovel.fotos.length - 4} fotos</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Layout de 2 Colunas */}
+        {/* Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
 
-          {/* Lado Esquerdo: Conteúdo Rico */}
           <div className="lg:col-span-2 space-y-10">
-
-            {/* Resumo Rápido (Scannability) */}
+            {/* Resumo */}
             <div className="flex items-center justify-between py-2 border-b pb-8">
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-gray-900">Hospedagem inteira por {anfitriao ? anfitriao.nome.split(' ')[0] : 'Anfitrião'}</h2>
+                <h2 className="text-xl font-bold text-gray-900">Hospedagem por {anfitriao ? anfitriao.nome.split(' ')[0] : 'Anfitrião'}</h2>
                 <p className="text-gray-600 flex gap-2 text-sm">
                   <span>{imovel.capacidade} hóspedes</span> •
                   <span>{imovel.num_quartos} quartos</span> •
@@ -152,44 +180,29 @@ export const ImovelDetalhePage = () => {
                 </p>
               </div>
               {anfitriao && (
-                <div className="h-14 w-14 rounded-full bg-gray-100 overflow-hidden border-2 border-white shadow-md">
-                  <div className="w-full h-full flex items-center justify-center bg-primary-teal text-white font-bold text-xl uppercase">
-                    {anfitriao.nome.charAt(0)}
-                  </div>
+                <div className="h-14 w-14 rounded-full bg-gray-100 overflow-hidden border-2 border-white shadow-md flex items-center justify-center text-primary-teal font-bold text-xl">
+                  {anfitriao.nome.charAt(0)}
                 </div>
               )}
             </div>
 
-            {/* Destaques (Marketing: Pontos Fortes) */}
-            <div className="space-y-4">
-              {imovel.possui_wifi && (
-                <div className="flex gap-4 items-start">
-                  <div className="mt-1"><Globe className="h-6 w-6 text-gray-700" /></div>
-                  <div><h3 className="font-semibold text-gray-900">Wi-Fi disponível</h3><p className="text-sm text-gray-500">Mantenha-se conectado durante a sua estadia.</p></div>
-                </div>
-              )}
-              {imovel.permite_pets && (
-                <div className="flex gap-4 items-start">
-                  <div className="mt-1"><Users className="h-6 w-6 text-gray-700" /></div>
-                  <div><h3 className="font-semibold text-gray-900">Pet Friendly</h3><p className="text-sm text-gray-500">Traga os seus amigos de quatro patas.</p></div>
-                </div>
-              )}
-              {imovel.possui_piscina && (
-                <div className="flex gap-4 items-start">
-                  <div className="mt-1"><Users className="h-6 w-6 text-gray-700" /></div>
-                  <div><h3 className="font-semibold text-gray-900">Piscina Incrível</h3><p className="text-sm text-gray-500">Relaxe e aproveite o sol na piscina.</p></div>
-                </div>
-              )}
+            {/* Destaques */}
+            <div className="space-y-6">
+              {imovel.possui_wifi && <div className="flex gap-4"><Globe className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Wi-Fi Veloz</h3><p className="text-sm text-gray-500">Ideal para trabalhar remotamente.</p></div></div>}
+              {imovel.permite_pets && <div className="flex gap-4"><Users className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Pet Friendly</h3><p className="text-sm text-gray-500">Traga seu melhor amigo.</p></div></div>}
+              {imovel.possui_piscina && <div className="flex gap-4"><Users className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Piscina</h3><p className="text-sm text-gray-500">Relaxe e aproveite o sol.</p></div></div>}
             </div>
 
+            {/* Descrição com Imagens Renderizadas */}
             <div className="border-t pt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre este espaço</h3>
-              <div className="prose max-w-none text-gray-600 leading-relaxed whitespace-pre-line text-base">
-                {imovel.descricao}
+              <div className="prose max-w-none">
+                {/* AQUI APLICAMOS A FUNÇÃO MÁGICA */}
+                {renderDescriptionWithImages(imovel.descricao)}
               </div>
             </div>
 
-            {/* Comodidades Completas */}
+            {/* Comodidades */}
             <div className="border-t pt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">O que este lugar oferece</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
@@ -199,9 +212,6 @@ export const ImovelDetalhePage = () => {
                 {imovel.permite_pets && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Aceita Pets</div>}
                 {imovel.tem_vista_mar && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Vista para o Mar</div>}
                 {imovel.tem_ar_condicionado && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Ar Condicionado</div>}
-                {/* Adicionar mais comodidades genéricas para encher a lista visualmente se necessário */}
-                <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Cozinha Equipada</div>
-                <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Entrada Privada</div>
               </div>
             </div>
 
@@ -216,11 +226,11 @@ export const ImovelDetalhePage = () => {
             )}
           </div>
 
-          {/* Lado Direito: Sticky Booking (Marketing: Conversão) */}
+          {/* Sticky Booking Card */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <Card className="shadow-xl border border-gray-200 rounded-2xl overflow-hidden">
-                <div className="bg-primary-teal/5 p-2 text-center text-xs font-bold text-primary-teal uppercase tracking-widest border-b border-primary-teal/10">
+                <div className="bg-teal-50 p-2 text-center text-xs font-bold text-primary-teal uppercase tracking-widest border-b border-teal-100">
                   Selo ALT de Qualidade
                 </div>
                 <CardContent className="p-6">
@@ -231,22 +241,14 @@ export const ImovelDetalhePage = () => {
 
                   <div className="space-y-3 mb-6">
                     {imovel.link_booking ? (
-                      <Button
-                        className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-base font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] flex justify-between px-6"
-                        onClick={() => window.open(imovel.link_booking, '_blank')}
-                      >
-                        <span>Reservar no Booking</span>
-                        <ArrowRight className="h-5 w-5" />
+                      <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6" onClick={() => window.open(imovel.link_booking, '_blank')}>
+                        <span>Reservar no Booking</span> <ArrowRight className="h-5 w-5" />
                       </Button>
                     ) : null}
 
                     {imovel.link_airbnb ? (
-                      <Button
-                        className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-base font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] flex justify-between px-6"
-                        onClick={() => window.open(imovel.link_airbnb, '_blank')}
-                      >
-                        <span>Reservar no Airbnb</span>
-                        <ArrowRight className="h-5 w-5" />
+                      <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
+                        <span>Reservar no Airbnb</span> <ArrowRight className="h-5 w-5" />
                       </Button>
                     ) : null}
 
@@ -262,22 +264,18 @@ export const ImovelDetalhePage = () => {
                     <span>Reserva Segura Garantida</span>
                   </div>
 
-                  <hr className="border-gray-100 mb-6" />
-
-                  {/* Admin View do Anfitrião */}
+                  {/* Admin View */}
                   {me && me.role === 'admin' && anfitriao && (
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Painel Admin</p>
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
-                        <div className="h-10 w-10 rounded-full bg-white border border-gray-200 text-primary-teal flex items-center justify-center font-bold shadow-sm">
-                          {anfitriao.nome.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p>
-                          <p className="text-xs text-primary-teal font-medium">Ver Dados de Contato</p>
+                    <>
+                      <hr className="border-gray-100 mb-4" />
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Painel Admin</p>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                          <div className="h-8 w-8 rounded-full bg-white border border-gray-200 text-primary-teal flex items-center justify-center font-bold text-xs shadow-sm">{anfitriao.nome.charAt(0)}</div>
+                          <div><p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p><p className="text-xs text-primary-teal font-medium">Ver Dados de Contato</p></div>
                         </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -291,8 +289,6 @@ export const ImovelDetalhePage = () => {
 };
 
 // --- COMPONENTE: DETALHE DO PARCEIRO ---
-// (Mantenha o código do ParceiroDetalhePage igual ao que enviei na resposta anterior, 
-// pois já estava com o visual moderno e corrigido com a paleta teal).
 export const ParceiroDetalhePage = () => {
   const { id } = useParams();
   const [parceiro, setParceiro] = useState(null);
@@ -317,7 +313,6 @@ export const ParceiroDetalhePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Capa */}
       <div className="relative h-[300px] md:h-[400px] bg-gray-900">
         {parceiro.fotos && parceiro.fotos.length > 0 ? (
           <img src={parceiro.fotos[0]} className="w-full h-full object-cover opacity-60" alt={parceiro.nome_empresa} />
@@ -326,7 +321,7 @@ export const ParceiroDetalhePage = () => {
         )}
         <div className="absolute inset-0 flex items-end">
           <div className="container mx-auto px-4 pb-12">
-            <Badge className="badge-teal mb-4 text-base px-3 py-1">{parceiro.categoria}</Badge>
+            <Badge className="bg-primary-teal text-white mb-4 text-base px-3 py-1 border-none">{parceiro.categoria}</Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{parceiro.nome_empresa}</h1>
           </div>
         </div>
@@ -341,7 +336,7 @@ export const ParceiroDetalhePage = () => {
                   <TicketPercent className="h-8 w-8" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-teal-800 uppercase tracking-widest mb-1">Benefício Exclusivo Hóspede ALT</p>
+                  <p className="text-sm font-bold text-teal-800 uppercase tracking-widest mb-1">Benefício Exclusivo para Associados ALT</p>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{parceiro.desconto_alt}</h2>
                 </div>
               </div>

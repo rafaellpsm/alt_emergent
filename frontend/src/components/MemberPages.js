@@ -332,7 +332,7 @@ export const MeuPerfilPage = () => {
               </div>
             </div>
             <CardContent className="p-8">
-              {perfil.desconto_alt && <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4"><TicketPercent className="h-8 w-8 text-primary-teal" /><div><p className="text-sm font-bold text-teal-800 uppercase">Benefício Hóspede ALT</p><p className="text-xl font-bold">{perfil.desconto_alt}</p></div></div>}
+              {perfil.desconto_alt && <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4"><TicketPercent className="h-8 w-8 text-primary-teal" /><div><p className="text-sm font-bold text-teal-800 uppercase">Benefício para Associados ALT</p><p className="text-xl font-bold">{perfil.desconto_alt}</p></div></div>}
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 space-y-6">
                   <div><h3 className="font-bold text-lg text-primary-gray">Sobre</h3><p className="whitespace-pre-line text-gray-600">{perfil.descricao}</p></div>
