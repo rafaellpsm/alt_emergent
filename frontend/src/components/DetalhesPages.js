@@ -10,7 +10,7 @@ import { MapPin, Bed, Bath, Users, Check, ArrowRight, Share2, Phone, Instagram, 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- COMPONENTE: DETALHE DO IMÓVEL (VERSÃO CLEAN) ---
+// --- COMPONENTE: DETALHE DO IMÓVEL (CLÁSSICO) ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export const ImovelDetalhePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 pt-10">
+    <div className="min-h-screen bg-gray-50 pb-20 pt-8">
       <div className="container mx-auto px-4">
 
         {/* Cabeçalho do Imóvel */}
@@ -75,14 +75,14 @@ export const ImovelDetalhePage = () => {
             <span className="flex items-center"><MapPin className="h-4 w-4 mr-1 text-primary-teal" /> {imovel.endereco_completo}</span>
             <span className="text-gray-300">|</span>
             <Badge className="bg-primary-teal/10 text-primary-teal hover:bg-primary-teal/20 border-none">{imovel.tipo}</Badge>
-            <Button variant="ghost" size="sm" onClick={handleShare} className="ml-auto text-primary-teal">
+            <Button variant="ghost" size="sm" onClick={handleShare} className="ml-auto text-primary-teal hover:bg-teal-50">
               <Share2 className="h-4 w-4 mr-2" /> Compartilhar
             </Button>
           </div>
         </div>
 
-        {/* Galeria de Fotos (Layout Padrão) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden">
+        {/* Galeria de Fotos (Clássica) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden shadow-sm">
           {/* Foto Principal (Grande) */}
           <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 h-full">
             {imovel.fotos && imovel.fotos.length > 0 ? (
@@ -114,8 +114,7 @@ export const ImovelDetalhePage = () => {
                 </p>
               </div>
               {anfitriao && (
-                <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
-                  {/* Placeholder avatar ou foto se tiver */}
+                <div className="h-12 w-12 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
                   <div className="w-full h-full flex items-center justify-center bg-primary-teal text-white font-bold text-xl">
                     {anfitriao.nome.charAt(0)}
                   </div>
@@ -126,13 +125,13 @@ export const ImovelDetalhePage = () => {
             {/* Descrição */}
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre este espaço</h3>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{imovel.descricao}</p>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line text-lg">{imovel.descricao}</p>
             </div>
 
             {/* Comodidades */}
-            <div className="py-6 border-t border-gray-200">
+            <div className="py-8 border-t border-gray-200">
               <h3 className="text-xl font-bold text-gray-900 mb-6">O que este lugar oferece</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {imovel.possui_piscina && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Piscina</div>}
                 {imovel.possui_churrasqueira && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Churrasqueira</div>}
                 {imovel.possui_wifi && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Wi-Fi</div>}
@@ -144,7 +143,7 @@ export const ImovelDetalhePage = () => {
 
             {/* Vídeo */}
             {imovel.video_url && (
-              <div className="py-6 border-t border-gray-200">
+              <div className="py-8 border-t border-gray-200">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Vídeo do Imóvel</h3>
                 <div className="aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
                   <video src={imovel.video_url} controls className="w-full h-full">
@@ -162,19 +161,19 @@ export const ImovelDetalhePage = () => {
 
               <div className="space-y-4">
                 {imovel.link_booking ? (
-                  <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-14 text-lg font-bold rounded-xl" onClick={() => window.open(imovel.link_booking, '_blank')}>
+                  <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-lg font-bold rounded-xl shadow-sm transition-all hover:-translate-y-0.5" onClick={() => window.open(imovel.link_booking, '_blank')}>
                     Ir para Booking.com
                   </Button>
                 ) : null}
 
                 {imovel.link_airbnb ? (
-                  <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-14 text-lg font-bold rounded-xl" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
+                  <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-lg font-bold rounded-xl shadow-sm transition-all hover:-translate-y-0.5" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
                     Ir para Airbnb
                   </Button>
                 ) : null}
 
                 {!imovel.link_booking && !imovel.link_airbnb && (
-                  <div className="p-4 bg-gray-100 rounded-xl text-center text-gray-500 text-sm">
+                  <div className="p-4 bg-gray-50 rounded-xl text-center text-gray-500 text-sm border border-dashed border-gray-300">
                     Este imóvel ainda não disponibilizou links diretos de reserva.
                   </div>
                 )}
@@ -188,13 +187,13 @@ export const ImovelDetalhePage = () => {
               {me && me.role === 'admin' && anfitriao && (
                 <div className="mt-6 pt-4 border-t border-gray-100">
                   <p className="text-xs font-bold text-red-500 mb-2 uppercase">Área Admin</p>
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
-                    <div className="h-10 w-10 rounded-full bg-primary-teal text-white flex items-center justify-center font-bold">
+                  <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition-colors border border-red-100" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                    <div className="h-10 w-10 rounded-full bg-red-500 text-white flex items-center justify-center font-bold shadow-sm">
                       {anfitriao.nome.charAt(0)}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p>
-                      <p className="text-xs text-gray-500">Ver Perfil Completo</p>
+                      <p className="text-xs text-gray-600">Ver Perfil Completo</p>
                     </div>
                   </div>
                 </div>
@@ -208,7 +207,7 @@ export const ImovelDetalhePage = () => {
   );
 };
 
-// --- COMPONENTE: DETALHE DO PARCEIRO ---
+// --- COMPONENTE: DETALHE DO PARCEIRO (CLÁSSICO) ---
 export const ParceiroDetalhePage = () => {
   const { id } = useParams();
   const [parceiro, setParceiro] = useState(null);
@@ -242,8 +241,8 @@ export const ParceiroDetalhePage = () => {
         )}
         <div className="absolute inset-0 flex items-end">
           <div className="container mx-auto px-4 pb-12">
-            <Badge className="badge-teal mb-4 text-base px-3 py-1">{parceiro.categoria}</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">{parceiro.nome_empresa}</h1>
+            <Badge className="badge-teal mb-4 text-base px-3 py-1 bg-primary-teal text-white hover:bg-teal-700 border-none">{parceiro.categoria}</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 shadow-sm">{parceiro.nome_empresa}</h1>
           </div>
         </div>
       </div>
@@ -266,10 +265,10 @@ export const ParceiroDetalhePage = () => {
             )}
 
             {/* Sobre */}
-            <Card className="card-custom">
+            <Card className="card-custom border-none shadow-md">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre</h3>
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line">{parceiro.descricao}</p>
+                <p className="text-gray-600 leading-relaxed whitespace-pre-line text-lg">{parceiro.descricao}</p>
               </CardContent>
             </Card>
 
@@ -286,7 +285,7 @@ export const ParceiroDetalhePage = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Galeria</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {parceiro.fotos.slice(1).map((foto, i) => (
-                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-gray-200 hover:opacity-90 transition-opacity cursor-pointer">
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden bg-gray-200 hover:opacity-90 transition-opacity cursor-pointer shadow-sm">
                       <img src={foto} className="w-full h-full object-cover" alt="Galeria" />
                     </div>
                   ))}
@@ -297,7 +296,7 @@ export const ParceiroDetalhePage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6 sticky top-24">
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 space-y-6 sticky top-24">
               {parceiro.telefone && (
                 <div className="flex items-center gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg"><Phone className="h-5 w-5 text-gray-600" /></div>
