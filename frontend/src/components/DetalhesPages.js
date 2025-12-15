@@ -10,16 +10,15 @@ import { MapPin, Bed, Bath, Users, Check, ArrowRight, Share2, Phone, Instagram, 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- COMPONENTE: DETALHE DO IMÓVEL ---
+// --- COMPONENTE: DETALHE DO IMÓVEL (VERSÃO CLEAN) ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [imovel, setImovel] = useState(null);
   const [anfitriao, setAnfitriao] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
 
-  // Estado para guardar o utilizador atual (para verificar se é admin)
+  // Estado para guardar o utilizador atual (correção do erro anterior)
   const [me, setMe] = useState(null);
 
   useEffect(() => {
@@ -39,12 +38,11 @@ export const ImovelDetalhePage = () => {
           console.error("Erro ao carregar anfitrião", err);
         }
 
-        // 3. Verifica quem está logado (Para saber se é Admin)
+        // 3. Verifica quem está logado
         try {
           const meRes = await axios.get(`${API}/auth/me`);
           setMe(meRes.data);
         } catch (err) {
-          // Se der erro (não logado), apenas ignora
           setMe(null);
         }
 
@@ -67,156 +65,140 @@ export const ImovelDetalhePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Galeria de Imagens */}
-      <div className="bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[500px]">
-            {/* Imagem Principal */}
-            <div className="lg:col-span-2 relative h-full bg-black rounded-xl overflow-hidden group">
-              {imovel.fotos && imovel.fotos.length > 0 ? (
-                <img src={imovel.fotos[selectedImage]} className="w-full h-full object-contain" alt="Principal" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500">Sem foto</div>
-              )}
-            </div>
+    <div className="min-h-screen bg-gray-50 pb-20 pt-10">
+      <div className="container mx-auto px-4">
 
-            {/* Lista Lateral */}
-            <div className="hidden lg:grid grid-rows-3 gap-4 h-full">
-              {imovel.fotos && imovel.fotos.slice(0, 3).map((foto, idx) => (
-                <div
-                  key={idx}
-                  className={`relative rounded-xl overflow-hidden cursor-pointer border-2 ${selectedImage === idx ? 'border-primary-teal' : 'border-transparent'}`}
-                  onClick={() => setSelectedImage(idx)}
-                >
-                  <img src={foto} className="w-full h-full object-cover hover:opacity-80 transition-opacity" alt={`Thumb ${idx}`} />
-                </div>
-              ))}
-              {imovel.fotos && imovel.fotos.length > 3 && (
-                <div className="relative rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center text-white cursor-pointer hover:bg-gray-700 transition-colors" onClick={() => setSelectedImage(3)}>
-                  <span className="font-bold">+{imovel.fotos.length - 3} fotos</span>
-                </div>
-              )}
-            </div>
+        {/* Cabeçalho do Imóvel */}
+        <div className="mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{imovel.titulo}</h1>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+            <span className="flex items-center"><MapPin className="h-4 w-4 mr-1 text-primary-teal" /> {imovel.endereco_completo}</span>
+            <span className="text-gray-300">|</span>
+            <Badge className="bg-primary-teal/10 text-primary-teal hover:bg-primary-teal/20 border-none">{imovel.tipo}</Badge>
+            <Button variant="ghost" size="sm" onClick={handleShare} className="ml-auto text-primary-teal">
+              <Share2 className="h-4 w-4 mr-2" /> Compartilhar
+            </Button>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Galeria de Fotos (Layout Padrão) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden">
+          {/* Foto Principal (Grande) */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 h-full">
+            {imovel.fotos && imovel.fotos.length > 0 ? (
+              <img src={imovel.fotos[0]} className="w-full h-full object-cover hover:opacity-95 transition-opacity cursor-pointer" alt="Principal" />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">Sem foto</div>
+            )}
+          </div>
+          {/* Fotos Secundárias */}
+          {imovel.fotos && imovel.fotos.slice(1, 5).map((foto, idx) => (
+            <div key={idx} className="hidden md:block h-full">
+              <img src={foto} className="w-full h-full object-cover hover:opacity-95 transition-opacity cursor-pointer" alt={`Foto ${idx + 1}`} />
+            </div>
+          ))}
+        </div>
 
-          {/* Coluna Principal */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="card-custom border-t-4 border-t-primary-teal">
-              <CardContent className="p-6 md:p-8">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <Badge className="badge-teal mb-2">{imovel.tipo}</Badge>
-                    <h1 className="text-3xl font-bold text-primary-gray mb-1">{imovel.titulo}</h1>
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <MapPin className="h-4 w-4 mr-1 text-primary-teal" /> {imovel.endereco_completo}
-                    </div>
-                  </div>
-                  <Button variant="outline" size="icon" onClick={handleShare} title="Compartilhar">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
+        {/* Conteúdo Principal + Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-                <div className="flex flex-wrap gap-6 py-6 border-y border-gray-100 my-6">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-teal-50 rounded-full text-primary-teal"><Users className="h-5 w-5" /></div>
-                    <div><p className="text-xs text-gray-500">Capacidade</p><p className="font-bold">{imovel.capacidade} Pessoas</p></div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-teal-50 rounded-full text-primary-teal"><Bed className="h-5 w-5" /></div>
-                    <div><p className="text-xs text-gray-500">Quartos</p><p className="font-bold">{imovel.num_quartos}</p></div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-teal-50 rounded-full text-primary-teal"><Bath className="h-5 w-5" /></div>
-                    <div><p className="text-xs text-gray-500">Banheiros</p><p className="font-bold">{imovel.num_banheiros}</p></div>
-                  </div>
-                </div>
+          {/* Lado Esquerdo: Detalhes */}
+          <div className="lg:col-span-2 space-y-8">
 
-                <div className="prose max-w-none text-gray-600">
-                  <h3 className="text-lg font-bold text-primary-gray mb-2">Sobre este lugar</h3>
-                  <p className="whitespace-pre-line leading-relaxed">{imovel.descricao}</p>
-                </div>
-
-                {/* Comodidades */}
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold text-primary-gray mb-4">O que este lugar oferece</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {imovel.possui_piscina && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Piscina</div>}
-                    {imovel.possui_churrasqueira && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Churrasqueira</div>}
-                    {imovel.possui_wifi && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Wi-Fi</div>}
-                    {imovel.permite_pets && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Aceita Pets</div>}
-                    {imovel.tem_vista_mar && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Vista para o Mar</div>}
-                    {imovel.tem_ar_condicionado && <div className="flex items-center gap-2 text-gray-700"><Check className="h-4 w-4 text-primary-teal" /> Ar Condicionado</div>}
+            {/* Resumo */}
+            <div className="flex justify-between py-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Hospedagem inteira: {imovel.tipo}</h2>
+                <p className="text-gray-600">
+                  {imovel.capacidade} hóspedes · {imovel.num_quartos} quartos · {imovel.num_banheiros} banheiros
+                </p>
+              </div>
+              {anfitriao && (
+                <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
+                  {/* Placeholder avatar ou foto se tiver */}
+                  <div className="w-full h-full flex items-center justify-center bg-primary-teal text-white font-bold text-xl">
+                    {anfitriao.nome.charAt(0)}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
 
-            {/* Vídeo (Se houver) */}
+            {/* Descrição */}
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre este espaço</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{imovel.descricao}</p>
+            </div>
+
+            {/* Comodidades */}
+            <div className="py-6 border-t border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">O que este lugar oferece</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {imovel.possui_piscina && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Piscina</div>}
+                {imovel.possui_churrasqueira && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Churrasqueira</div>}
+                {imovel.possui_wifi && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Wi-Fi</div>}
+                {imovel.permite_pets && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Aceita Pets</div>}
+                {imovel.tem_vista_mar && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Vista para o Mar</div>}
+                {imovel.tem_ar_condicionado && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Ar Condicionado</div>}
+              </div>
+            </div>
+
+            {/* Vídeo */}
             {imovel.video_url && (
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold text-primary-gray mb-4">Vídeo do Imóvel</h3>
+              <div className="py-6 border-t border-gray-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Vídeo do Imóvel</h3>
                 <div className="aspect-video rounded-xl overflow-hidden shadow-lg bg-black">
-                  <video
-                    src={imovel.video_url}
-                    controls
-                    className="w-full h-full"
-                  >
-                    Seu navegador não suporta o elemento de vídeo.
+                  <video src={imovel.video_url} controls className="w-full h-full">
+                    Seu navegador não suporta vídeos.
                   </video>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Coluna Lateral (Sticky) */}
+          {/* Lado Direito: Sidebar de Reserva */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
+            <div className="sticky top-24 bg-white p-6 rounded-2xl shadow-xl border border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Reservar</h3>
 
-              {/* Card de Reserva */}
-              <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                <h3 className="text-xl font-bold text-primary-gray mb-4">Reservar Agora</h3>
-                <div className="space-y-3">
-                  {imovel.link_booking && (
-                    <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-lg" onClick={() => window.open(imovel.link_booking, '_blank')}>
-                      Reservar no Booking
-                    </Button>
-                  )}
-                  {imovel.link_airbnb && (
-                    <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-lg" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
-                      Reservar no Airbnb
-                    </Button>
-                  )}
-                  {!imovel.link_booking && !imovel.link_airbnb && (
-                    <div className="p-4 bg-gray-100 rounded-lg text-center text-gray-500">
-                      Links de reserva indisponíveis no momento.
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4 text-center">
-                  <p className="text-xs text-gray-400">Você será redirecionado para a plataforma parceira.</p>
-                </div>
+              <div className="space-y-4">
+                {imovel.link_booking ? (
+                  <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-14 text-lg font-bold rounded-xl" onClick={() => window.open(imovel.link_booking, '_blank')}>
+                    Ir para Booking.com
+                  </Button>
+                ) : null}
+
+                {imovel.link_airbnb ? (
+                  <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-14 text-lg font-bold rounded-xl" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
+                    Ir para Airbnb
+                  </Button>
+                ) : null}
+
+                {!imovel.link_booking && !imovel.link_airbnb && (
+                  <div className="p-4 bg-gray-100 rounded-xl text-center text-gray-500 text-sm">
+                    Este imóvel ainda não disponibilizou links diretos de reserva.
+                  </div>
+                )}
               </div>
 
-              {/* Card do Anfitrião (AGORA SEGURO: Só aparece se "me" existir e for admin) */}
+              <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                <p className="text-xs text-gray-400">Você será redirecionado para a plataforma segura do parceiro.</p>
+              </div>
+
+              {/* Card do Anfitrião (Visível Apenas para Admin) */}
               {me && me.role === 'admin' && anfitriao && (
-                <div className="bg-white rounded-xl md:rounded-2xl border shadow-sm p-4 md:p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
-                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary-teal/10 flex items-center justify-center text-primary-teal font-bold text-lg md:text-xl flex-shrink-0">
-                    {anfitriao.nome.charAt(0)}
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-bold text-red-500 mb-2 uppercase">Área Admin</p>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                    <div className="h-10 w-10 rounded-full bg-primary-teal text-white flex items-center justify-center font-bold">
+                      {anfitriao.nome.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p>
+                      <p className="text-xs text-gray-500">Ver Perfil Completo</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500">Anfitrião (Admin View)</p>
-                    <p className="font-bold text-primary-gray text-base md:text-lg truncate">{anfitriao.nome}</p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
                 </div>
               )}
-
             </div>
           </div>
 
