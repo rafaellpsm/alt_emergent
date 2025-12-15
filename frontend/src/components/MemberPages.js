@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-// Adicionei SelectGroup e SelectLabel para organizar os bairros
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
@@ -23,19 +22,68 @@ const API = `${BACKEND_URL}/api`;
 const bairrosIlhabela = [
   {
     regiao: "Norte",
-    bairros: ["Jabaquara", "Pacuíba", "Armação", "Ponta das Canas", "Praia do Pinto", "Siriúba", "Viana", "Barreiros", "Santa Tereza"]
+    bairros: [
+      "Armação",
+      "Barreiros",
+      "Garapocaia (Pedra do Sino)",
+      "Jabaquara",
+      "Pacuíba",
+      "Ponta Azeda",
+      "Ponta das Canas",
+      "Praia do Pinto",
+      "Santa Tereza",
+      "Siriúba",
+      "Viana"
+    ]
   },
   {
     regiao: "Centro",
-    bairros: ["Vila (Centro Histórico)", "Saco da Capela", "Pequeá", "Engenho d'Água", "Itaquanduba", "Itaguaçu", "Perequê"]
+    bairros: [
+      "Engenho d'Água",
+      "Itaguaçu",
+      "Itaquanduba",
+      "Morro do Cantagalo",
+      "Pequeá",
+      "Perequê",
+      "Saco da Capela",
+      "Vila (Centro Histórico)"
+    ]
   },
   {
     regiao: "Sul",
-    bairros: ["Barra Velha", "Água Branca", "Reino", "Green Park", "Cocaia", "Toca", "Bexiga", "Ilha das Cabras", "Piúva", "Portinho", "Feiticeira", "Julião", "Praia Grande", "Curral", "Veloso", "São Pedro", "Borrifos"]
+    bairros: [
+      "Água Branca",
+      "Barra Velha",
+      "Bexiga",
+      "Borrifos",
+      "Cambaquara",
+      "Cocaia",
+      "Curral",
+      "Feiticeira",
+      "Green Park",
+      "Ilha das Cabras",
+      "Julião",
+      "Piúva",
+      "Ponta da Sela",
+      "Portinho",
+      "Praia Grande",
+      "Reino",
+      "São Pedro",
+      "Sepituba",
+      "Toca",
+      "Veloso"
+    ]
   },
   {
     regiao: "Leste",
-    bairros: ["Castelhanos"]
+    bairros: [
+      "Bonete",
+      "Castelhanos",
+      "Enchovas",
+      "Indaiaúba",
+      "Praia Vermelha",
+      "Saco do Sombrio"
+    ]
   }
 ];
 

@@ -429,19 +429,19 @@ const SobreSection = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 h-48 md:h-64">
           {/* Peixe */}
           <div className="w-full h-full overflow-hidden">
-            <img src="{peixe1}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
+            <img src={peixe1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
           </div>
           {/* Placa Parque (Usando natureza similar) */}
           <div className="w-full h-full overflow-hidden">
-            <img src="{parque2}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
+            <img src={parque2} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
           </div>
           {/* Cachoeira */}
           <div className="w-full h-full overflow-hidden">
-            <img src="{cachoeira3}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
+            <img src={cachoeira3} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
           </div>
           {/* Praia/Barco */}
           <div className="w-full h-full overflow-hidden">
-            <img src="{praia4}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
+            <img src={praia4} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
           </div>
         </div>
       </FadeInSection>
@@ -458,15 +458,15 @@ const SobreSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-80">
           {/* Letreiro Ilhabela (Usando visual praia colorida) */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="{mirante5}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
+            <img src={mirante5} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
           </div>
           {/* Farol */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="{farol6}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
+            <img src={farol6} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
           </div>
           {/* Pescador/Rede */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="{pescador7}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
+            <img src={pescador7} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
           </div>
         </div>
       </FadeInSection>
