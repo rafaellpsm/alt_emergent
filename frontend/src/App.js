@@ -30,6 +30,13 @@ import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo_horiz.png';
 import logoGray from './assets/logo_horiz.png';
 import logoPraia from './assets/logo_praia.png';
+import peixe1 from './assets/galeria/sardinha_ilhabela.png';
+import parque2 from './assets/galeria/parque_ilhabela.png';
+import cachoeira3 from './assets/galeria/cachoeira_ilhabela.png';
+import praia4 from './assets/galeria/praia_ilhabela.png';
+import mirante5 from './assets/galeria/mirante_ilhabela.png';
+import farol6 from './assets/galeria/farol_ilhabela.png';
+import pescador7 from './assets/galeria/trabalhador_Ilhabela.png';
 
 // --- CONFIGURAÇÃO E HOOKS ---
 axios.interceptors.response.use(
@@ -414,28 +421,27 @@ const TelefonesUteisSection = () => {
   );
 };
 
-// --- NOVA SECÇÃO: SOBRE (MOSAICO DE FOTOS) ---
+// --- SECÇÃO: SOBRE ILHABELA ---
 const SobreSection = () => {
   return (
     <section className="bg-white w-full">
-      {/* 1ª Fileira: 4 Imagens (Peixe, Placa, Cachoeira, Praia) */}
       <FadeInSection>
         <div className="grid grid-cols-2 md:grid-cols-4 h-48 md:h-64">
           {/* Peixe */}
           <div className="w-full h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/1796730/pexels-photo-1796730.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
+            <img src="{peixe1}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
           </div>
           {/* Placa Parque (Usando natureza similar) */}
           <div className="w-full h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/1572973/pexels-photo-1572973.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
+            <img src="{parque2}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
           </div>
           {/* Cachoeira */}
           <div className="w-full h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/3576246/pexels-photo-3576246.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
+            <img src="{cachoeira3}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
           </div>
           {/* Praia/Barco */}
           <div className="w-full h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/3608063/pexels-photo-3608063.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
+            <img src="{praia4}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
           </div>
         </div>
       </FadeInSection>
@@ -452,15 +458,15 @@ const SobreSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-80">
           {/* Letreiro Ilhabela (Usando visual praia colorida) */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/2086622/pexels-photo-2086622.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
+            <img src="{mirante5}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
           </div>
           {/* Farol */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/2555285/pexels-photo-2555285.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
+            <img src="{farol6}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
           </div>
           {/* Pescador/Rede */}
           <div className="w-full h-64 md:h-full overflow-hidden">
-            <img src="https://images.pexels.com/photos/2131849/pexels-photo-2131849.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
+            <img src="{pescador7}" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
           </div>
         </div>
       </FadeInSection>

@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+// Adicionei SelectGroup e SelectLabel para organizar os bairros
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import { Badge } from './ui/badge';
 import { toast } from '../hooks/use-toast';
 import { PhotoUpload } from './PhotoUpload';
@@ -17,6 +18,26 @@ import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users, TicketPercent, Phone, Glob
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// --- LISTA COMPLETA DE BAIRROS DE ILHABELA ---
+const bairrosIlhabela = [
+  {
+    regiao: "Norte",
+    bairros: ["Jabaquara", "Pacuíba", "Armação", "Ponta das Canas", "Praia do Pinto", "Siriúba", "Viana", "Barreiros", "Santa Tereza"]
+  },
+  {
+    regiao: "Centro",
+    bairros: ["Vila (Centro Histórico)", "Saco da Capela", "Pequeá", "Engenho d'Água", "Itaquanduba", "Itaguaçu", "Perequê"]
+  },
+  {
+    regiao: "Sul",
+    bairros: ["Barra Velha", "Água Branca", "Reino", "Green Park", "Cocaia", "Toca", "Bexiga", "Ilha das Cabras", "Piúva", "Portinho", "Feiticeira", "Julião", "Praia Grande", "Curral", "Veloso", "São Pedro", "Borrifos"]
+  },
+  {
+    regiao: "Leste",
+    bairros: ["Castelhanos"]
+  }
+];
 
 export const TodosImoveisPage = () => {
   const navigate = useNavigate();
@@ -91,19 +112,30 @@ export const TodosImoveisPage = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* --- FILTRO DE REGIÃO/BAIRRO ATUALIZADO --- */}
               <div>
-                <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Região</Label>
+                <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Região / Bairro</Label>
                 <Select value={filtros.regiao} onValueChange={(value) => handleFilterChange('regiao', value)}>
-                  <SelectTrigger className="bg-white"><SelectValue placeholder="Todas" /></SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className="bg-white"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent className="max-h-[300px]"> {/* Altura máxima com scroll */}
                     <SelectItem value="todas">Todas</SelectItem>
-                    <SelectItem value="centro">Centro</SelectItem>
-                    <SelectItem value="perequê">Perequê</SelectItem>
-                    <SelectItem value="vila">Vila</SelectItem>
-                    <SelectItem value="barra-velha">Barra Velha</SelectItem>
+                    {bairrosIlhabela.map((grupo) => (
+                      <SelectGroup key={grupo.regiao}>
+                        <SelectLabel className="pl-2 py-1 text-xs font-bold text-primary-teal bg-gray-50 uppercase tracking-wide">
+                          Região {grupo.regiao}
+                        </SelectLabel>
+                        {grupo.bairros.map((bairro) => (
+                          <SelectItem key={bairro} value={bairro.toLowerCase()} className="pl-6">
+                            {bairro}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div>
                 <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Quartos (mín.)</Label>
                 <Input type="number" className="bg-white" placeholder="Ex: 2" value={filtros.num_quartos} onChange={(e) => handleFilterChange('num_quartos', e.target.value)} />
@@ -152,7 +184,7 @@ export const TodosImoveisPage = () => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div className="text-xs text-primary-teal font-semibold uppercase tracking-wide flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> {imovel.regiao}
+                        <MapPin className="h-3 w-3" /> <span className="capitalize">{imovel.regiao}</span>
                       </div>
                     </div>
                     <h3 className="font-bold text-lg text-gray-900 leading-tight mb-3 line-clamp-1">{imovel.titulo}</h3>
@@ -174,7 +206,6 @@ export const TodosImoveisPage = () => {
   );
 };
 
-// --- PÁGINA: MEU PERFIL (PARCEIRO/ADMIN) - COM EXCLUSÃO ---
 export const MeuPerfilPage = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -235,16 +266,15 @@ export const MeuPerfilPage = () => {
     }
   };
 
-  // --- NOVA FUNÇÃO DE EXCLUIR ---
   const handleDelete = async () => {
     if (!window.confirm("Tem certeza absoluta? Isso apagará permanentemente o seu negócio e todos os dados associados.")) return;
 
     try {
       await axios.delete(`${API}/perfil-parceiro/${perfil.id}`);
       toast({ title: "Negócio removido com sucesso." });
-      setPerfil(null); // Limpa o estado
-      setEditing(false); // Volta ao modo de criação
-      setFormData({ // Reseta o formulário
+      setPerfil(null);
+      setEditing(false);
+      setFormData({
         nome_empresa: '', descricao: '', categoria: '', telefone: '', endereco: '',
         website: '', instagram: '', facebook: '', whatsapp: '', horario_funcionamento: '',
         servicos_oferecidos: '', fotos: [], video_url: '', desconto_alt: ''
@@ -254,7 +284,6 @@ export const MeuPerfilPage = () => {
     }
   };
 
-  // Funções de Link (Mantidas)
   const formatInstagram = (h) => h ? (h.includes('http') ? h : `https://instagram.com/${h.replace('@', '')}`) : null;
   const formatFacebook = (h) => h ? (h.includes('http') ? h : `https://facebook.com/${h}`) : null;
   const formatWebsite = (u) => u ? (u.startsWith('http') ? u : `https://${u}`) : null;
@@ -270,7 +299,6 @@ export const MeuPerfilPage = () => {
               <Button onClick={() => setEditing(true)} className="btn-primary gap-2">
                 <Edit className="h-4 w-4" /> Editar
               </Button>
-              {/* BOTÃO DE EXCLUIR */}
               <Button onClick={handleDelete} variant="destructive" size="icon" title="Excluir Negócio">
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -278,8 +306,6 @@ export const MeuPerfilPage = () => {
           )}
         </PageHeader>
 
-        {/* ... (O RESTO DO CÓDIGO DO FORMULÁRIO E VISUALIZAÇÃO MANTÉM-SE IGUAL AO ANTERIOR) ... */}
-        {/* Para poupar espaço, mantém o código que já tinhas daqui para baixo (dentro do return) */}
         {(editing || !perfil) ? (
           <Card className="card-custom max-w-4xl mx-auto">
             <CardHeader>
@@ -349,73 +375,6 @@ export const MeuPerfilPage = () => {
               </div>
             </CardContent>
           </Card>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export const ParceirosPage = () => {
-  const navigate = useNavigate();
-  const [parceiros, setParceiros] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [categoriaFiltro, setCategoriaFiltro] = useState('');
-
-  useEffect(() => {
-    fetchParceiros();
-  }, []);
-
-  const fetchParceiros = async () => {
-    try {
-      const response = await axios.get(`${API}/parceiros`);
-      setParceiros(response.data);
-    } catch (error) {
-      toast({ title: "Erro ao carregar parceiros", variant: "destructive" });
-    }
-    setLoading(false);
-  };
-
-  const categoriasDisponiveis = [...new Set(parceiros.map(p => p.categoria))];
-  const parceirsFiltrados = categoriaFiltro ? parceiros.filter(p => p.categoria === categoriaFiltro) : parceiros;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
-        <PageHeader title="Nossos Parceiros" showBackButton={false} />
-
-        {categoriasDisponiveis.length > 0 && (
-          <div className="flex overflow-x-auto gap-2 mb-8 pb-2 scrollbar-hide">
-            <Button variant={categoriaFiltro === '' ? 'default' : 'outline'} onClick={() => setCategoriaFiltro('')} className="rounded-full whitespace-nowrap">Todos</Button>
-            {categoriasDisponiveis.map(cat => (
-              <Button key={cat} variant={categoriaFiltro === cat ? 'default' : 'outline'} onClick={() => setCategoriaFiltro(cat)} className="rounded-full whitespace-nowrap capitalize">{cat}</Button>
-            ))}
-          </div>
-        )}
-
-        {loading ? <div className="flex justify-center py-12"><div className="spinner"></div></div> : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {parceirsFiltrados.map((parceiro) => (
-              <Card key={parceiro.id} className="card-custom hover-lift cursor-pointer overflow-hidden flex flex-col h-full" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
-                <div className="aspect-video bg-gray-200 relative">
-                  {parceiro.fotos && parceiro.fotos.length > 0 && (
-                    <img src={parceiro.fotos[0]} alt={parceiro.nome_empresa} className="w-full h-full object-cover" />
-                  )}
-                  <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
-                </div>
-                <CardContent className="p-5 flex-1 flex flex-col">
-                  <h3 className="font-bold text-lg text-primary-gray mb-2">{parceiro.nome_empresa}</h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">{parceiro.descricao}</p>
-
-                  {parceiro.desconto_alt && (
-                    <div className="mt-auto bg-teal-50 border border-teal-100 rounded p-2 flex items-center gap-2">
-                      <TicketPercent className="h-4 w-4 text-primary-teal" />
-                      <span className="text-xs font-bold text-teal-800">{parceiro.desconto_alt}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
       </div>
     </div>
@@ -617,25 +576,31 @@ export const MeusImoveisPage = () => {
                     placeholder="Descreva as características e diferenciais do seu imóvel..."
                   />
                 </div>
+
+                {/* --- SELETOR DE REGIÃO ATUALIZADO (FORMULÁRIO) --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="regiao" className="form-label">Região *</Label>
+                    <Label htmlFor="regiao" className="form-label">Região / Bairro *</Label>
                     <Select
                       value={formData.regiao}
                       onValueChange={(value) => setFormData({ ...formData, regiao: value })}
                     >
                       <SelectTrigger className="form-input">
-                        <SelectValue placeholder="Selecione a região" />
+                        <SelectValue placeholder="Selecione a região/bairro" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="centro">Centro</SelectItem>
-                        <SelectItem value="perequê">Perequê</SelectItem>
-                        <SelectItem value="vila">Vila</SelectItem>
-                        <SelectItem value="barra-velha">Barra Velha</SelectItem>
-                        <SelectItem value="curral">Curral</SelectItem>
-                        <SelectItem value="praia-grande">Praia Grande</SelectItem>
-                        <SelectItem value="bonete">Bonete</SelectItem>
-                        <SelectItem value="outras">Outras</SelectItem>
+                      <SelectContent className="max-h-[300px]">
+                        {bairrosIlhabela.map((grupo) => (
+                          <SelectGroup key={grupo.regiao}>
+                            <SelectLabel className="pl-2 py-1 text-xs font-bold text-primary-teal bg-gray-50 uppercase tracking-wide">
+                              Região {grupo.regiao}
+                            </SelectLabel>
+                            {grupo.bairros.map((bairro) => (
+                              <SelectItem key={bairro} value={bairro.toLowerCase()} className="pl-6">
+                                {bairro}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -651,6 +616,7 @@ export const MeusImoveisPage = () => {
                     />
                   </div>
                 </div>
+
                 <div>
                   <Label htmlFor="endereco_completo" className="form-label">Endereço Completo *</Label>
                   <Textarea
@@ -771,32 +737,6 @@ export const MeusImoveisPage = () => {
                     </div>
                   </div>
                 </div>
-                {formData.fotos.length > 0 && (
-                  <div>
-                    <Label className="form-label">Fotos para Inserir na Descrição</Label>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-3 border rounded-lg bg-gray-50">
-                      {formData.fotos.map((foto, index) => (
-                        <div
-                          key={index}
-                          className="relative group cursor-pointer border rounded overflow-hidden hover:ring-2 hover:ring-primary-teal aspect-video"
-                          onClick={() => {
-                            const fotoUrl = `![Foto ${index + 1}](${foto})`;
-                            const newDescricao = formData.descricao + `\n\n${fotoUrl}\n`;
-                            setFormData({ ...formData, descricao: newDescricao });
-                          }}
-                        >
-                          <img src={foto} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                            <span className="text-white text-xs opacity-0 group-hover:opacity-100">Inserir</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-gray-600 mt-2">
-                      💡 Clique em uma foto acima para inseri-la na descrição
-                    </p>
-                  </div>
-                )}
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button type="submit" className="flex-1 btn-primary py-6 text-lg">
                     {editingImovel ? 'Atualizar' : 'Cadastrar'} Imóvel
