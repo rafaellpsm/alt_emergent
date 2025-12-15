@@ -1063,20 +1063,24 @@ async def delete_perfil_parceiro(
     perfil_id: str,
     current_user: User = Depends(get_current_user)
 ):
-    # Procura o perfil
+    # 1. Procura o perfil na base de dados
     perfil = await db.perfis_parceiros.find_one({"id": perfil_id})
     if not perfil:
         raise HTTPException(status_code=404, detail="Perfil não encontrado")
 
-    # Verifica permissão: Só o dono OU o Admin podem apagar
+    # 2. Verifica a permissão: Só o dono (user_id) OU o Admin podem apagar
     if perfil["user_id"] != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Sem permissão para excluir este perfil"
         )
 
-    # Apaga do banco
-    await db.perfis_parceiros.delete_one({"id": perfil_id})
+    # 3. Apaga o perfil
+    result = await db.perfis_parceiros.delete_one({"id": perfil_id})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=500, detail="Erro ao excluir o perfil")
+
     return {"message": "Perfil de parceiro removido com sucesso"}
 
 
