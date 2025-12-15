@@ -179,25 +179,12 @@ export const MeuPerfilPage = () => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    nome_empresa: '',
-    descricao: '',
-    categoria: '',
-    telefone: '',
-    endereco: '',
-    website: '',
-    instagram: '',
-    facebook: '',
-    whatsapp: '',
-    horario_funcionamento: '',
-    servicos_oferecidos: '',
-    fotos: [],
-    video_url: '',
-    desconto_alt: ''
+    nome_empresa: '', descricao: '', categoria: '', telefone: '', endereco: '',
+    website: '', instagram: '', facebook: '', whatsapp: '', horario_funcionamento: '',
+    servicos_oferecidos: '', fotos: [], video_url: '', desconto_alt: ''
   });
 
-  useEffect(() => {
-    fetchPerfil();
-  }, []);
+  useEffect(() => { fetchPerfil(); }, []);
 
   const fetchPerfil = async () => {
     try {
@@ -222,9 +209,7 @@ export const MeuPerfilPage = () => {
         });
       }
     } catch (error) {
-      if (error.response?.status !== 404) {
-        toast({ title: "Erro ao carregar perfil", variant: "destructive" });
-      }
+      if (error.response?.status !== 404) toast({ title: "Erro ao carregar perfil", variant: "destructive" });
     }
     setLoading(false);
   };
@@ -242,32 +227,39 @@ export const MeuPerfilPage = () => {
       setEditing(false);
       fetchPerfil();
     } catch (error) {
-      // --- LÓGICA DE ERRO PERSONALIZADA ---
       console.error(error);
       let msg = "Verifique os dados e tente novamente.";
-
-      // Se o erro vier do Pydantic (validação)
       if (error.response?.data?.detail) {
         const details = error.response.data.detail;
         if (Array.isArray(details)) {
-          // Procura erros de URL
           const urlError = details.find(d => d.type === 'url_parsing' || d.type.includes('url'));
-          if (urlError) {
-            msg = `O campo ${urlError.loc[1]} deve ser um link válido (ex: https://site.com)`;
-          } else {
-            msg = "Existem campos inválidos no formulário.";
-          }
+          if (urlError) msg = `O campo ${urlError.loc[1]} deve ser um link válido (ex: https://site.com)`;
+          else msg = "Existem campos inválidos no formulário.";
         } else {
           msg = details;
         }
       }
-
-      toast({
-        title: "Erro ao salvar",
-        description: msg,
-        variant: "destructive"
-      });
+      toast({ title: "Erro ao salvar", description: msg, variant: "destructive" });
     }
+  };
+
+  // --- FUNÇÕES AUXILIARES PARA FORMATAR LINKS ---
+  const formatInstagram = (handle) => {
+    if (!handle) return null;
+    if (handle.includes('http')) return handle;
+    return `https://instagram.com/${handle.replace('@', '')}`;
+  };
+
+  const formatFacebook = (handle) => {
+    if (!handle) return null;
+    if (handle.includes('http')) return handle;
+    return `https://facebook.com/${handle}`;
+  };
+
+  const formatWebsite = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `https://${url}`;
   };
 
   if (loading) return <div className="flex justify-center items-center py-20"><div className="spinner"></div></div>;
@@ -277,9 +269,7 @@ export const MeuPerfilPage = () => {
       <div className="container mx-auto px-4 py-12">
         <PageHeader title="Meu Negócio">
           {perfil && !editing && (
-            <Button onClick={() => setEditing(true)} className="btn-primary gap-2">
-              <Edit className="h-4 w-4" /> Editar Informações
-            </Button>
+            <Button onClick={() => setEditing(true)} className="btn-primary gap-2"><Edit className="h-4 w-4" /> Editar Informações</Button>
           )}
         </PageHeader>
 
@@ -291,61 +281,34 @@ export const MeuPerfilPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nome_empresa">Nome da Empresa *</Label>
-                    <Input id="nome_empresa" value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="categoria">Categoria *</Label>
-                    <Input id="categoria" placeholder="Ex: Restaurante, Passeios..." value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required />
-                  </div>
+                  <div><Label>Nome da Empresa *</Label><Input value={formData.nome_empresa} onChange={(e) => setFormData({ ...formData, nome_empresa: e.target.value })} required /></div>
+                  <div><Label>Categoria *</Label><Input placeholder="Ex: Restaurante, Passeios..." value={formData.categoria} onChange={(e) => setFormData({ ...formData, categoria: e.target.value })} required /></div>
                 </div>
-
-                {/* DESCONTO */}
                 <div className="bg-teal-50 p-5 rounded-lg border border-teal-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TicketPercent className="h-5 w-5 text-primary-teal" />
-                    <Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT (Opcional)</Label>
-                  </div>
-                  <Input
-                    placeholder="Ex: 15% de desconto em todo o cardápio"
-                    value={formData.desconto_alt}
-                    onChange={(e) => setFormData({ ...formData, desconto_alt: e.target.value })}
-                    className="bg-white border-teal-200 focus:border-teal-500"
-                  />
+                  <div className="flex items-center gap-2 mb-2"><TicketPercent className="h-5 w-5 text-primary-teal" /><Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT (Opcional)</Label></div>
+                  <Input placeholder="Ex: 15% de desconto em todo o cardápio" value={formData.desconto_alt} onChange={(e) => setFormData({ ...formData, desconto_alt: e.target.value })} className="bg-white border-teal-200 focus:border-teal-500" />
                   <p className="text-xs text-teal-700 mt-2">✨ Este benefício aparecerá em destaque no cartão do seu negócio na página inicial.</p>
                 </div>
-
-                <div>
-                  <Label htmlFor="descricao">Descrição *</Label>
-                  <Textarea id="descricao" rows={4} value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required />
-                </div>
-
+                <div><Label>Descrição *</Label><Textarea rows={4} value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required /></div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div><Label>Telefone *</Label><Input value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} required /></div>
                   <div><Label>WhatsApp (Opcional)</Label><Input value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} /></div>
                 </div>
-
                 <div><Label>Endereço (Opcional)</Label><Input value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} /></div>
-
                 <div className="grid md:grid-cols-3 gap-4">
                   <div><Label>Instagram (Opcional)</Label><Input value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="@seu_insta" /></div>
                   <div><Label>Facebook (Opcional)</Label><Input value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} /></div>
                   <div><Label>Website (Opcional)</Label><Input value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://..." /></div>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-4">
                   <div><Label>Horário de Funcionamento (Opcional)</Label><Input value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} /></div>
                   <div><Label>Serviços Oferecidos (Opcional)</Label><Input value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} /></div>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-6 pt-6 border-t">
                   <PhotoUpload photos={formData.fotos} onPhotosChange={(f) => setFormData({ ...formData, fotos: f })} maxPhotos={10} label="Fotos do Negócio" />
                   <VideoUpload videoUrl={formData.video_url} onVideoChange={(v) => setFormData({ ...formData, video_url: v })} label="Vídeo de Apresentação (Opcional)" />
                 </div>
-
                 <div className="flex space-x-4 pt-6 border-t">
                   <Button type="submit" className="flex-1 btn-primary py-6 text-lg">{perfil ? 'Salvar Alterações' : 'Criar Perfil'}</Button>
                   {editing && <Button type="button" variant="outline" className="flex-1 py-6" onClick={() => setEditing(false)}>Cancelar</Button>}
@@ -358,28 +321,22 @@ export const MeuPerfilPage = () => {
             <div className="relative h-64 bg-gray-200">
               {perfil.fotos && perfil.fotos.length > 0 ? (
                 <img src={perfil.fotos[0]} alt={perfil.nome_empresa} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">Sem capa</div>
-              )}
+              ) : (<div className="flex items-center justify-center h-full text-gray-400">Sem capa</div>)}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-20">
                 <h2 className="text-3xl font-bold text-white">{perfil.nome_empresa}</h2>
                 <Badge className="badge-teal mt-2">{perfil.categoria}</Badge>
               </div>
             </div>
-
             <CardContent className="p-8">
               {perfil.desconto_alt && (
                 <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
-                  <div className="bg-white p-3 rounded-full shadow-md text-primary-teal">
-                    <TicketPercent className="h-8 w-8" />
-                  </div>
+                  <div className="bg-white p-3 rounded-full shadow-md text-primary-teal"><TicketPercent className="h-8 w-8" /></div>
                   <div>
                     <p className="text-sm font-bold text-teal-800 uppercase tracking-wide mb-1">Benefício Exclusivo Hóspede ALT</p>
                     <p className="text-xl text-gray-800 font-bold">{perfil.desconto_alt}</p>
                   </div>
                 </div>
               )}
-
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 space-y-6">
                   <div>
@@ -397,7 +354,6 @@ export const MeuPerfilPage = () => {
                     </div>
                   )}
                 </div>
-
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 space-y-4">
                     <div className="flex items-center gap-3 text-gray-700">
@@ -417,9 +373,10 @@ export const MeuPerfilPage = () => {
                       </div>
                     )}
                     <div className="flex gap-2 pt-2">
-                      {perfil.instagram && <Button size="icon" variant="outline" asChild><a href={perfil.instagram} target="_blank" rel="noreferrer"><Instagram className="h-4 w-4" /></a></Button>}
-                      {perfil.facebook && <Button size="icon" variant="outline" asChild><a href={perfil.facebook} target="_blank" rel="noreferrer"><Facebook className="h-4 w-4" /></a></Button>}
-                      {perfil.website && <Button size="icon" variant="outline" asChild><a href={perfil.website} target="_blank" rel="noreferrer"><Globe className="h-4 w-4" /></a></Button>}
+                      {/* AQUI ESTÁ A CORREÇÃO DOS LINKS */}
+                      {perfil.instagram && <Button size="icon" variant="outline" asChild><a href={formatInstagram(perfil.instagram)} target="_blank" rel="noreferrer"><Instagram className="h-4 w-4" /></a></Button>}
+                      {perfil.facebook && <Button size="icon" variant="outline" asChild><a href={formatFacebook(perfil.facebook)} target="_blank" rel="noreferrer"><Facebook className="h-4 w-4" /></a></Button>}
+                      {perfil.website && <Button size="icon" variant="outline" asChild><a href={formatWebsite(perfil.website)} target="_blank" rel="noreferrer"><Globe className="h-4 w-4" /></a></Button>}
                     </div>
                   </div>
                 </div>
