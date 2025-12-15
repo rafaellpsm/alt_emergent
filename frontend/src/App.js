@@ -49,7 +49,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 const AuthContext = React.createContext();
 
-// --- ANIMAÇÃO CLEAN (Fade In) ---
+// --- ANIMAÇÃO (Fade In) ---
 const FadeInSection = ({ children, delay = 0 }) => {
   const [isVisible, setVisible] = useState(false);
   const domRef = useRef();
@@ -138,7 +138,7 @@ const UserProfileMenu = ({ user, logout, isHomePage = false }) => {
   );
 };
 
-// --- Navegação Inteligente (Mostra links certos para cada pessoa) ---
+// --- NAVEGAÇÃO INTELIGENTE ---
 const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
   const { user } = useAuth();
   const location = useLocation();
@@ -158,35 +158,29 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
     return `${baseDesktopClass} ${isHomePage ? homeDesktopClass : defaultDesktopClass}`;
   };
 
-  // 1. Links para quem NÃO está logado (Público)
   const publicNavLinks = [
     { href: "/imoveis", text: "Imóveis", icon: Home },
     { href: "/parceiros", text: "Parceiros", icon: Users }
   ];
 
-  // 2. Links para MEMBROS (Donos de imóveis)
   const memberNavLinks = [
     { href: "/meus-imoveis", text: "Meus Imóveis", icon: Briefcase },
     { href: "/imoveis", text: "Todos os Imóveis", icon: Home },
     { href: "/parceiros", text: "Parceiros", icon: Users }
   ];
 
-  // 3. Links para PARCEIROS (Comércio)
   const partnerNavLinks = [
     { href: "/meu-perfil", text: "Meu Negócio", icon: Briefcase },
     { href: "/imoveis", text: "Imóveis", icon: Home },
     { href: "/parceiros", text: "Parceiros", icon: Users }
   ];
 
-  // 4. Links para ADMIN
   const adminNavLinks = [
     { href: "/admin/dashboard", text: "Dashboard", icon: Home },
     { href: "/imoveis", text: "Ver Site", icon: Eye }
   ];
 
-  // Lógica de Decisão
   let linksToRender = publicNavLinks;
-
   if (user) {
     if (user.role === 'admin') {
       linksToRender = [
@@ -223,13 +217,13 @@ const DefaultHeader = () => {
   return (
     <header className='bg-white shadow-sm border-b fixed top-0 left-0 right-0 z-50 h-20'>
       <div className="container mx-auto px-4 h-full flex justify-between items-center">
-        {/* LOGO ATUALIZADA: Igual à Home, Maior e Texto Unicolor */}
         <Link to="/" className="flex items-center space-x-3 group">
           <img
             src={logoTeal}
             alt="Logo"
             className="h-14 w-auto transition-transform group-hover:scale-110"
           />
+          <span className="text-2xl font-bold text-primary-gray tracking-tight">ALT Ilhabela</span>
         </Link>
 
         <div className="hidden md:flex items-center space-x-6">
@@ -327,6 +321,7 @@ const HomeHeader = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-3 group">
           <img src={logoSrc} alt="Logo" className="h-14 w-auto transition-transform group-hover:scale-110" />
+          <span className={`text-2xl font-bold ${textColor} tracking-tight`}>ALT Ilhabela</span>
         </Link>
         <div className="hidden md:flex items-center space-x-4">
           <Navigation isHomePage={!isScrolled} />
@@ -395,13 +390,13 @@ const TelefonesUteisSection = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {phones.map((p, idx) => (
             <FadeInSection key={idx} delay={idx * 50}>
-              <Card className="hover:shadow-lg transition-shadow border-none shadow h-full bg-gray-50">
+              <Card className="hover:shadow-lg transition-shadow border-none shadow h-full bg-gray-50 hover:bg-teal-50/30">
                 <CardContent className="p-6 flex flex-col items-start">
-                  <div className="bg-teal-600 text-white p-3 rounded-lg mb-4">
+                  <div className="bg-primary-teal text-white p-3 rounded-lg mb-4">
                     <p.icon className="h-6 w-6" />
                   </div>
                   <h3 className="font-bold text-lg text-primary-gray mb-1">{p.title}</h3>
-                  <p className="text-teal-600 font-medium mb-2">{p.number}</p>
+                  <p className="text-primary-teal font-medium mb-2">{p.number}</p>
                   <p className="text-xs text-gray-500">{p.desc}</p>
                 </CardContent>
               </Card>
@@ -491,7 +486,7 @@ const SobreSection = () => {
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
         <div className="h-48 md:h-auto overflow-hidden">
-          <img src={logoPraia} className="w-full h-full object-cover" alt="Guia" />
+          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
         </div>
         <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
@@ -521,7 +516,7 @@ const ExploreIlhabelaSection = () => {
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#459894] to-[#2c6e6b] rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
             <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
               <video
                 src="https://videos.pexels.com/video-files/4552029/4552029-hd_1920_1080_30fps.mp4"
@@ -545,7 +540,7 @@ const ExploreIlhabelaSection = () => {
             <div className="grid grid-cols-2 gap-4">
               {regions.map((region, index) => (
                 <a key={index} href={region.link} target="_blank" rel="noopener noreferrer" className="group relative h-24 rounded-xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#459894] to-[#2c6e6b] opacity-80 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative z-10 flex items-center gap-2 text-white font-bold text-lg"><Compass className="h-5 w-5" /> {region.name}</div>
                 </a>
               ))}
@@ -580,8 +575,7 @@ const CTASection = ({ navigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
-              variant="outline"
-              className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
+              className="bg-primary-teal hover:bg-teal-700 text-white font-bold text-lg px-8 py-7 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               onClick={() => navigate('/candidatura/membro')}
             >
               Seja um Membro
@@ -713,13 +707,13 @@ const HomePage = () => {
           </section>
         )}
 
-        {/* --- PARCEIROS EM DESTAQUE COM BANNER VERDE --- */}
+        {/* --- PARCEIROS EM DESTAQUE COM BANNER VERDE TEAL --- */}
         {pageData.parceiros_destaque && pageData.parceiros_destaque.length > 0 && (
           <section className="py-20 bg-gray-50">
             <div className="container mx-auto px-4">
-              {/* Banner de Descontos */}
+              {/* Banner de Descontos - Cor Teal Oficial */}
               <FadeInSection>
-                <div className="bg-[#0e7490] rounded-xl shadow-xl p-8 mb-12 text-white flex flex-col md:flex-row items-center gap-6 max-w-4xl mx-auto text-center md:text-left">
+                <div className="bg-[#459894] rounded-xl shadow-xl p-8 mb-12 text-white flex flex-col md:flex-row items-center gap-6 max-w-4xl mx-auto text-center md:text-left">
                   <div className="bg-white/10 p-4 rounded-full">
                     <Ticket className="h-10 w-10 text-white" />
                   </div>
@@ -736,7 +730,7 @@ const HomePage = () => {
                     <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full group border border-gray-100" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
                       <div className="relative h-56 overflow-hidden">
                         <img src={parceiro.fotos[0] || 'https://via.placeholder.com/400x300'} alt={parceiro.nome_empresa} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        <Badge className="absolute top-4 right-4 bg-[#0e7490] hover:bg-[#155e75] text-white shadow-sm">{parceiro.categoria}</Badge>
+                        <Badge className="absolute top-4 right-4 bg-[#459894] hover:bg-[#3d8682] text-white shadow-sm">{parceiro.categoria}</Badge>
                       </div>
                       <div className="p-6 flex flex-col flex-1">
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">{parceiro.nome_empresa}</h3>
@@ -745,14 +739,14 @@ const HomePage = () => {
                         {/* BOX DO DESCONTO ESTILIZADA */}
                         {parceiro.desconto_alt ? (
                           <div className="bg-teal-50 border border-teal-100 rounded-lg p-3 flex items-center gap-3 mb-6">
-                            <Ticket className="h-5 w-5 text-[#0e7490]" />
+                            <Ticket className="h-5 w-5 text-[#459894]" />
                             <span className="text-sm font-medium text-teal-900">{parceiro.desconto_alt}</span>
                           </div>
                         ) : (
                           <div className="mb-6 h-[46px]"></div> // Espaço vazio
                         )}
 
-                        <Button className="w-full bg-[#0e7490] hover:bg-[#155e75] text-white font-medium h-10 rounded-md">Ver Detalhes</Button>
+                        <Button className="w-full bg-[#459894] hover:bg-[#3d8682] text-white font-medium h-10 rounded-md">Ver Detalhes</Button>
                       </div>
                     </div>
                   </FadeInSection>

@@ -288,7 +288,7 @@ export const MeuPerfilPage = () => {
                 <div className="bg-teal-50 p-5 rounded-lg border border-teal-200">
                   <div className="flex items-center gap-2 mb-2"><TicketPercent className="h-5 w-5 text-primary-teal" /><Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT (Opcional)</Label></div>
                   <Input placeholder="Ex: 15% de desconto em todo o cardápio" value={formData.desconto_alt} onChange={(e) => setFormData({ ...formData, desconto_alt: e.target.value })} className="bg-white border-teal-200 focus:border-teal-500" />
-                  <p className="text-xs text-teal-700 mt-2">✨ Este benefício aparecerá em destaque no cartão do seu negócio na página inicial.</p>
+                  <p className="text-xs text-teal-700 mt-2">✨ Este fício aparecerá em destaque no cartão do seu negócio na página inicial.</p>
                 </div>
                 <div><Label>Descrição *</Label><Textarea rows={4} value={formData.descricao} onChange={(e) => setFormData({ ...formData, descricao: e.target.value })} required /></div>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -332,7 +332,7 @@ export const MeuPerfilPage = () => {
                 <div className="mb-8 bg-teal-50 border border-teal-200 rounded-xl p-5 flex items-start gap-4 shadow-sm">
                   <div className="bg-white p-3 rounded-full shadow-md text-primary-teal"><TicketPercent className="h-8 w-8" /></div>
                   <div>
-                    <p className="text-sm font-bold text-teal-800 uppercase tracking-wide mb-1">Benefício Exclusivo Hóspede ALT</p>
+                    <p className="text-sm font-bold text-teal-800 uppercase tracking-wide mb-1">Benefício Exclusivo para associados ALT</p>
                     <p className="text-xl text-gray-800 font-bold">{perfil.desconto_alt}</p>
                   </div>
                 </div>
@@ -373,7 +373,6 @@ export const MeuPerfilPage = () => {
                       </div>
                     )}
                     <div className="flex gap-2 pt-2">
-                      {/* AQUI ESTÁ A CORREÇÃO DOS LINKS */}
                       {perfil.instagram && <Button size="icon" variant="outline" asChild><a href={formatInstagram(perfil.instagram)} target="_blank" rel="noreferrer"><Instagram className="h-4 w-4" /></a></Button>}
                       {perfil.facebook && <Button size="icon" variant="outline" asChild><a href={formatFacebook(perfil.facebook)} target="_blank" rel="noreferrer"><Facebook className="h-4 w-4" /></a></Button>}
                       {perfil.website && <Button size="icon" variant="outline" asChild><a href={formatWebsite(perfil.website)} target="_blank" rel="noreferrer"><Globe className="h-4 w-4" /></a></Button>}
