@@ -242,7 +242,31 @@ export const MeuPerfilPage = () => {
       setEditing(false);
       fetchPerfil();
     } catch (error) {
-      toast({ title: "Erro ao salvar perfil", description: "Verifique os dados.", variant: "destructive" });
+      // --- LÓGICA DE ERRO PERSONALIZADA ---
+      console.error(error);
+      let msg = "Verifique os dados e tente novamente.";
+
+      // Se o erro vier do Pydantic (validação)
+      if (error.response?.data?.detail) {
+        const details = error.response.data.detail;
+        if (Array.isArray(details)) {
+          // Procura erros de URL
+          const urlError = details.find(d => d.type === 'url_parsing' || d.type.includes('url'));
+          if (urlError) {
+            msg = `O campo ${urlError.loc[1]} deve ser um link válido (ex: https://site.com)`;
+          } else {
+            msg = "Existem campos inválidos no formulário.";
+          }
+        } else {
+          msg = details;
+        }
+      }
+
+      toast({
+        title: "Erro ao salvar",
+        description: msg,
+        variant: "destructive"
+      });
     }
   };
 
@@ -279,13 +303,14 @@ export const MeuPerfilPage = () => {
                   </div>
                 </div>
 
+                {/* DESCONTO */}
                 <div className="bg-teal-50 p-5 rounded-lg border border-teal-200">
                   <div className="flex items-center gap-2 mb-2">
                     <TicketPercent className="h-5 w-5 text-primary-teal" />
-                    <Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT</Label>
+                    <Label className="text-primary-teal font-bold text-base">Desconto Exclusivo para Hóspedes ALT (Opcional)</Label>
                   </div>
                   <Input
-                    placeholder="Ex: 15% de desconto em todo o cardápio ou Drink de cortesia"
+                    placeholder="Ex: 15% de desconto em todo o cardápio"
                     value={formData.desconto_alt}
                     onChange={(e) => setFormData({ ...formData, desconto_alt: e.target.value })}
                     className="bg-white border-teal-200 focus:border-teal-500"
@@ -300,25 +325,25 @@ export const MeuPerfilPage = () => {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div><Label>Telefone *</Label><Input value={formData.telefone} onChange={(e) => setFormData({ ...formData, telefone: e.target.value })} required /></div>
-                  <div><Label>WhatsApp</Label><Input value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} /></div>
+                  <div><Label>WhatsApp (Opcional)</Label><Input value={formData.whatsapp} onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })} /></div>
                 </div>
 
-                <div><Label>Endereço</Label><Input value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} /></div>
+                <div><Label>Endereço (Opcional)</Label><Input value={formData.endereco} onChange={(e) => setFormData({ ...formData, endereco: e.target.value })} /></div>
 
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div><Label>Instagram</Label><Input value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="@seu_insta" /></div>
-                  <div><Label>Facebook</Label><Input value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} /></div>
-                  <div><Label>Website</Label><Input value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} /></div>
+                  <div><Label>Instagram (Opcional)</Label><Input value={formData.instagram} onChange={(e) => setFormData({ ...formData, instagram: e.target.value })} placeholder="@seu_insta" /></div>
+                  <div><Label>Facebook (Opcional)</Label><Input value={formData.facebook} onChange={(e) => setFormData({ ...formData, facebook: e.target.value })} /></div>
+                  <div><Label>Website (Opcional)</Label><Input value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} placeholder="https://..." /></div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div><Label>Horário de Funcionamento</Label><Input value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} /></div>
-                  <div><Label>Serviços Oferecidos</Label><Input value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} /></div>
+                  <div><Label>Horário de Funcionamento (Opcional)</Label><Input value={formData.horario_funcionamento} onChange={(e) => setFormData({ ...formData, horario_funcionamento: e.target.value })} /></div>
+                  <div><Label>Serviços Oferecidos (Opcional)</Label><Input value={formData.servicos_oferecidos} onChange={(e) => setFormData({ ...formData, servicos_oferecidos: e.target.value })} /></div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 pt-6 border-t">
                   <PhotoUpload photos={formData.fotos} onPhotosChange={(f) => setFormData({ ...formData, fotos: f })} maxPhotos={10} label="Fotos do Negócio" />
-                  <VideoUpload videoUrl={formData.video_url} onVideoChange={(v) => setFormData({ ...formData, video_url: v })} label="Vídeo de Apresentação" />
+                  <VideoUpload videoUrl={formData.video_url} onVideoChange={(v) => setFormData({ ...formData, video_url: v })} label="Vídeo de Apresentação (Opcional)" />
                 </div>
 
                 <div className="flex space-x-4 pt-6 border-t">
