@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle, Eye, X, Ban, CheckCircle } from 'lucide-react';
+import { MoreHorizontal, Trash2, UserX, UserCheck, Star, Mail, Edit, PlusCircle, Eye, X, Ban, CheckCircle, Search, Filter } from 'lucide-react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import RichTextEditor from './RichTextEditor';
 import { PhotoUpload } from './PhotoUpload';
 import { VideoUpload } from './VideoUpload';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -573,6 +574,11 @@ export const AdminUsuariosPage = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // --- ESTADOS PARA FILTROS ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const [roleFilter, setRoleFilter] = useState('todos');
+    const [statusFilter, setStatusFilter] = useState('todos');
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -612,22 +618,125 @@ export const AdminUsuariosPage = () => {
         }
     };
 
+    // --- LÓGICA DE FILTRAGEM ---
+    const filteredUsers = users.filter(user => {
+        // 1. Filtro de Texto (Nome ou Email)
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = user.nome.toLowerCase().includes(searchLower) ||
+            user.email.toLowerCase().includes(searchLower);
+
+        // 2. Filtro de Função (Role)
+        const matchesRole = roleFilter === 'todos' || user.role === roleFilter;
+
+        // 3. Filtro de Status
+        const matchesStatus = statusFilter === 'todos' ||
+            (statusFilter === 'ativo' ? user.ativo : !user.ativo);
+
+        // Ocultar o próprio admin da lista geral para segurança (opcional, mas recomendado)
+        const isNotAdmin = user.role !== 'admin';
+
+        return matchesSearch && matchesRole && matchesStatus && isNotAdmin;
+    });
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setRoleFilter('todos');
+        setStatusFilter('todos');
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Utilizadores</h1>
+
+            {/* --- BARRA DE FERRAMENTAS E FILTROS --- */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">
+
+                {/* Campo de Busca */}
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                        placeholder="Buscar por nome ou email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+
+                {/* Filtro de Função */}
+                <div className="w-full md:w-48">
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                        <SelectTrigger>
+                            <div className="flex items-center gap-2 text-gray-600">
+                                <Filter className="h-4 w-4" />
+                                <SelectValue placeholder="Função" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="todos">Todas as Funções</SelectItem>
+                            <SelectItem value="membro">Membro</SelectItem>
+                            <SelectItem value="parceiro">Parceiro</SelectItem>
+                            <SelectItem value="associado">Associado</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Filtro de Status */}
+                <div className="w-full md:w-48">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger>
+                            <div className="flex items-center gap-2 text-gray-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <SelectValue placeholder="Status" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="todos">Todos Status</SelectItem>
+                            <SelectItem value="ativo">Ativo</SelectItem>
+                            <SelectItem value="inativo">Inativo</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Botão Limpar */}
+                {(searchTerm || roleFilter !== 'todos' || statusFilter !== 'todos') && (
+                    <Button variant="ghost" onClick={clearFilters} className="text-gray-500 hover:text-red-500">
+                        <X className="h-4 w-4 mr-2" /> Limpar
+                    </Button>
+                )}
+            </div>
+
             {loading ? <div className="flex justify-center items-center py-20"><div className="spinner"></div></div> : (
                 <Card>
                     <Table>
-                        <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Email</TableHead><TableHead>Função</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Função</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
-                            {users
-                                .filter(user => user.role !== 'admin')
-                                .map(user => (
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map(user => (
                                     <TableRow key={user.id}>
-                                        <TableCell>{user.nome}</TableCell>
+                                        <TableCell className="font-medium">{user.nome}</TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell><Badge className="badge-beige">{user.role}</Badge></TableCell>
-                                        <TableCell>{user.ativo ? <Badge className="badge-teal">Ativo</Badge> : <Badge variant="secondary">Inativo</Badge>}</TableCell>
+                                        <TableCell>
+                                            <Badge className={`capitalize ${user.role === 'membro' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                                                user.role === 'parceiro' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+                                                    'badge-beige'
+                                                }`}>
+                                                {user.role}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {user.ativo ?
+                                                <Badge className="badge-teal flex w-fit items-center gap-1"><CheckCircle className="h-3 w-3" /> Ativo</Badge> :
+                                                <Badge variant="destructive" className="flex w-fit items-center gap-1"><Ban className="h-3 w-3" /> Inativo</Badge>
+                                            }
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -640,7 +749,14 @@ export const AdminUsuariosPage = () => {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                                        Nenhum utilizador encontrado com estes filtros.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </Card>
