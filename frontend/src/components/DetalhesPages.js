@@ -31,7 +31,7 @@ const renderDescriptionWithImages = (text) => {
   });
 };
 
-// --- COMPONENTE: DETALHE DO IMÓVEL (COM CARROSSEL) ---
+// --- COMPONENTE: DETALHE DO IMÓVEL ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -125,57 +125,37 @@ export const ImovelDetalhePage = () => {
           </div>
         </div>
 
-        {/* --- CARROSSEL DE FOTOS (MODERNO) --- */}
+        {/* --- CARROSSEL DE FOTOS --- */}
         <div className="mb-10">
           <div className="relative w-full h-[400px] md:h-[600px] bg-gray-100 rounded-2xl overflow-hidden group shadow-sm border border-gray-200">
             {imovel.fotos && imovel.fotos.length > 0 ? (
               <>
                 <img
                   src={imovel.fotos[currentImageIndex]}
-                  className="w-full h-full object-contain md:object-cover bg-black/5 backdrop-blur-sm"
+                  className="w-full h-full object-contain md:object-cover bg-black/5 backdrop-blur-sm transition-opacity duration-300"
                   alt={`Foto ${currentImageIndex + 1}`}
                 />
 
-                {/* Setas de Navegação (Só aparecem se houver > 1 foto) */}
                 {imovel.fotos.length > 1 && (
                   <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </button>
+                    <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"><ChevronLeft className="h-6 w-6" /></button>
+                    <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"><ChevronRight className="h-6 w-6" /></button>
                   </>
                 )}
 
-                {/* Contador */}
                 <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md">
                   {currentImageIndex + 1} / {imovel.fotos.length}
                 </div>
               </>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
-                <span>Sem fotos disponíveis</span>
-              </div>
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400"><ImageIcon className="h-12 w-12 mb-2 opacity-50" /><span>Sem fotos disponíveis</span></div>
             )}
           </div>
 
-          {/* Miniaturas (Thumbnails) */}
           {imovel.fotos && imovel.fotos.length > 1 && (
             <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
               {imovel.fotos.map((foto, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`relative h-20 w-28 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all ${currentImageIndex === idx ? 'ring-2 ring-primary-teal opacity-100' : 'opacity-60 hover:opacity-100'}`}
-                >
+                <div key={idx} onClick={() => setCurrentImageIndex(idx)} className={`relative h-20 w-28 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all ${currentImageIndex === idx ? 'ring-2 ring-primary-teal opacity-100' : 'opacity-60 hover:opacity-100'}`}>
                   <img src={foto} className="w-full h-full object-cover" alt={`Thumb ${idx}`} />
                 </div>
               ))}
@@ -187,7 +167,7 @@ export const ImovelDetalhePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
 
           <div className="lg:col-span-2 space-y-10">
-            {/* Resumo */}
+            {/* Resumo com FOTO DO ANFITRIÃO */}
             <div className="flex items-center justify-between py-2 border-b pb-8">
               <div className="space-y-1">
                 <h2 className="text-xl font-bold text-gray-900">Hospedagem por {anfitriao ? anfitriao.nome.split(' ')[0] : 'Anfitrião'}</h2>
@@ -198,8 +178,15 @@ export const ImovelDetalhePage = () => {
                 </p>
               </div>
               {anfitriao && (
-                <div className="h-14 w-14 rounded-full bg-teal-50 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-primary-teal font-bold text-xl uppercase">
-                  {anfitriao.nome.charAt(0)}
+                <div className="h-16 w-16 rounded-full bg-gray-100 overflow-hidden border-2 border-white shadow-md flex-shrink-0">
+                  {/* AQUI ESTÁ A LÓGICA DA FOTO */}
+                  {anfitriao.foto_url ? (
+                    <img src={anfitriao.foto_url} alt={anfitriao.nome} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-primary-teal text-white font-bold text-xl uppercase">
+                      {anfitriao.nome.charAt(0)}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -226,7 +213,7 @@ export const ImovelDetalhePage = () => {
               )}
             </div>
 
-            {/* Descrição com Imagens Renderizadas */}
+            {/* Descrição */}
             <div className="border-t pt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre este espaço</h3>
               <div className="prose max-w-none">
@@ -258,7 +245,7 @@ export const ImovelDetalhePage = () => {
             )}
           </div>
 
-          {/* Lado Direito: Sticky Booking (Marketing & Conversão) */}
+          {/* Lado Direito: Sticky Booking */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <Card className="shadow-xl border border-gray-200 rounded-2xl overflow-hidden">
@@ -304,7 +291,9 @@ export const ImovelDetalhePage = () => {
                       <div>
                         <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Painel Admin</p>
                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-100" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
-                          <div className="h-8 w-8 rounded-full bg-white border border-gray-200 text-primary-teal flex items-center justify-center font-bold text-xs shadow-sm">{anfitriao.nome.charAt(0)}</div>
+                          <div className="h-8 w-8 rounded-full bg-white border border-gray-200 text-primary-teal flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden">
+                            {anfitriao.foto_url ? <img src={anfitriao.foto_url} className="w-full h-full object-cover" alt="" /> : anfitriao.nome.charAt(0)}
+                          </div>
                           <div><p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p><p className="text-xs text-primary-teal font-medium">Ver Dados de Contato</p></div>
                         </div>
                       </div>

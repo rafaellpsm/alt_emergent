@@ -844,11 +844,18 @@ async def get_imovel_proprietario(imovel_id: str, current_user: User = Depends(g
     imovel = await db.imoveis.find_one({"id": imovel_id, "ativo": True})
     if not imovel:
         raise HTTPException(status_code=404, detail="Imóvel não encontrado")
+
     proprietario = await db.users.find_one({"id": imovel["proprietario_id"]})
     if not proprietario:
         raise HTTPException(
             status_code=404, detail="Proprietário não encontrado")
-    return {"id": proprietario["id"], "nome": proprietario["nome"], "role": proprietario["role"]}
+
+    return {
+        "id": proprietario["id"],
+        "nome": proprietario["nome"],
+        "role": proprietario["role"],
+        "foto_url": proprietario.get("foto_url")
+    }
 
 
 @api_router.get("/usuarios/{user_id}/perfil-publico")
