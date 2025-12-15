@@ -250,7 +250,7 @@ export const ImovelDetalhePage = () => {
               </Card>
 
               {/* Card do Anfitrião */}
-              {anfitriao && (
+              {user && user.role === 'admin' && anfitriao && (
                 <div className="bg-white rounded-xl md:rounded-2xl border shadow-sm p-4 md:p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
                   <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-primary-teal/10 flex items-center justify-center text-primary-teal font-bold text-lg md:text-xl flex-shrink-0">
                     {anfitriao.nome.charAt(0)}

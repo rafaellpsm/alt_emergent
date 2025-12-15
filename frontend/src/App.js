@@ -486,7 +486,7 @@ const SobreSection = () => {
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
         <div className="h-48 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
+          <img src={logoPraia} className="w-full h-full object-cover" alt="Guia" />
         </div>
         <div className="p-10 flex flex-col justify-center bg-white">
           <FadeInSection>
