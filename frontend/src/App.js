@@ -186,7 +186,8 @@ const Navigation = ({ isMobile = false, isHomePage = false, onNavClick }) => {
       linksToRender = [
         ...adminNavLinks,
         { href: "/meus-imoveis", text: "Gerir Meus Imóveis", icon: Briefcase },
-        { href: "/meu-perfil", text: "Meu Negócio (Parceiro)", icon: Briefcase }
+        { href: "/meu-perfil", text: "Meu Negócio (Parceiro)", icon: Briefcase },
+        { href: "/parceiros", text: "Parceiros", icon: Users }
       ];
     }
     else if (user.role === 'membro') linksToRender = memberNavLinks;
