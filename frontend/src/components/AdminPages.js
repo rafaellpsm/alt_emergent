@@ -798,6 +798,18 @@ export const AdminDestaquesPage = () => {
         }
     };
 
+    const handleDeleteParceiro = async (id) => {
+        if (!window.confirm("ATENÇÃO: Deseja apagar este negócio permanentemente?")) return;
+        try {
+            // Usa a nova rota que criámos no backend
+            await axios.delete(`${API}/perfil-parceiro/${id}`);
+            toast({ title: "Negócio removido!" });
+            fetchData(); // Recarrega a lista
+        } catch (error) {
+            toast({ title: "Erro ao remover", variant: "destructive" });
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 py-12">
             <h1 className="text-3xl font-bold text-primary-gray mb-8">Gerir Destaques</h1>
@@ -822,9 +834,15 @@ export const AdminDestaquesPage = () => {
                             {parceiros.map(item => (
                                 <div key={item.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md">
                                     <span>{item.nome_empresa}</span>
-                                    <Button variant={item.destaque ? "default" : "outline"} size="sm" onClick={() => toggleDestaque('parceiros', item.id, item.destaque)}>
-                                        <Star className={`h-4 w-4 ${item.destaque ? 'text-yellow-400' : ''}`} />
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant={item.destaque ? "default" : "outline"} size="sm" onClick={() => toggleDestaque('parceiros', item.id, item.destaque)}>
+                                            <Star className={`h-4 w-4 ${item.destaque ? 'text-yellow-400' : ''}`} />
+                                        </Button>
+                                        {/* BOTÃO DE APAGAR */}
+                                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteParceiro(item.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </CardContent>

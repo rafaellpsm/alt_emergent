@@ -1057,6 +1057,29 @@ async def update_perfil_parceiro(
             status_code=500, detail="Ocorreu um erro interno no servidor ao atualizar o perfil.")
 
 
+# --- ROTA PARA EXCLUIR PERFIL DE PARCEIRO ---
+@api_router.delete("/perfil-parceiro/{perfil_id}")
+async def delete_perfil_parceiro(
+    perfil_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    # Procura o perfil
+    perfil = await db.perfis_parceiros.find_one({"id": perfil_id})
+    if not perfil:
+        raise HTTPException(status_code=404, detail="Perfil não encontrado")
+
+    # Verifica permissão: Só o dono OU o Admin podem apagar
+    if perfil["user_id"] != current_user.id and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Sem permissão para excluir este perfil"
+        )
+
+    # Apaga do banco
+    await db.perfis_parceiros.delete_one({"id": perfil_id})
+    return {"message": "Perfil de parceiro removido com sucesso"}
+
+
 @api_router.get("/noticias", response_model=List[Noticia])
 async def get_noticias(
     categoria: Optional[str] = None,
