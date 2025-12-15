@@ -8,48 +8,30 @@ import { toast } from '../hooks/use-toast';
 import {
   MapPin, Bed, Bath, Users, Check, ArrowRight, Share2,
   Phone, Instagram, Facebook, Globe, TicketPercent, MessageCircle,
-  ShieldCheck, Heart
+  ShieldCheck, Heart, ChevronLeft, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- FUNÇÃO AUXILIAR: Converte texto com Markdown de imagem em HTML real ---
+// --- FUNÇÃO AUXILIAR: Renderizar Markdown de Imagens na Descrição ---
 const renderDescriptionWithImages = (text) => {
   if (!text) return null;
-
-  // Divide o texto sempre que encontrar o padrão ![Alt](Url)
-  // A Regex captura o padrão inteiro para não o perdermos
   const parts = text.split(/(!\[.*?\]\(.*?\))/g);
-
   return parts.map((part, index) => {
-    // Verifica se esta parte é uma imagem
     const imageMatch = part.match(/!\[(.*?)\]\((.*?)\)/);
-
     if (imageMatch) {
-      // Se for imagem, renderiza a tag <img>
       return (
         <div key={index} className="my-6 rounded-xl overflow-hidden shadow-sm">
-          <img
-            src={imageMatch[2]}
-            alt={imageMatch[1] || "Foto do imóvel"}
-            className="w-full h-auto object-cover"
-            loading="lazy"
-          />
+          <img src={imageMatch[2]} alt={imageMatch[1] || "Detalhe do imóvel"} className="w-full h-auto object-cover" loading="lazy" />
         </div>
       );
     }
-
-    // Se for texto normal, renderiza mantendo as quebras de linha
-    return (
-      <span key={index} className="whitespace-pre-line text-gray-600 leading-relaxed text-base">
-        {part}
-      </span>
-    );
+    return <span key={index} className="whitespace-pre-line text-gray-600 leading-relaxed text-base">{part}</span>;
   });
 };
 
-// --- COMPONENTE: DETALHE DO IMÓVEL ---
+// --- COMPONENTE: DETALHE DO IMÓVEL (COM CARROSSEL) ---
 export const ImovelDetalhePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -58,8 +40,8 @@ export const ImovelDetalhePage = () => {
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState(null);
 
-  // Estado para controlar qual imagem está grande
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  // Estado do Carrossel
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,17 +67,30 @@ export const ImovelDetalhePage = () => {
     fetchData();
   }, [id, navigate]);
 
-  if (loading) return <div className="flex justify-center items-center h-screen"><div className="spinner"></div></div>;
-  if (!imovel) return null;
+  // Funções do Carrossel
+  const nextImage = () => {
+    if (imovel?.fotos) {
+      setCurrentImageIndex((prev) => (prev === imovel.fotos.length - 1 ? 0 : prev + 1));
+    }
+  };
+
+  const prevImage = () => {
+    if (imovel?.fotos) {
+      setCurrentImageIndex((prev) => (prev === 0 ? imovel.fotos.length - 1 : prev - 1));
+    }
+  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast({ title: "Link copiado!", description: "Pronto para enviar aos amigos." });
   };
 
+  if (loading) return <div className="flex justify-center items-center h-screen"><div className="spinner"></div></div>;
+  if (!imovel) return null;
+
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* Navegação Breadcrumb */}
+      {/* Breadcrumb */}
       <div className="border-b bg-gray-50">
         <div className="container mx-auto px-4 h-14 flex items-center text-sm text-gray-500">
           <Link to="/" className="hover:text-primary-teal transition-colors">Home</Link>
@@ -124,48 +119,71 @@ export const ImovelDetalhePage = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full hover:bg-gray-50 border-gray-300">
+            <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full hover:bg-gray-50 border-gray-300 text-gray-600">
               <Share2 className="h-4 w-4 mr-2" /> Compartilhar
             </Button>
           </div>
         </div>
 
-        {/* GALERIA INTERATIVA (CORRIGIDA) */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 h-[450px] md:h-[550px] mb-10 rounded-2xl overflow-hidden shadow-sm">
-          {/* Foto Principal (Selecionada) */}
-          <div className="lg:col-span-3 h-full relative group">
+        {/* --- CARROSSEL DE FOTOS (MODERNO) --- */}
+        <div className="mb-10">
+          <div className="relative w-full h-[400px] md:h-[600px] bg-gray-100 rounded-2xl overflow-hidden group shadow-sm border border-gray-200">
             {imovel.fotos && imovel.fotos.length > 0 ? (
-              <img
-                src={imovel.fotos[selectedImageIndex]}
-                className="w-full h-full object-cover transition-all duration-300"
-                alt="Principal"
-              />
+              <>
+                <img
+                  src={imovel.fotos[currentImageIndex]}
+                  className="w-full h-full object-contain md:object-cover bg-black/5 backdrop-blur-sm"
+                  alt={`Foto ${currentImageIndex + 1}`}
+                />
+
+                {/* Setas de Navegação (Só aparecem se houver > 1 foto) */}
+                {imovel.fotos.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  </>
+                )}
+
+                {/* Contador */}
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-md">
+                  {currentImageIndex + 1} / {imovel.fotos.length}
+                </div>
+              </>
             ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">Sem foto</div>
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
+                <span>Sem fotos disponíveis</span>
+              </div>
             )}
           </div>
 
-          {/* Lista Lateral de Miniaturas */}
-          <div className="hidden lg:grid grid-rows-4 gap-2 h-full">
-            {imovel.fotos && imovel.fotos.slice(0, 4).map((foto, idx) => (
-              <div
-                key={idx}
-                className={`relative h-full cursor-pointer overflow-hidden rounded-lg ${selectedImageIndex === idx ? 'ring-2 ring-primary-teal' : 'opacity-70 hover:opacity-100'}`}
-                onClick={() => setSelectedImageIndex(idx)} // AQUI: Clicar muda a foto principal
-              >
-                <img src={foto} className="w-full h-full object-cover" alt={`Thumb ${idx}`} />
-              </div>
-            ))}
-            {/* Botão para ver mais se houver muitas fotos (Visual apenas) */}
-            {imovel.fotos && imovel.fotos.length > 4 && (
-              <div className="relative h-full bg-gray-100 flex items-center justify-center cursor-pointer hover:bg-gray-200 rounded-lg" onClick={() => setSelectedImageIndex(4)}>
-                <span className="text-gray-500 font-bold text-sm">+{imovel.fotos.length - 4} fotos</span>
-              </div>
-            )}
-          </div>
+          {/* Miniaturas (Thumbnails) */}
+          {imovel.fotos && imovel.fotos.length > 1 && (
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+              {imovel.fotos.map((foto, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => setCurrentImageIndex(idx)}
+                  className={`relative h-20 w-28 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all ${currentImageIndex === idx ? 'ring-2 ring-primary-teal opacity-100' : 'opacity-60 hover:opacity-100'}`}
+                >
+                  <img src={foto} className="w-full h-full object-cover" alt={`Thumb ${idx}`} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Conteúdo Principal */}
+        {/* Conteúdo Principal + Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative">
 
           <div className="lg:col-span-2 space-y-10">
@@ -180,24 +198,38 @@ export const ImovelDetalhePage = () => {
                 </p>
               </div>
               {anfitriao && (
-                <div className="h-14 w-14 rounded-full bg-gray-100 overflow-hidden border-2 border-white shadow-md flex items-center justify-center text-primary-teal font-bold text-xl">
+                <div className="h-14 w-14 rounded-full bg-teal-50 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center text-primary-teal font-bold text-xl uppercase">
                   {anfitriao.nome.charAt(0)}
                 </div>
               )}
             </div>
 
-            {/* Destaques */}
-            <div className="space-y-6">
-              {imovel.possui_wifi && <div className="flex gap-4"><Globe className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Wi-Fi Veloz</h3><p className="text-sm text-gray-500">Ideal para trabalhar remotamente.</p></div></div>}
-              {imovel.permite_pets && <div className="flex gap-4"><Users className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Pet Friendly</h3><p className="text-sm text-gray-500">Traga seu melhor amigo.</p></div></div>}
-              {imovel.possui_piscina && <div className="flex gap-4"><Users className="h-6 w-6 text-gray-700 mt-1" /><div><h3 className="font-semibold text-gray-900">Piscina</h3><p className="text-sm text-gray-500">Relaxe e aproveite o sol.</p></div></div>}
+            {/* Destaques (Ícones Grandes) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {imovel.possui_wifi && (
+                <div className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <Globe className="h-6 w-6 text-primary-teal mt-1" />
+                  <div><h3 className="font-semibold text-gray-900">Wi-Fi Veloz</h3><p className="text-sm text-gray-500">Conexão estável.</p></div>
+                </div>
+              )}
+              {imovel.permite_pets && (
+                <div className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <Users className="h-6 w-6 text-primary-teal mt-1" />
+                  <div><h3 className="font-semibold text-gray-900">Pet Friendly</h3><p className="text-sm text-gray-500">Seu pet é bem-vindo.</p></div>
+                </div>
+              )}
+              {imovel.possui_piscina && (
+                <div className="flex gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <Users className="h-6 w-6 text-primary-teal mt-1" />
+                  <div><h3 className="font-semibold text-gray-900">Piscina</h3><p className="text-sm text-gray-500">Para dias de sol.</p></div>
+                </div>
+              )}
             </div>
 
             {/* Descrição com Imagens Renderizadas */}
             <div className="border-t pt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Sobre este espaço</h3>
               <div className="prose max-w-none">
-                {/* AQUI APLICAMOS A FUNÇÃO MÁGICA */}
                 {renderDescriptionWithImages(imovel.descricao)}
               </div>
             </div>
@@ -206,12 +238,12 @@ export const ImovelDetalhePage = () => {
             <div className="border-t pt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">O que este lugar oferece</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                {imovel.possui_piscina && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Piscina</div>}
-                {imovel.possui_churrasqueira && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Churrasqueira</div>}
-                {imovel.possui_wifi && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Wi-Fi</div>}
-                {imovel.permite_pets && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Aceita Pets</div>}
-                {imovel.tem_vista_mar && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Vista para o Mar</div>}
-                {imovel.tem_ar_condicionado && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-green-600" /> Ar Condicionado</div>}
+                {imovel.possui_piscina && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Piscina</div>}
+                {imovel.possui_churrasqueira && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Churrasqueira</div>}
+                {imovel.possui_wifi && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Wi-Fi</div>}
+                {imovel.permite_pets && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Aceita Pets</div>}
+                {imovel.tem_vista_mar && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Vista para o Mar</div>}
+                {imovel.tem_ar_condicionado && <div className="flex items-center gap-3 text-gray-700"><Check className="h-5 w-5 text-primary-teal" /> Ar Condicionado</div>}
               </div>
             </div>
 
@@ -226,12 +258,14 @@ export const ImovelDetalhePage = () => {
             )}
           </div>
 
-          {/* Sticky Booking Card */}
+          {/* Lado Direito: Sticky Booking (Marketing & Conversão) */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <Card className="shadow-xl border border-gray-200 rounded-2xl overflow-hidden">
-                <div className="bg-teal-50 p-2 text-center text-xs font-bold text-primary-teal uppercase tracking-widest border-b border-teal-100">
-                  Selo ALT de Qualidade
+                <div className="bg-primary-teal p-3 text-center">
+                  <p className="text-xs font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Verificado ALT
+                  </p>
                 </div>
                 <CardContent className="p-6">
                   <div className="mb-6">
@@ -241,13 +275,13 @@ export const ImovelDetalhePage = () => {
 
                   <div className="space-y-3 mb-6">
                     {imovel.link_booking ? (
-                      <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6" onClick={() => window.open(imovel.link_booking, '_blank')}>
+                      <Button className="w-full bg-[#003580] hover:bg-[#002860] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6 transition-transform hover:scale-[1.02]" onClick={() => window.open(imovel.link_booking, '_blank')}>
                         <span>Reservar no Booking</span> <ArrowRight className="h-5 w-5" />
                       </Button>
                     ) : null}
 
                     {imovel.link_airbnb ? (
-                      <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
+                      <Button className="w-full bg-[#FF385C] hover:bg-[#D90B3E] text-white h-12 text-base font-bold rounded-xl shadow-sm flex justify-between px-6 transition-transform hover:scale-[1.02]" onClick={() => window.open(imovel.link_airbnb, '_blank')}>
                         <span>Reservar no Airbnb</span> <ArrowRight className="h-5 w-5" />
                       </Button>
                     ) : null}
@@ -259,9 +293,8 @@ export const ImovelDetalhePage = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-6">
-                    <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <span>Reserva Segura Garantida</span>
+                  <div className="text-center text-xs text-gray-400 mb-6">
+                    Você será redirecionado para a plataforma de reserva.
                   </div>
 
                   {/* Admin View */}
@@ -270,7 +303,7 @@ export const ImovelDetalhePage = () => {
                       <hr className="border-gray-100 mb-4" />
                       <div>
                         <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Painel Admin</p>
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 border border-gray-100" onClick={() => navigate(`/anfitriao/${anfitriao.id}`)}>
                           <div className="h-8 w-8 rounded-full bg-white border border-gray-200 text-primary-teal flex items-center justify-center font-bold text-xs shadow-sm">{anfitriao.nome.charAt(0)}</div>
                           <div><p className="text-sm font-bold text-gray-900">{anfitriao.nome}</p><p className="text-xs text-primary-teal font-medium">Ver Dados de Contato</p></div>
                         </div>
@@ -336,7 +369,7 @@ export const ParceiroDetalhePage = () => {
                   <TicketPercent className="h-8 w-8" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-teal-800 uppercase tracking-widest mb-1">Benefício Exclusivo para Associados ALT</p>
+                  <p className="text-sm font-bold text-teal-800 uppercase tracking-widest mb-1">Benefício Exclusivo Hóspede ALT</p>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{parceiro.desconto_alt}</h2>
                 </div>
               </div>
