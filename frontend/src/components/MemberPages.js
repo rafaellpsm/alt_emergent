@@ -18,7 +18,6 @@ import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users, TicketPercent, Phone, Glob
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// --- LISTA COMPLETA DE BAIRROS DE ILHABELA ---
 const bairrosIlhabela = [
   {
     regiao: "Norte",
