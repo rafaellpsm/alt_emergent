@@ -38,6 +38,10 @@ import mirante5 from './assets/galeria/mirante_ilhabela.jpg';
 import farol6 from './assets/galeria/ilhabela_costeira.png';
 import pescador7 from './assets/galeria/trabalhador_Ilhabela.png';
 import passaro from './assets/galeria/passaro_ilhabela.jpeg';
+import cascata from './assets/galeria/cascata_ilhabela.png';
+import lixo from './assets/galeria/lixo_ilhabela.png';
+import canoa from './assets/galeria/canoa_ilhabela.png';
+import megafone from './assets/galeria/alt_jsmf.png';
 
 // --- CONFIGURAÇÃO E HOOKS ---
 axios.interceptors.response.use(
@@ -476,7 +480,7 @@ const SobrePilaresSection = () => {
       {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
         <div className="h-64 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/7551442/pexels-photo-7551442.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Megafone" />
+          <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
         </div>
         <div className="p-12 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
@@ -501,14 +505,14 @@ const SobrePilaresSection = () => {
           </FadeInSection>
         </div>
         <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src="https://images.pexels.com/photos/957024/beach-pollution-plastic-waste-957024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Sustentabilidade" />
+          <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
         <div className="h-64 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/347139/pexels-photo-347139.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Parceiros" />
+          <img src={cascata} className="w-full h-full object-cover" alt="Parceiros" />
         </div>
         <div className="p-12 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
@@ -528,12 +532,12 @@ const SobrePilaresSection = () => {
             <Users className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
             <p className="text-gray-600 leading-relaxed">
-              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
+              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições culturais da ilha, valorizando a identidade caiçara. Unidos, construímos um futuro melhor para nossa ilha.
             </p>
           </FadeInSection>
         </div>
         <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src="https://images.pexels.com/photos/4669141/pexels-photo-4669141.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Comunidade" />
+          <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
@@ -547,7 +551,7 @@ const SobrePilaresSection = () => {
             <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
             <p className="text-gray-600 leading-relaxed">
-              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
+              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica. Indicamos especialistas em observação de aves (birdwatching), esportes náuticos, mergulho e ecoturismo. Compartilhamos informações sobre mercados, restaurantes tradicionais, pontos turísticos históricos e opções de transporte. Fortalecemos a economia local valorizando os profissionais e a cultura caiçara de Ilhabela.
             </p>
           </FadeInSection>
         </div>
