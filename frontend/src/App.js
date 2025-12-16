@@ -30,9 +30,6 @@ import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo_horiz.png';
 import logoGray from './assets/logo_horiz.png';
 import logoPraia from './assets/logo_praia.png';
-import logoTeal from './assets/logo_horiz.png';
-import logoGray from './assets/logo_horiz.png';
-import logoPraia from './assets/logo_praia.png';
 import peixe1 from './assets/galeria/sardinha_ilhabela.png';
 import parque2 from './assets/galeria/parque_ilhabela.png';
 import cachoeira3 from './assets/galeria/cachoeira_ilhabela.png';
@@ -238,6 +235,7 @@ const DefaultHeader = () => {
             src={logoTeal}
             alt="Logo"
             className="h-14 w-auto transition-transform group-hover:scale-110"
+            id="#"
           />
         </Link>
 
