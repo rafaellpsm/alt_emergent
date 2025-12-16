@@ -37,7 +37,7 @@ import praia4 from './assets/galeria/praia_ilhabela.png';
 import mirante5 from './assets/galeria/mirante_ilhabela.jpg';
 import farol6 from './assets/galeria/ilhabela_costeira.png';
 import pescador7 from './assets/galeria/trabalhador_Ilhabela.png';
-// import passaro from './assets/passaro_ilhabela.jpg';
+import passaro from './assets/galeria/passaro_ilhabela.jpeg';
 
 // --- CONFIGURAÇÃO E HOOKS ---
 axios.interceptors.response.use(
@@ -422,25 +422,22 @@ const TelefonesUteisSection = () => {
   );
 };
 
-// --- SECÇÃO: SOBRE ILHABELA ---
-const SobreSection = () => {
+// --- SECÇÃO: SOBRE (PARTE 1: MOSAICO DE FOTOS) ---
+const SobreMosaicoSection = () => {
   return (
     <section className="bg-white w-full">
+      {/* 1ª Fileira: 4 Imagens */}
       <FadeInSection>
         <div className="grid grid-cols-2 md:grid-cols-4 h-48 md:h-64">
-          {/* Peixe */}
           <div className="w-full h-full overflow-hidden">
-            <img src={peixe1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura Caiçara" />
+            <img src={peixe1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cultura" />
           </div>
-          {/* Placa Parque (Usando natureza similar) */}
           <div className="w-full h-full overflow-hidden">
-            <img src={parque2} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Parque Estadual" />
+            <img src={parque2} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Natureza" />
           </div>
-          {/* Cachoeira */}
           <div className="w-full h-full overflow-hidden">
             <img src={cachoeira3} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Cachoeiras" />
           </div>
-          {/* Praia/Barco */}
           <div className="w-full h-full overflow-hidden">
             <img src={praia4} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Praias" />
           </div>
@@ -454,18 +451,15 @@ const SobreSection = () => {
         </div>
       </FadeInSection>
 
-      {/* 3ª Fileira: 3 Imagens (Letreiro, Farol, Pescador) */}
+      {/* 3ª Fileira: 3 Imagens */}
       <FadeInSection delay={400}>
         <div className="grid grid-cols-1 md:grid-cols-3 h-auto md:h-80">
-          {/* Letreiro Ilhabela (Usando visual praia colorida) */}
           <div className="w-full h-64 md:h-full overflow-hidden">
             <img src={mirante5} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Ilhabela" />
           </div>
-          {/* Farol */}
           <div className="w-full h-64 md:h-full overflow-hidden">
             <img src={farol6} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Farol" />
           </div>
-          {/* Pescador/Rede */}
           <div className="w-full h-64 md:h-full overflow-hidden">
             <img src={pescador7} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Pescador" />
           </div>
@@ -475,6 +469,7 @@ const SobreSection = () => {
   );
 };
 
+// --- SECÇÃO: SOBRE (PARTE 2: OS 5 PILARES) ---
 const SobrePilaresSection = () => {
   return (
     <section className="bg-white">
@@ -545,7 +540,7 @@ const SobrePilaresSection = () => {
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
         <div className="h-64 md:h-auto overflow-hidden">
-          <img src="https://images.pexels.com/photos/15505739/pexels-photo-15505739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className="w-full h-full object-cover" alt="Guia" />
+          <img src={passaro} className="w-full h-full object-cover" alt="Guia" />
         </div>
         <div className="p-12 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
@@ -634,8 +629,7 @@ const CTASection = ({ navigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
-              variant="outline"
-              className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
+              className="bg-primary-teal hover:bg-teal-700 text-white font-bold text-lg px-8 py-7 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               onClick={() => navigate('/candidatura/membro')}
             >
               Seja um Membro
