@@ -480,7 +480,7 @@ const SobrePilaresSection = () => {
     <section className="bg-white">
       {/* Bloco 2: Sustentabilidade */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1"> {/* Menos padding vertical (py-6) */}
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2"> {/* Menos padding vertical (py-6) */}
           <FadeInSection>
             <Leaf className="h-8 w-8 text-primary-teal mb-2" /> {/* Ícone menor e menos margem */}
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Sustentabilidade</h2>
@@ -489,7 +489,7 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2"> {/* Altura mobile reduzida (h-40) */}
+        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1"> {/* Altura mobile reduzida (h-40) */}
           <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
@@ -512,7 +512,7 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 4: Comunidade */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2">
           <FadeInSection>
             <Users className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Comunidade Ativa</h2>
@@ -521,7 +521,7 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1">
           <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
@@ -544,7 +544,7 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2">
           <FadeInSection>
             <Megaphone className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Junto Somos Mais Fortes</h2>
@@ -553,7 +553,7 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1">
           <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
         </div>
       </div>
