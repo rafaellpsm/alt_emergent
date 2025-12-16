@@ -620,6 +620,7 @@ export const MeusImoveisPage = () => {
                       <SelectItem value="apartamento">Apartamento</SelectItem>
                       <SelectItem value="pousada">Pousada</SelectItem>
                       <SelectItem value="chale">Chalé</SelectItem>
+                      <SelectItem value="suite">Suíte</SelectItem>
                       <SelectItem value="studio">Studio</SelectItem>
                       <SelectItem value="cobertura">Cobertura</SelectItem>
                     </SelectContent>
