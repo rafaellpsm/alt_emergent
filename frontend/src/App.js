@@ -476,36 +476,34 @@ const SobreMosaicoSection = () => {
 
 // --- SECÇÃO: SOBRE (PARTE 2: OS 5 PILARES - RETANGULAR & SLIM) ---
 const SobrePilaresSection = () => {
-  // OBS: Substitua os src das imagens pelas suas variáveis (lixo, cascata, etc.) se preferir.
-  // Usei links de placeholder para garantir que o código funcione ao copiar.
   return (
     <section className="bg-white">
       {/* Bloco 2: Sustentabilidade */}
       <div className="grid md:grid-cols-2">
-        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1"> {/* Menos padding vertical (py-6) */}
           <FadeInSection>
-            <Leaf className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <Leaf className="h-8 w-8 text-primary-teal mb-2" /> {/* Ícone menor e menos margem */}
+            <h2 className="text-2xl font-bold text-primary-gray mb-2">Sustentabilidade</h2>
+            <p className="text-gray-600 leading-snug text-sm md:text-base"> {/* Texto mais compacto */}
               Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src={lixo} className="w-full h-full object-cover md:h-full" alt="Sustentabilidade" />
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2"> {/* Altura mobile reduzida (h-40) */}
+          <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden">
-          <img src={cascata} className="w-full h-full object-cover md:h-full" alt="Parceiros" />
+        <div className="h-40 md:h-auto overflow-hidden">
+          <img src={cascata} className="w-full h-full object-cover" alt="Parceiros" />
         </div>
-        <div className="px-10 py-8 flex flex-col justify-center bg-gray-50">
+        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
-            <Heart className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <Heart className="h-8 w-8 text-primary-teal mb-2" />
+            <h2 className="text-2xl font-bold text-primary-gray mb-2">Parceiros Locais</h2>
+            <p className="text-gray-600 leading-snug text-sm md:text-base">
               Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local.
             </p>
           </FadeInSection>
@@ -514,30 +512,30 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 4: Comunidade */}
       <div className="grid md:grid-cols-2">
-        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1">
           <FadeInSection>
-            <Users className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <Users className="h-8 w-8 text-primary-teal mb-2" />
+            <h2 className="text-2xl font-bold text-primary-gray mb-2">Comunidade Ativa</h2>
+            <p className="text-gray-600 leading-snug text-sm md:text-base">
               Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src={canoa} className="w-full h-full object-cover md:h-full" alt="Comunidade" />
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden">
-          <img src={passaro} className="w-full h-full object-cover md:h-full" alt="Guia" />
+        <div className="h-40 md:h-auto overflow-hidden">
+          <img src={passaro} className="w-full h-full object-cover" alt="Guia" />
         </div>
-        <div className="px-10 py-8 flex flex-col justify-center bg-gray-50">
+        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
-            <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <BookOpen className="h-8 w-8 text-primary-teal mb-2" />
+            <h2 className="text-2xl font-bold text-primary-gray mb-2">Guia Local</h2>
+            <p className="text-gray-600 leading-snug text-sm md:text-base">
               Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
             </p>
           </FadeInSection>
@@ -546,17 +544,17 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
-        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-1">
           <FadeInSection>
-            <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <Megaphone className="h-8 w-8 text-primary-teal mb-2" />
+            <h2 className="text-2xl font-bold text-primary-gray mb-2">Junto Somos Mais Fortes</h2>
+            <p className="text-gray-600 leading-snug text-sm md:text-base">
               Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
-          <img src={megafone} className="w-full h-full object-cover md:h-full" alt="Megafone" />
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
         </div>
       </div>
     </section>
