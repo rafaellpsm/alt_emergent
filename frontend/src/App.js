@@ -35,7 +35,7 @@ import parque2 from './assets/galeria/parque_ilhabela.png';
 import cachoeira3 from './assets/galeria/cachoeira_ilhabela.png';
 import praia4 from './assets/galeria/praia_ilhabela.png';
 import mirante5 from './assets/galeria/mirante_ilhabela.jpg';
-import farol6 from './assets/galeria/farol_ilhabela.png';
+import farol6 from './assets/galeria/ilhabela_costeira.png';
 import pescador7 from './assets/galeria/trabalhador_Ilhabela.png';
 // import passaro from './assets/passaro_ilhabela.jpg';
 
