@@ -477,47 +477,32 @@ const SobreMosaicoSection = () => {
 const SobrePilaresSection = () => {
   return (
     <section className="bg-white">
-      {/* Bloco 1: Megafone */}
-      <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
-          <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
-        </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
-          <FadeInSection>
-            <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
-            </p>
-          </FadeInSection>
-        </div>
-      </div>
 
       {/* Bloco 2: Sustentabilidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="p-8 flex flex-col justify-center bg-white order-2 md:order-1"> {/* p-12 -> p-8 */}
           <FadeInSection>
             <Leaf className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
             <p className="text-gray-600 leading-relaxed">
               Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2"> {/* h-64 -> h-48 */}
           <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
+        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
           <img src={cascata} className="w-full h-full object-cover" alt="Parceiros" />
         </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
+        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
           <FadeInSection>
             <Heart className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
             <p className="text-gray-600 leading-relaxed">
               Trabalhamos com os melhores estabelecimentos da ilha para proporcionar experiências completas e autênticas aos visitantes. Apoiamo a economia local.
             </p>
@@ -527,31 +512,47 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 4: Comunidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-12 flex flex-col justify-center bg-white order-2 md:order-1">
+        <div className="p-8 flex flex-col justify-center bg-white order-2 md:order-1"> {/* p-12 -> p-8 */}
           <FadeInSection>
             <Users className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
             <p className="text-gray-600 leading-relaxed">
               Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições culturais da ilha, valorizando a identidade caiçara. Unidos, construímos um futuro melhor para nossa ilha.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-64 md:h-auto overflow-hidden order-1 md:order-2">
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2"> {/* h-64 -> h-48 */}
           <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
-        <div className="h-64 md:h-auto overflow-hidden">
+        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
           <img src={passaro} className="w-full h-full object-cover" alt="Guia" />
         </div>
-        <div className="p-12 flex flex-col justify-center bg-gray-50">
+        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
           <FadeInSection>
             <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
-            <h2 className="text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
             <p className="text-gray-600 leading-relaxed">
               Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica. Indicamos especialistas em observação de aves (birdwatching), esportes náuticos, mergulho e ecoturismo. Compartilhamos informações sobre mercados, restaurantes tradicionais, pontos turísticos históricos e opções de transporte. Fortalecemos a economia local valorizando os profissionais e a cultura caiçara de Ilhabela.
+            </p>
+          </FadeInSection>
+        </div>
+      </div>
+
+      {/* Bloco 1: Megafone (Estava em último no teu código) */}
+      <div className="grid md:grid-cols-2">
+        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
+          <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
+        </div>
+        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
+          <FadeInSection>
+            <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
+            <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
+            <p className="text-gray-600 leading-relaxed">
+              Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
             </p>
           </FadeInSection>
         </div>
