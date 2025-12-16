@@ -478,28 +478,29 @@ const SobreMosaicoSection = () => {
 const SobrePilaresSection = () => {
   return (
     <section className="bg-white">
-      {/* Bloco 2: Sustentabilidade */}
+
+      {/* Bloco 2: Sustentabilidade (Antes: Texto Esq / Agora: Imagem Esq) */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2"> {/* Menos padding vertical (py-6) */}
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-2"> {/* Texto à Direita (md:order-2) */}
           <FadeInSection>
-            <Leaf className="h-8 w-8 text-primary-teal mb-2" /> {/* Ícone menor e menos margem */}
+            <Leaf className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Sustentabilidade</h2>
-            <p className="text-gray-600 leading-snug text-sm md:text-base"> {/* Texto mais compacto */}
+            <p className="text-gray-600 leading-snug text-sm md:text-base">
               Promovemos a consciência ambiental orientando nossos hóspedes sobre o correto descarte de resíduos e a conservação ambiental da ilha. Cuidamos do nosso paraíso preservando as belezas naturais de Ilhabela.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1"> {/* Altura mobile reduzida (h-40) */}
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-1"> {/* Imagem à Esquerda (md:order-1) */}
           <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
         </div>
       </div>
 
-      {/* Bloco 3: Parceiros Locais */}
+      {/* Bloco 3: Parceiros Locais (Antes: Imagem Esq / Agora: Texto Esq) */}
       <div className="grid md:grid-cols-2">
-        <div className="h-40 md:h-auto overflow-hidden">
-          <img src={cascata} className="w-full h-full object-cover" alt="Parceiros" />
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2"> {/* Imagem à Direita (md:order-2) */}
+          <img src={cascata} className="w-full h-full object-cover md:h-full" alt="Parceiros" />
         </div>
-        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50">
+        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50 order-2 md:order-1"> {/* Texto à Esquerda (md:order-1) */}
           <FadeInSection>
             <Heart className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Parceiros Locais</h2>
@@ -510,9 +511,9 @@ const SobrePilaresSection = () => {
         </div>
       </div>
 
-      {/* Bloco 4: Comunidade */}
+      {/* Bloco 4: Comunidade (Antes: Texto Esq / Agora: Imagem Esq) */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-2"> {/* Texto à Direita */}
           <FadeInSection>
             <Users className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Comunidade Ativa</h2>
@@ -521,17 +522,17 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1">
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-1"> {/* Imagem à Esquerda */}
           <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
         </div>
       </div>
 
-      {/* Bloco 5: Guia Local */}
+      {/* Bloco 5: Guia Local (Antes: Imagem Esq / Agora: Texto Esq) */}
       <div className="grid md:grid-cols-2">
-        <div className="h-40 md:h-auto overflow-hidden">
-          <img src={passaro} className="w-full h-full object-cover" alt="Guia" />
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-2"> {/* Imagem à Direita */}
+          <img src={passaro} className="w-full h-full object-cover md:h-full" alt="Guia" />
         </div>
-        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50">
+        <div className="px-8 py-6 flex flex-col justify-center bg-gray-50 order-2 md:order-1"> {/* Texto à Esquerda */}
           <FadeInSection>
             <BookOpen className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Guia Local</h2>
@@ -542,9 +543,9 @@ const SobrePilaresSection = () => {
         </div>
       </div>
 
-      {/* Bloco 1: Megafone */}
+      {/* Bloco 1: Megafone (Antes: Texto Esq / Agora: Imagem Esq) */}
       <div className="grid md:grid-cols-2">
-        <div className="px-8 py-6 flex flex-col justify-center bg-white order-1 md:order-2">
+        <div className="px-8 py-6 flex flex-col justify-center bg-white order-2 md:order-2"> {/* Texto à Direita */}
           <FadeInSection>
             <Megaphone className="h-8 w-8 text-primary-teal mb-2" />
             <h2 className="text-2xl font-bold text-primary-gray mb-2">Junto Somos Mais Fortes</h2>
@@ -553,7 +554,7 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-40 md:h-auto overflow-hidden order-2 md:order-1">
+        <div className="h-40 md:h-auto overflow-hidden order-1 md:order-1"> {/* Imagem à Esquerda */}
           <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
         </div>
       </div>
