@@ -30,6 +30,9 @@ import { NoticiaDetalhePage } from './components/NoticiaDetalhePage';
 import logoTeal from './assets/logo_horiz.png';
 import logoGray from './assets/logo_horiz.png';
 import logoPraia from './assets/logo_praia.png';
+import logoTeal from './assets/logo_horiz.png';
+import logoGray from './assets/logo_horiz.png';
+import logoPraia from './assets/logo_praia.png';
 import peixe1 from './assets/galeria/sardinha_ilhabela.png';
 import parque2 from './assets/galeria/parque_ilhabela.png';
 import cachoeira3 from './assets/galeria/cachoeira_ilhabela.png';
@@ -473,14 +476,15 @@ const SobreMosaicoSection = () => {
   );
 };
 
-// --- SECÇÃO: SOBRE (PARTE 2: OS 5 PILARES) ---
+// --- SECÇÃO: SOBRE (PARTE 2: OS 5 PILARES - RETANGULAR & SLIM) ---
 const SobrePilaresSection = () => {
+  // OBS: Substitua os src das imagens pelas suas variáveis (lixo, cascata, etc.) se preferir.
+  // Usei links de placeholder para garantir que o código funcione ao copiar.
   return (
     <section className="bg-white">
-
       {/* Bloco 2: Sustentabilidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-8 flex flex-col justify-center bg-white order-2 md:order-1"> {/* p-12 -> p-8 */}
+        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
           <FadeInSection>
             <Leaf className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Sustentabilidade</h2>
@@ -489,17 +493,17 @@ const SobrePilaresSection = () => {
             </p>
           </FadeInSection>
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2"> {/* h-64 -> h-48 */}
-          <img src={lixo} className="w-full h-full object-cover" alt="Sustentabilidade" />
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src={lixo} className="w-full h-full object-cover md:h-full" alt="Sustentabilidade" />
         </div>
       </div>
 
       {/* Bloco 3: Parceiros Locais */}
       <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
-          <img src={cascata} className="w-full h-full object-cover" alt="Parceiros" />
+        <div className="h-48 md:h-auto overflow-hidden">
+          <img src={cascata} className="w-full h-full object-cover md:h-full" alt="Parceiros" />
         </div>
-        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
+        <div className="px-10 py-8 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
             <Heart className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Parceiros Locais</h2>
@@ -512,42 +516,39 @@ const SobrePilaresSection = () => {
 
       {/* Bloco 4: Comunidade */}
       <div className="grid md:grid-cols-2">
-        <div className="p-8 flex flex-col justify-center bg-white order-2 md:order-1"> {/* p-12 -> p-8 */}
+        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
           <FadeInSection>
             <Users className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Comunidade Ativa</h2>
             <p className="text-gray-600 leading-relaxed">
-              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições culturais da ilha, valorizando a identidade caiçara. Unidos, construímos um futuro melhor para nossa ilha.
+              Incentivamos a participação em conselhos e grupos de bairro, fortalecendo os laços entre locadores e a comunidade local de Ilhabela. Respeitamos, apoiamos e fomentamos as tradições caiçaras.
             </p>
           </FadeInSection>
         </div>
-        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2"> {/* h-64 -> h-48 */}
-          <img src={canoa} className="w-full h-full object-cover" alt="Comunidade" />
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src={canoa} className="w-full h-full object-cover md:h-full" alt="Comunidade" />
         </div>
       </div>
 
       {/* Bloco 5: Guia Local */}
       <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
-          <img src={passaro} className="w-full h-full object-cover" alt="Guia" />
+        <div className="h-48 md:h-auto overflow-hidden">
+          <img src={passaro} className="w-full h-full object-cover md:h-full" alt="Guia" />
         </div>
-        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
+        <div className="px-10 py-8 flex flex-col justify-center bg-gray-50">
           <FadeInSection>
             <BookOpen className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Guia Local</h2>
             <p className="text-gray-600 leading-relaxed">
-              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica. Indicamos especialistas em observação de aves (birdwatching), esportes náuticos, mergulho e ecoturismo. Compartilhamos informações sobre mercados, restaurantes tradicionais, pontos turísticos históricos e opções de transporte. Fortalecemos a economia local valorizando os profissionais e a cultura caiçara de Ilhabela.
+              Conectamos nossos hóspedes com os melhores guias locais e profissionais da ilha para experiências autênticas em praias, cachoeiras e trilhas da Mata Atlântica.
             </p>
           </FadeInSection>
         </div>
       </div>
 
-      {/* Bloco 1: Megafone (Estava em último no teu código) */}
+      {/* Bloco 1: Megafone */}
       <div className="grid md:grid-cols-2">
-        <div className="h-48 md:h-auto overflow-hidden"> {/* h-64 -> h-48 */}
-          <img src={megafone} className="w-full h-full object-cover" alt="Megafone" />
-        </div>
-        <div className="p-8 flex flex-col justify-center bg-gray-50"> {/* p-12 -> p-8 */}
+        <div className="px-10 py-8 flex flex-col justify-center bg-white order-2 md:order-1">
           <FadeInSection>
             <Megaphone className="h-10 w-10 text-primary-teal mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-primary-gray mb-4">Junto Somos Mais Fortes</h2>
@@ -555,6 +556,9 @@ const SobrePilaresSection = () => {
               Acreditamos que a união de proprietários comprometidos com a excelência cria experiências inesquecíveis e valoriza nossa ilha paradisíaca.
             </p>
           </FadeInSection>
+        </div>
+        <div className="h-48 md:h-auto overflow-hidden order-1 md:order-2">
+          <img src={megafone} className="w-full h-full object-cover md:h-full" alt="Megafone" />
         </div>
       </div>
     </section>
@@ -634,8 +638,7 @@ const CTASection = ({ navigate }) => {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
-              variant="outline"
-              className="border-2 border-gray-200 text-gray-700 hover:border-primary-teal hover:text-primary-teal hover:bg-teal-50 font-bold text-lg px-8 py-7 h-auto rounded-xl transition-all"
+              className="bg-primary-teal hover:bg-teal-700 text-white font-bold text-lg px-8 py-7 h-auto rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               onClick={() => navigate('/candidatura/membro')}
             >
               Seja um Membro
