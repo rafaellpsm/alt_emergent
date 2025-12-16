@@ -18,6 +18,7 @@ import { Trash2, Edit, Eye, MapPin, Bed, Bath, Users, TicketPercent, Phone, Glob
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// --- LISTA COMPLETA DE BAIRROS DE ILHABELA ---
 const bairrosIlhabela = [
   {
     regiao: "Norte",
@@ -86,6 +87,7 @@ const bairrosIlhabela = [
   }
 ];
 
+// --- PÁGINA: TODOS OS IMÓVEIS (PÚBLICA) ---
 export const TodosImoveisPage = () => {
   const navigate = useNavigate();
   const [imoveis, setImoveis] = useState([]);
@@ -160,12 +162,12 @@ export const TodosImoveisPage = () => {
                 </Select>
               </div>
 
-              {/* --- FILTRO DE REGIÃO/BAIRRO ATUALIZADO --- */}
+              {/* FILTRO DE REGIÃO/BAIRRO COM GRUPOS */}
               <div>
                 <Label className="mb-1 block text-xs uppercase text-gray-500 font-semibold">Região / Bairro</Label>
                 <Select value={filtros.regiao} onValueChange={(value) => handleFilterChange('regiao', value)}>
                   <SelectTrigger className="bg-white"><SelectValue placeholder="Todos" /></SelectTrigger>
-                  <SelectContent className="max-h-[300px]"> {/* Altura máxima com scroll */}
+                  <SelectContent className="max-h-[300px]">
                     <SelectItem value="todas">Todas</SelectItem>
                     {bairrosIlhabela.map((grupo) => (
                       <SelectGroup key={grupo.regiao}>
@@ -253,6 +255,7 @@ export const TodosImoveisPage = () => {
   );
 };
 
+// --- PÁGINA: MEU PERFIL (PARCEIRO/ADMIN) ---
 export const MeuPerfilPage = () => {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -428,31 +431,86 @@ export const MeuPerfilPage = () => {
   );
 };
 
+// --- PÁGINA: PARCEIROS (PÚBLICA) ---
+export const ParceirosPage = () => {
+  const navigate = useNavigate();
+  const [parceiros, setParceiros] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+
+  useEffect(() => {
+    fetchParceiros();
+  }, []);
+
+  const fetchParceiros = async () => {
+    try {
+      const response = await axios.get(`${API}/parceiros`);
+      setParceiros(response.data);
+    } catch (error) {
+      toast({ title: "Erro ao carregar parceiros", variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  const categoriasDisponiveis = [...new Set(parceiros.map(p => p.categoria))];
+  const parceirsFiltrados = categoriaFiltro ? parceiros.filter(p => p.categoria === categoriaFiltro) : parceiros;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-12">
+        <PageHeader title="Nossos Parceiros" showBackButton={false} />
+
+        {categoriasDisponiveis.length > 0 && (
+          <div className="flex overflow-x-auto gap-2 mb-8 pb-2 scrollbar-hide">
+            <Button variant={categoriaFiltro === '' ? 'default' : 'outline'} onClick={() => setCategoriaFiltro('')} className="rounded-full whitespace-nowrap">Todos</Button>
+            {categoriasDisponiveis.map(cat => (
+              <Button key={cat} variant={categoriaFiltro === cat ? 'default' : 'outline'} onClick={() => setCategoriaFiltro(cat)} className="rounded-full whitespace-nowrap capitalize">{cat}</Button>
+            ))}
+          </div>
+        )}
+
+        {loading ? <div className="flex justify-center py-12"><div className="spinner"></div></div> : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {parceirsFiltrados.map((parceiro) => (
+              <Card key={parceiro.id} className="card-custom hover-lift cursor-pointer overflow-hidden flex flex-col h-full" onClick={() => navigate(`/parceiro/${parceiro.id}`)}>
+                <div className="aspect-video bg-gray-200 relative">
+                  {parceiro.fotos && parceiro.fotos.length > 0 && (
+                    <img src={parceiro.fotos[0]} alt={parceiro.nome_empresa} className="w-full h-full object-cover" />
+                  )}
+                  <Badge className="absolute top-3 left-3 bg-white/90 text-primary-gray">{parceiro.categoria}</Badge>
+                </div>
+                <CardContent className="p-5 flex-1 flex flex-col">
+                  <h3 className="font-bold text-lg text-primary-gray mb-2">{parceiro.nome_empresa}</h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">{parceiro.descricao}</p>
+
+                  {parceiro.desconto_alt && (
+                    <div className="mt-auto bg-teal-50 border border-teal-100 rounded p-2 flex items-center gap-2">
+                      <TicketPercent className="h-4 w-4 text-primary-teal" />
+                      <span className="text-xs font-bold text-teal-800">{parceiro.desconto_alt}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- PÁGINA: MEUS IMÓVEIS (MEMBRO/ADMIN) ---
 export const MeusImoveisPage = () => {
   const [imoveis, setImoveis] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingImovel, setEditingImovel] = useState(null);
   const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    tipo: '',
-    regiao: '',
-    endereco_completo: '',
-    num_quartos: 1,
-    num_banheiros: 1,
-    capacidade: 2,
-    area_m2: '',
-    possui_piscina: false,
-    possui_churrasqueira: false,
-    possui_wifi: true,
-    permite_pets: false,
-    tem_vista_mar: false,
-    tem_ar_condicionado: false,
-    link_booking: '',
-    link_airbnb: '',
-    fotos: [],
-    video_url: ''
+    titulo: '', descricao: '', tipo: '', regiao: '', endereco_completo: '',
+    num_quartos: 1, num_banheiros: 1, capacidade: 2, possui_piscina: false,
+    possui_churrasqueira: false, possui_wifi: true, permite_pets: false,
+    tem_vista_mar: false, tem_ar_condicionado: false, link_booking: '',
+    link_airbnb: '', fotos: [], video_url: ''
   });
 
   useEffect(() => {
@@ -460,16 +518,8 @@ export const MeusImoveisPage = () => {
   }, []);
 
   const fetchImoveis = async () => {
-    try {
-      const response = await axios.get(`${API}/meus-imoveis`);
-      setImoveis(response.data);
-    } catch (error) {
-      toast({
-        title: "Erro ao carregar imóveis",
-        description: "Tente recarregar a página.",
-        variant: "destructive",
-      });
-    }
+    try { const res = await axios.get(`${API}/meus-imoveis`); setImoveis(res.data); }
+    catch (e) { toast({ title: "Erro ao carregar imóveis", variant: "destructive" }); }
     setLoading(false);
   };
 
@@ -505,8 +555,7 @@ export const MeusImoveisPage = () => {
   const resetForm = () => {
     setFormData({
       titulo: '', descricao: '', tipo: '', regiao: '', endereco_completo: '',
-      num_quartos: 1,
-      num_banheiros: 1, capacidade: 2, area_m2: '', possui_piscina: false,
+      num_quartos: 1, num_banheiros: 1, capacidade: 2, possui_piscina: false,
       possui_churrasqueira: false, possui_wifi: true, permite_pets: false,
       tem_vista_mar: false, tem_ar_condicionado: false, link_booking: '',
       link_airbnb: '', fotos: [], video_url: ''
@@ -516,24 +565,15 @@ export const MeusImoveisPage = () => {
   const handleEdit = (imovel) => {
     setEditingImovel(imovel);
     setFormData({
-      titulo: imovel.titulo || '',
-      descricao: imovel.descricao || '',
-      tipo: imovel.tipo || '',
-      regiao: imovel.regiao || '',
-      endereco_completo: imovel.endereco_completo || '',
-      num_quartos: imovel.num_quartos || 1,
-      num_banheiros: imovel.num_banheiros || 1,
-      capacidade: imovel.capacidade || 2,
-      area_m2: imovel.area_m2 || '',
-      possui_piscina: imovel.possui_piscina || false,
+      titulo: imovel.titulo || '', descricao: imovel.descricao || '', tipo: imovel.tipo || '',
+      regiao: imovel.regiao || '', endereco_completo: imovel.endereco_completo || '',
+      num_quartos: imovel.num_quartos || 1, num_banheiros: imovel.num_banheiros || 1,
+      capacidade: imovel.capacidade || 2, possui_piscina: imovel.possui_piscina || false,
       possui_churrasqueira: imovel.possui_churrasqueira || false,
       possui_wifi: imovel.possui_wifi !== undefined ? imovel.possui_wifi : true,
-      permite_pets: imovel.permite_pets || false,
-      tem_vista_mar: imovel.tem_vista_mar || false,
-      tem_ar_condicionado: imovel.tem_ar_condicionado || false,
-      link_booking: imovel.link_booking || '',
-      link_airbnb: imovel.link_airbnb || '',
-      fotos: Array.isArray(imovel.fotos) ? imovel.fotos : [],
+      permite_pets: imovel.permite_pets || false, tem_vista_mar: imovel.tem_vista_mar || false,
+      tem_ar_condicionado: imovel.tem_ar_condicionado || false, link_booking: imovel.link_booking || '',
+      link_airbnb: imovel.link_airbnb || '', fotos: Array.isArray(imovel.fotos) ? imovel.fotos : [],
       video_url: imovel.video_url || ''
     });
     setShowForm(true);
@@ -552,316 +592,125 @@ export const MeusImoveisPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <h1 className="text-3xl font-bold text-primary-gray">Meus Imóveis</h1>
-          {!showForm && (
-            <Button
-              className="btn-primary w-full sm:w-auto"
-              onClick={() => {
-                setEditingImovel(null);
-                resetForm();
-                setShowForm(true);
-              }}
-            >
-              + Cadastrar Novo Imóvel
-            </Button>
-          )}
-        </div>
-
-        {showForm ? (
-          <Card className="card-custom mb-8">
-            <CardHeader>
-              <CardTitle className="text-primary-gray">
-                {editingImovel ? 'Editar Imóvel' : 'Novo Imóvel'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="titulo" className="form-label">Título do Imóvel *</Label>
-                    <Input
-                      id="titulo"
-                      className="form-input"
-                      value={formData.titulo}
-                      onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                      required
-                      placeholder="Casa com vista para o mar"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tipo" className="form-label">Tipo de Imóvel *</Label>
-                    <Select
-                      value={formData.tipo}
-                      onValueChange={(value) => setFormData({ ...formData, tipo: value })}
-                    >
-                      <SelectTrigger className="form-input">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="casa">Casa</SelectItem>
-                        <SelectItem value="apartamento">Apartamento</SelectItem>
-                        <SelectItem value="pousada">Pousada</SelectItem>
-                        <SelectItem value="chale">Chalé</SelectItem>
-                        <SelectItem value="studio">Studio</SelectItem>
-                        <SelectItem value="cobertura">Cobertura</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="descricao" className="form-label">Descrição *</Label>
-                  <Textarea
-                    id="descricao"
-                    className="form-input"
-                    value={formData.descricao}
-                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    required
-                    rows={4}
-                    placeholder="Descreva as características e diferenciais do seu imóvel..."
-                  />
-                </div>
-
-                {/* --- SELETOR DE REGIÃO ATUALIZADO (FORMULÁRIO) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="regiao" className="form-label">Região / Bairro *</Label>
-                    <Select
-                      value={formData.regiao}
-                      onValueChange={(value) => setFormData({ ...formData, regiao: value })}
-                    >
-                      <SelectTrigger className="form-input">
-                        <SelectValue placeholder="Selecione a região/bairro" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {bairrosIlhabela.map((grupo) => (
-                          <SelectGroup key={grupo.regiao}>
-                            <SelectLabel className="pl-2 py-1 text-xs font-bold text-primary-teal bg-gray-50 uppercase tracking-wide">
-                              Região {grupo.regiao}
-                            </SelectLabel>
-                            {grupo.bairros.map((bairro) => (
-                              <SelectItem key={bairro} value={bairro.toLowerCase()} className="pl-6">
-                                {bairro}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="area_m2" className="form-label">Área (m²)</Label>
-                    <Input
-                      id="area_m2"
-                      type="number"
-                      className="form-input"
-                      value={formData.area_m2}
-                      onChange={(e) => setFormData({ ...formData, area_m2: e.target.value })}
-                      placeholder="120"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="endereco_completo" className="form-label">Endereço Completo *</Label>
-                  <Textarea
-                    id="endereco_completo"
-                    className="form-input"
-                    value={formData.endereco_completo}
-                    onChange={(e) => setFormData({ ...formData, endereco_completo: e.target.value })}
-                    required
-                    placeholder="Rua, número, bairro, CEP..."
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="num_quartos" className="form-label">Quartos *</Label>
-                    <Input
-                      id="num_quartos"
-                      type="number"
-                      min="0"
-                      className="form-input"
-                      value={formData.num_quartos}
-                      onChange={(e) => setFormData({ ...formData, num_quartos: parseInt(e.target.value) || 0 })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="num_banheiros" className="form-label">Banheiros *</Label>
-                    <Input
-                      id="num_banheiros"
-                      type="number"
-                      min="1"
-                      className="form-input"
-                      value={formData.num_banheiros}
-                      onChange={(e) => setFormData({ ...formData, num_banheiros: parseInt(e.target.value) || 1 })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="capacidade" className="form-label">Capacidade *</Label>
-                    <Input
-                      id="capacidade"
-                      type="number"
-                      min="1"
-                      className="form-input"
-                      value={formData.capacidade}
-                      onChange={(e) => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 1 })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <Label className="form-label">Comodidades</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
-                      { key: 'possui_piscina', label: 'Piscina' },
-                      { key: 'possui_churrasqueira', label: 'Churrasqueira' },
-                      { key: 'possui_wifi', label: 'Wi-Fi' },
-                      { key: 'permite_pets', label: 'Aceita Pets' },
-                      { key: 'tem_vista_mar', label: 'Vista para o Mar' },
-                      { key: 'tem_ar_condicionado', label: 'Ar Condicionado' }
-                    ].map(({ key, label }) => (
-                      <div key={key} className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          id={key}
-                          checked={formData[key]}
-                          onChange={(e) => setFormData({ ...formData, [key]: e.target.checked })}
-                          className="rounded focus-teal"
-                        />
-                        <Label htmlFor={key} className="form-label mb-0 cursor-pointer">{label}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="link_booking" className="form-label">Link Booking.com</Label>
-                    <Input
-                      id="link_booking"
-                      type="url"
-                      className="form-input"
-                      value={formData.link_booking}
-                      onChange={(e) => setFormData({ ...formData, link_booking: e.target.value })}
-                      placeholder="https://booking.com/..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="link_airbnb" className="form-label">Link Airbnb</Label>
-                    <Input
-                      id="link_airbnb"
-                      type="url"
-                      className="form-input"
-                      value={formData.link_airbnb}
-                      onChange={(e) => setFormData({ ...formData, link_airbnb: e.target.value })}
-                      placeholder="https://airbnb.com/..."
-                    />
-                  </div>
-                </div>
-                <div className="mt-6 pt-6 border-t">
-                  <VideoUpload
-                    videoUrl={formData.video_url}
-                    onVideoChange={(newUrl) => setFormData({ ...formData, video_url: newUrl })}
-                    label="Vídeo do Imóvel"
-                  />
-                </div>
-                <div className="mt-6">
-                  <PhotoUpload
-                    photos={formData.fotos}
-                    onPhotosChange={(newPhotos) => setFormData({ ...formData, fotos: newPhotos })}
-                    maxPhotos={20}
-                    label="Fotos do Imóvel"
-                  />
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">📸 Dicas para Fotos Incríveis</h4>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p>• <strong>Proporção recomendada:</strong> 16:9 ou 4:3 (paisagem horizontal)</p>
-                      <p>• <strong>Primeira foto:</strong> Será a foto principal do imóvel</p>
-                      <p>• <strong>Sequência sugerida:</strong> Fachada → Sala → Quartos → Cozinha → Banheiros → Área externa</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button type="submit" className="flex-1 btn-primary py-6 text-lg">
-                    {editingImovel ? 'Atualizar' : 'Cadastrar'} Imóvel
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 py-6"
-                    onClick={() => {
-                      setShowForm(false);
-                      setEditingImovel(null);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {imoveis.length === 0 ? (
-              <div className="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-                <p className="text-gray-500 mb-4">Você ainda não cadastrou nenhum imóvel.</p>
-                <Button
-                  className="btn-primary"
-                  onClick={() => {
-                    setEditingImovel(null);
-                    resetForm();
-                    setShowForm(true);
-                  }}
-                >
-                  Cadastrar Primeiro Imóvel
-                </Button>
-              </div>
-            ) : (
-              imoveis.map((imovel) => (
-                <Card key={imovel.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="aspect-video bg-gray-200 relative group">
-                    {imovel.fotos && imovel.fotos.length > 0 ? (
-                      <img src={imovel.fotos[0]} className="w-full h-full object-cover" alt={imovel.titulo} />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">Sem foto</div>
-                    )}
-                    <div className="absolute top-2 right-2 flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white shadow-sm" onClick={() => handleEdit(imovel)} title="Editar">
-                        <Edit className="h-4 w-4 text-gray-700" />
-                      </Button>
-                      <Button size="icon" variant="destructive" className="h-8 w-8 shadow-sm" onClick={() => handleDelete(imovel.id)} title="Remover">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {imovel.destaque && <Badge className="absolute top-2 left-2 bg-yellow-400 text-yellow-900">Destaque</Badge>}
-                  </div>
-
-                  <CardContent className="p-4">
-                    <div className="mb-2">
-                      <h3 className="font-bold text-gray-800 truncate text-lg">{imovel.titulo}</h3>
-                      <p className="text-sm text-gray-500">{imovel.regiao} • {imovel.tipo}</p>
-                    </div>
-
-                    <p className="text-gray-600 mb-4 line-clamp-2 text-sm h-10">
-                      {imovel.descricao}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3 bg-gray-50 p-2 rounded">
-                      <div className="flex items-center gap-1"><Bed className="h-3 w-3" /> {imovel.num_quartos} quartos</div>
-                      <div className="flex items-center gap-1"><Bath className="h-3 w-3" /> {imovel.num_banheiros} banheiros</div>
-                      <div className="flex items-center gap-1"><Users className="h-3 w-3" /> {imovel.capacidade} pessoas</div>
-                      <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {imovel.visualizacoes} views</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+    <div className="container mx-auto px-4 py-12">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-primary-gray">Meus Imóveis</h1>
+        {!showForm && (
+          <Button className="btn-primary w-full sm:w-auto" onClick={() => { setEditingImovel(null); resetForm(); setShowForm(true); }}>
+            + Cadastrar Novo Imóvel
+          </Button>
         )}
       </div>
+
+      {showForm ? (
+        <Card className="card-custom mb-8">
+          <CardHeader>
+            <CardTitle>{editingImovel ? 'Editar Imóvel' : 'Novo Imóvel'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><Label>Título *</Label><Input value={formData.titulo} onChange={e => setFormData({ ...formData, titulo: e.target.value })} required placeholder="Casa com vista para o mar" /></div>
+                <div>
+                  <Label>Tipo *</Label>
+                  <Select value={formData.tipo} onValueChange={v => setFormData({ ...formData, tipo: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="casa">Casa</SelectItem>
+                      <SelectItem value="apartamento">Apartamento</SelectItem>
+                      <SelectItem value="pousada">Pousada</SelectItem>
+                      <SelectItem value="chale">Chalé</SelectItem>
+                      <SelectItem value="studio">Studio</SelectItem>
+                      <SelectItem value="cobertura">Cobertura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div><Label>Descrição *</Label><Textarea rows={4} value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} required placeholder="Descreva as características e diferenciais do seu imóvel..." /></div>
+
+              {/* --- SELETOR DE REGIÃO ATUALIZADO (FORMULÁRIO DE CADASTRO) --- */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label>Região / Bairro *</Label>
+                  <Select value={formData.regiao} onValueChange={v => setFormData({ ...formData, regiao: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecione a região/bairro" /></SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {bairrosIlhabela.map((grupo) => (
+                        <SelectGroup key={grupo.regiao}>
+                          <SelectLabel className="pl-2 py-1 text-xs font-bold text-primary-teal bg-gray-50 uppercase tracking-wide">
+                            Região {grupo.regiao}
+                          </SelectLabel>
+                          {grupo.bairros.map((bairro) => (
+                            <SelectItem key={bairro} value={bairro.toLowerCase()} className="pl-6">
+                              {bairro}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Endereço Completo *</Label><Input value={formData.endereco_completo} onChange={e => setFormData({ ...formData, endereco_completo: e.target.value })} required placeholder="Rua, número, bairro, CEP..." /></div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div><Label>Quartos *</Label><Input type="number" min="0" value={formData.num_quartos} onChange={e => setFormData({ ...formData, num_quartos: parseInt(e.target.value) || 0 })} required /></div>
+                <div><Label>Banheiros *</Label><Input type="number" min="1" value={formData.num_banheiros} onChange={e => setFormData({ ...formData, num_banheiros: parseInt(e.target.value) || 1 })} required /></div>
+                <div><Label>Capacidade *</Label><Input type="number" min="1" value={formData.capacidade} onChange={e => setFormData({ ...formData, capacidade: parseInt(e.target.value) || 1 })} required /></div>
+              </div>
+              <div className="space-y-4">
+                <Label>Comodidades</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {[{ key: 'possui_piscina', label: 'Piscina' }, { key: 'possui_churrasqueira', label: 'Churrasqueira' }, { key: 'possui_wifi', label: 'Wi-Fi' }, { key: 'permite_pets', label: 'Aceita Pets' }, { key: 'tem_vista_mar', label: 'Vista para o Mar' }, { key: 'tem_ar_condicionado', label: 'Ar Condicionado' }].map(({ key, label }) => (
+                    <div key={key} className="flex items-center space-x-3">
+                      <input type="checkbox" id={key} checked={formData[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.checked })} className="rounded focus-teal" />
+                      <Label htmlFor={key} className="form-label mb-0 cursor-pointer">{label}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><Label>Link Booking.com</Label><Input type="url" value={formData.link_booking} onChange={e => setFormData({ ...formData, link_booking: e.target.value })} placeholder="https://booking.com/..." /></div>
+                <div><Label>Link Airbnb</Label><Input type="url" value={formData.link_airbnb} onChange={e => setFormData({ ...formData, link_airbnb: e.target.value })} placeholder="https://airbnb.com/..." /></div>
+              </div>
+              <div className="mt-6 pt-6 border-t"><VideoUpload videoUrl={formData.video_url} onVideoChange={(newUrl) => setFormData({ ...formData, video_url: newUrl })} label="Vídeo do Imóvel" /></div>
+              <div className="mt-6"><PhotoUpload photos={formData.fotos} onPhotosChange={(newPhotos) => setFormData({ ...formData, fotos: newPhotos })} maxPhotos={20} label="Fotos do Imóvel" /><div className="mt-4 p-4 bg-blue-50 rounded-lg"><h4 className="font-medium text-blue-900 mb-2">📸 Dicas para Fotos Incríveis</h4><div className="text-sm text-blue-800 space-y-1"><p>• <strong>Proporção recomendada:</strong> 16:9 ou 4:3 (paisagem horizontal)</p><p>• <strong>Primeira foto:</strong> Será a foto principal do imóvel</p></div></div></div>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button type="submit" className="flex-1 btn-primary py-6 text-lg">{editingImovel ? 'Atualizar' : 'Cadastrar'} Imóvel</Button>
+                <Button type="button" variant="outline" className="flex-1 py-6" onClick={() => { setShowForm(false); setEditingImovel(null); }}>Cancelar</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {imoveis.length === 0 ? (
+            <div className="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300"><p className="text-gray-500 mb-4">Você ainda não cadastrou nenhum imóvel.</p><Button className="btn-primary" onClick={() => { setEditingImovel(null); resetForm(); setShowForm(true); }}>Cadastrar Primeiro Imóvel</Button></div>
+          ) : (
+            imoveis.map(imovel => (
+              <Card key={imovel.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="aspect-video bg-gray-200 relative group">
+                  {imovel.fotos && imovel.fotos.length > 0 ? (<img src={imovel.fotos[0]} className="w-full h-full object-cover" alt={imovel.titulo} />) : (<div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">Sem foto</div>)}
+                  <div className="absolute top-2 right-2 flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 hover:bg-white shadow-sm" onClick={() => handleEdit(imovel)} title="Editar"><Edit className="h-4 w-4 text-gray-700" /></Button>
+                    <Button size="icon" variant="destructive" className="h-8 w-8 shadow-sm" onClick={() => handleDelete(imovel.id)} title="Remover"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                  <Badge className={`absolute top-2 left-2 ${imovel.status_aprovacao === 'aprovado' ? 'bg-green-500' : 'bg-yellow-500'}`}>{imovel.status_aprovacao}</Badge>
+                </div>
+                <CardContent className="p-4">
+                  <div className="mb-2"><h3 className="font-bold text-gray-800 truncate text-lg">{imovel.titulo}</h3><p className="text-sm text-gray-500">{imovel.regiao} • {imovel.tipo}</p></div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3 bg-gray-50 p-2 rounded">
+                    <div className="flex items-center gap-1"><Bed className="h-3 w-3" /> {imovel.num_quartos} quartos</div>
+                    <div className="flex items-center gap-1"><Bath className="h-3 w-3" /> {imovel.num_banheiros} banheiros</div>
+                    <div className="flex items-center gap-1"><Users className="h-3 w-3" /> {imovel.capacidade} pessoas</div>
+                    <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {imovel.visualizacoes} views</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
